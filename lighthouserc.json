@@ -1,0 +1,64 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 2,
+      "startServerCommand": "npm run start",
+      "startServerReadyPattern": "Local:",
+      "settings": {
+        "preset": "desktop",
+        "throttlingMethod": "simulate",
+        "budgets": [
+          {
+            "path": "/*",
+            "resourceSizes": [
+              {
+                "resourceType": "script",
+                "budget": 320
+              },
+              {
+                "resourceType": "image",
+                "budget": 1100
+              },
+              {
+                "resourceType": "font",
+                "budget": 180
+              },
+              {
+                "resourceType": "total",
+                "budget": 2000
+              }
+            ],
+            "timings": [
+              {
+                "metric": "first-contentful-paint",
+                "budget": 1800
+              },
+              {
+                "metric": "interactive",
+                "budget": 3800
+              }
+            ]
+          }
+        ]
+      },
+      "url": [
+        "http://localhost:3000/",
+        "http://localhost:3000/productos/mindflow-ai-sales-engine",
+        "http://localhost:3000/blog",
+        "http://localhost:3000/contacto"
+      ]
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.9 }],
+        "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "interactive": ["warn", { "maxNumericValue": 3800 }],
+        "total-blocking-time": ["warn", { "maxNumericValue": 200 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

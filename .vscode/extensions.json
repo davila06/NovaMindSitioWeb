@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "ecmel.vscode-html-css",
+    "formulahendry.auto-rename-tag",
+    "ms-vscode.live-server"
+  ]
+}

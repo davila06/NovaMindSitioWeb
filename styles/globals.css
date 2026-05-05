@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --brand-primary: #2b2e83;
+  --brand-secondary: #2f7ed8;
+  --brand-tech: #5bc0eb;
+  --bg-dark: #0f172a;
+  --bg-card: #1e293b;
+  --text-soft: #f8fafc;
+  --accent-interactive: #38bdf8;
+  --accent-energy: #facc15;
+  --accent-cta: #f97316;
+  --accent-danger: #ef4444;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role='tab']:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #0f172a;
+  background-image:
+    radial-gradient(circle at 14% 10%, rgba(91, 192, 235, 0.22), transparent 42%),
+    radial-gradient(circle at 86% 82%, rgba(249, 115, 22, 0.18), transparent 38%),
+    linear-gradient(135deg, #0f172a, #1e293b);
+  color: #f8fafc;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(56, 189, 248, 0.14) 0.6px, transparent 0.6px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.48), transparent 62%);
+  z-index: -1;
+}
+
+.section-dark {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(91, 192, 235, 0.24), transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.22), transparent 38%),
+    linear-gradient(135deg, #0f172a, #1e293b);
+  color: #f8fafc;
+}
+
+.glass-panel {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(91, 192, 235, 0.24);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.grid-tech {
+  background-image:
+    linear-gradient(to right, rgba(56, 189, 248, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-gradient-brand {
+  background-image: linear-gradient(135deg, #2b2e83, #2f7ed8, #5bc0eb);
+}
+
+.bg-gradient-energy {
+  background-image: linear-gradient(135deg, #facc15, #f97316, #ef4444);
+}
+
+.bg-gradient-futurist {
+  background-image: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+@keyframes enter-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes enter-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.enter-fade-up {
+  animation: enter-fade-up 600ms ease-out both;
+}
+
+.enter-scale-in {
+  animation: enter-scale-in 700ms ease-out both;
+}

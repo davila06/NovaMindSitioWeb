@@ -36,6 +36,13 @@ const contactSchema = z.object({
   message: z.string().trim().min(10).max(4000),
   website: z.string().trim().max(200).optional(),
   utm: utmSchema,
+  // Consentimiento explícito — obligatorio Ley 8968 Costa Rica
+  consentPrivacy: z.literal(true, {
+    errorMap: () => ({
+      message:
+        "Se requiere consentimiento explícito para el tratamiento de datos.",
+    }),
+  }),
 });
 
 type ContactPayload = z.infer<typeof contactSchema>;
@@ -88,6 +95,10 @@ function buildEmailHtml(data: ContactPayload) {
     <p><strong>Horizonte de implementacion:</strong> ${safeHorizon}</p>
     <p><strong>Mensaje:</strong></p>
     <p>${safeMessage}</p>
+    <hr/>
+    <h3>Consentimiento (Ley 8968 CR)</h3>
+    <p><strong>Consentimiento explícito:</strong> Sí — versión política 2026-01</p>
+    <p><strong>Timestamp ISO:</strong> ${new Date().toISOString()}</p>
     ${utmBlock}
   `;
 }
@@ -242,6 +253,18 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
+
+    // Audit log del consentimiento (Ley 8968 CR)
+    console.info(
+      JSON.stringify({
+        event: "consent_recorded",
+        requestId,
+        clientIp,
+        consentPrivacy: data.consentPrivacy,
+        policyVersion: "2026-01",
+        timestamp: new Date().toISOString(),
+      }),
+    );
 
     if (data.website && data.website.trim().length > 0) {
       return withRequestId(

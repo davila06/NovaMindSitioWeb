@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { AnalyticsScripts } from "@/components/layout/AnalyticsScripts";
 import { GlobalErrorListeners } from "@/components/layout/GlobalErrorListeners";
+import { CookieConsent } from "@/components/shared/ui/CookieConsent";
 import { createPageMetadata, siteConfig } from "@/lib/seo";
 
 const inter = Inter({
@@ -145,7 +146,10 @@ export default function RootLayout({
     <html lang="es-CR">
       <head>
         {/* Prevent iOS/Android from linkifying non-phone content */}
-        <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+        <meta
+          name="format-detection"
+          content="telephone=no, date=no, email=no, address=no"
+        />
         {/* DNS prefetch for analytics — non-blocking */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.clarity.ms" />
@@ -220,6 +224,7 @@ export default function RootLayout({
         <AnalyticsScripts />
         <GlobalErrorListeners />
         <AppShell>{children}</AppShell>
+        <CookieConsent />
       </body>
     </html>
   );

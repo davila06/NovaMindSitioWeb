@@ -6,16 +6,27 @@ import { captureServerError } from "@/lib/monitoring";
 const subscribeSchema = z.object({
   email: z.string().trim().email("Correo electrónico inválido.").max(254),
   interest: z.string().trim().max(120).optional(),
+  // Consentimiento explícito — obligatorio Ley 8968 Costa Rica
+  consentPrivacy: z.literal(true, {
+    errorMap: () => ({
+      message:
+        "Se requiere consentimiento explícito para el tratamiento de datos.",
+    }),
+  }),
 });
 
 export async function POST(request: Request) {
-  const requestId = crypto.randomUUID()
+  const requestId = crypto.randomUUID();
 
   // Validate Content-Type
   const contentType = request.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {
     return NextResponse.json(
-      { ok: false, message: "Content-Type debe ser application/json.", requestId },
+      {
+        ok: false,
+        message: "Content-Type debe ser application/json.",
+        requestId,
+      },
       { status: 415 },
     );
   }
@@ -29,8 +40,18 @@ export async function POST(request: Request) {
   });
   if (!rl.allowed) {
     return NextResponse.json(
-      { ok: false, message: "Demasiadas solicitudes. Intenta m\u00e1s tarde.", requestId },
-      { status: 429, headers: { "Retry-After": String(rl.retryAfterSeconds), "X-Request-Id": requestId } },
+      {
+        ok: false,
+        message: "Demasiadas solicitudes. Intenta m\u00e1s tarde.",
+        requestId,
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(rl.retryAfterSeconds),
+          "X-Request-Id": requestId,
+        },
+      },
     );
   }
 
@@ -45,11 +66,23 @@ export async function POST(request: Request) {
           message: parsed.error.errors[0]?.message ?? "Datos inválidos.",
           requestId,
         },
-        { status: 400, headers: { 'X-Request-Id': requestId } },
+        { status: 400, headers: { "X-Request-Id": requestId } },
       );
     }
 
     const { email, interest } = parsed.data;
+
+    // Audit log del consentimiento (Ley 8968 CR)
+    console.info(
+      JSON.stringify({
+        event: "newsletter_consent_recorded",
+        requestId,
+        ip,
+        consentPrivacy: true,
+        policyVersion: "2026-01",
+        timestamp: new Date().toISOString(),
+      }),
+    );
 
     // ── Email forwarding ────────────────────────────────────────────
     // If RESEND_API_KEY is configured, forward subscription notification.
@@ -85,8 +118,12 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { ok: true, message: "\u00a1Suscripci\u00f3n exitosa! Te contactaremos pronto.", requestId },
-      { headers: { 'X-Request-Id': requestId } },
+      {
+        ok: true,
+        message: "\u00a1Suscripci\u00f3n exitosa! Te contactaremos pronto.",
+        requestId,
+      },
+      { headers: { "X-Request-Id": requestId } },
     );
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
@@ -98,7 +135,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(
       { ok: false, message: "Error interno. Intenta de nuevo.", requestId },
-      { status: 500, headers: { 'X-Request-Id': requestId } },
+      { status: 500, headers: { "X-Request-Id": requestId } },
     );
   }
 }

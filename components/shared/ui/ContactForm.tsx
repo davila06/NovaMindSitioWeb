@@ -4,6 +4,8 @@ import { products } from '@/data/products'
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { Toast } from '@/components/shared/ui/Toast'
 import { trackEvent, trackFormProgress } from '@/lib/analytics-client'
+import { getStoredUTM } from '@/lib/useUTM'
+import { ChevronRight, CheckCircle2 } from 'lucide-react'
 
 const productInterestOptions = products.map((product) => product.name)
 
@@ -35,6 +37,18 @@ const initialState: FormState = {
 
 const requiredFields: Array<keyof FormState> = ['name', 'email', 'interest', 'message']
 
+const STEPS = [
+  { number: 1, label: '¿Quién eres?' },
+  { number: 2, label: '¿Qué necesitas?' },
+  { number: 3, label: 'Tu mensaje' },
+]
+
+const STEP_REQUIRED: Record<number, Array<keyof FormState>> = {
+  1: ['name', 'email'],
+  2: ['interest'],
+  3: ['message'],
+}
+
 function validateField(field: keyof FormState, value: string): string {
   if (field === 'name') {
     return value.trim().length >= 2 ? '' : 'Ingresa un nombre valido (minimo 2 caracteres).'
@@ -62,7 +76,26 @@ export function ContactForm() {
   const [isPending, startTransition] = useTransition()
   const focusedFieldsRef = useRef<Set<keyof FormState>>(new Set())
   const hasSubmittedRef = useRef(false)
-  const errorSummaryId = 'contact-form-error-summary'
+  const [currentStep, setCurrentStep] = useState(1)
+
+  // Auto-save form progress to localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('nm-contact-draft')
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<FormState>
+        setForm((prev) => ({ ...prev, ...parsed }))
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    if (hasSubmittedRef.current) return
+    try {
+      const hasData = Object.values(form).some((v) => v.trim().length > 0)
+      if (hasData) localStorage.setItem('nm-contact-draft', JSON.stringify(form))
+    } catch { /* ignore */ }
+  }, [form])
 
   const completionRate = useMemo(() => {
     const total = requiredFields.length
@@ -128,6 +161,21 @@ export function ContactForm() {
     }
   }, [completionRate, form])
 
+  function handleNextStep() {
+    const stepFields = STEP_REQUIRED[currentStep] ?? []
+    const nextErrors: FormErrors = {}
+    for (const field of stepFields) {
+      const fieldError = validateField(field, form[field])
+      if (fieldError) nextErrors[field] = fieldError
+    }
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors((prev) => ({ ...prev, ...nextErrors }))
+      return
+    }
+    setCurrentStep((s) => Math.min(s + 1, 3))
+    trackFormProgress({ form: 'contact_request', step: 'step_' + String(currentStep) + '_complete', completionRate })
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSubmitted(false)
@@ -166,7 +214,7 @@ export function ContactForm() {
         const response = await fetch('/api/contact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
+          body: JSON.stringify({ ...form, utm: getStoredUTM() ?? undefined }),
         })
 
         const result = await response.json()
@@ -195,6 +243,8 @@ export function ContactForm() {
         })
         setForm(initialState)
         setErrors({})
+        setCurrentStep(1)
+        try { localStorage.removeItem('nm-contact-draft') } catch { /* ignore */ }
       } catch {
         trackEvent('contact_submit_error', { reason: 'network_error' })
         trackFormProgress({
@@ -208,175 +258,151 @@ export function ContactForm() {
     })
   }
 
+  const inputCls = 'w-full rounded-xl border border-brand-lavender/20 bg-brand-void/60 px-4 py-2.5 text-sm text-[#f0f8ff] outline-none ring-brand-violet transition focus:ring-2'
+
   return (
-    <form className="mt-8 space-y-4" onSubmit={handleSubmit} noValidate>
-      <div className="hidden" aria-hidden="true">
-        <label htmlFor="contact-website">Website</label>
-        <input
-          id="contact-website"
-          name="website"
-          tabIndex={-1}
-          autoComplete="off"
-          value={form.website}
-          onChange={(event) => updateField('website', event.target.value)}
-        />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block space-y-2 text-sm font-medium text-slate-200">
-          <span>Nombre</span>
-          <input
-            value={form.name}
-            onChange={(event) => updateField('name', event.target.value)}
-            onFocus={() => handleFieldFocus('name')}
-            onBlur={() => handleFieldBlur('name')}
-            placeholder="Tu nombre"
-            autoComplete="name"
-            required
-            aria-invalid={Boolean(errors.name)}
-            aria-describedby={errors.name ? 'contact-name-error' : undefined}
-            className="w-full rounded-xl border border-brand-interactive/22 bg-slate-950/72 px-4 py-2.5 text-sm text-slate-100 outline-none ring-brand-interactive transition focus:ring-2"
-          />
-          {errors.name && <span id="contact-name-error" className="text-xs text-rose-300">{errors.name}</span>}
-        </label>
-        <label className="block space-y-2 text-sm font-medium text-slate-200">
-          <span>Correo empresarial</span>
-          <input
-            type="email"
-            value={form.email}
-            onChange={(event) => updateField('email', event.target.value)}
-            onFocus={() => handleFieldFocus('email')}
-            onBlur={() => handleFieldBlur('email')}
-            placeholder="nombre@empresa.com"
-            autoComplete="email"
-            required
-            aria-invalid={Boolean(errors.email)}
-            aria-describedby={errors.email ? 'contact-email-error' : undefined}
-            className="w-full rounded-xl border border-brand-interactive/22 bg-slate-950/72 px-4 py-2.5 text-sm text-slate-100 outline-none ring-brand-interactive transition focus:ring-2"
-          />
-          {errors.email && <span id="contact-email-error" className="text-xs text-rose-300">{errors.email}</span>}
-        </label>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block space-y-2 text-sm font-medium text-slate-200">
-          <span>Empresa</span>
-          <input
-            value={form.company}
-            onChange={(event) => updateField('company', event.target.value)}
-            onFocus={() => handleFieldFocus('company')}
-            onBlur={() => handleFieldBlur('company')}
-            placeholder="Nombre de empresa"
-            autoComplete="organization"
-            className="w-full rounded-xl border border-brand-interactive/22 bg-slate-950/72 px-4 py-2.5 text-sm text-slate-100 outline-none ring-brand-interactive transition focus:ring-2"
-          />
-        </label>
-        <label className="block space-y-2 text-sm font-medium text-slate-200">
-          <span>Interes principal</span>
-          <select
-            value={form.interest}
-            onChange={(event) => updateField('interest', event.target.value)}
-            onFocus={() => handleFieldFocus('interest')}
-            onBlur={() => handleFieldBlur('interest')}
-            required
-            aria-invalid={Boolean(errors.interest)}
-            aria-describedby={errors.interest ? 'contact-interest-error' : undefined}
-            className="w-full rounded-xl border border-brand-interactive/22 bg-slate-950/72 px-4 py-2.5 text-sm text-slate-100 outline-none ring-brand-interactive transition focus:ring-2"
-          >
-            {productInterestOptions.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-          {errors.interest && <span id="contact-interest-error" className="text-xs text-rose-300">{errors.interest}</span>}
-        </label>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <label className="block space-y-2 text-sm font-medium text-slate-200">
-          <span>Volumen estimado</span>
-          <select
-            value={form.leadVolume}
-            onChange={(event) => updateField('leadVolume', event.target.value)}
-            onFocus={() => handleFieldFocus('leadVolume')}
-            onBlur={() => handleFieldBlur('leadVolume')}
-            className="w-full rounded-xl border border-brand-interactive/22 bg-slate-950/72 px-4 py-2.5 text-sm text-slate-100 outline-none ring-brand-interactive transition focus:ring-2"
-          >
-            <option value="">Seleccionar</option>
-            <option value="<100">Menos de 100</option>
-            <option value="100-500">100 a 500</option>
-            <option value="500-2000">500 a 2000</option>
-            <option value="2000+">Mas de 2000</option>
-          </select>
-        </label>
-        <label className="block space-y-2 text-sm font-medium text-slate-200">
-          <span>Urgencia</span>
-          <select
-            value={form.urgency}
-            onChange={(event) => updateField('urgency', event.target.value)}
-            onFocus={() => handleFieldFocus('urgency')}
-            onBlur={() => handleFieldBlur('urgency')}
-            className="w-full rounded-xl border border-brand-interactive/22 bg-slate-950/72 px-4 py-2.5 text-sm text-slate-100 outline-none ring-brand-interactive transition focus:ring-2"
-          >
-            <option value="">Seleccionar</option>
-            <option value="baja">Baja</option>
-            <option value="media">Media</option>
-            <option value="alta">Alta</option>
-            <option value="critica">Critica</option>
-          </select>
-        </label>
-        <label className="block space-y-2 text-sm font-medium text-slate-200">
-          <span>Horizonte</span>
-          <select
-            value={form.implementationHorizon}
-            onChange={(event) => updateField('implementationHorizon', event.target.value)}
-            onFocus={() => handleFieldFocus('implementationHorizon')}
-            onBlur={() => handleFieldBlur('implementationHorizon')}
-            className="w-full rounded-xl border border-brand-interactive/22 bg-slate-950/72 px-4 py-2.5 text-sm text-slate-100 outline-none ring-brand-interactive transition focus:ring-2"
-          >
-            <option value="">Seleccionar</option>
-            <option value="0-30">0 a 30 dias</option>
-            <option value="31-90">31 a 90 dias</option>
-            <option value="91-180">91 a 180 dias</option>
-            <option value="180+">Mas de 180 dias</option>
-          </select>
-        </label>
-      </div>
-      <label className="block space-y-2 text-sm font-medium text-slate-200">
-        <span>Mensaje</span>
-        <textarea
-          rows={5}
-          value={form.message}
-          onChange={(event) => updateField('message', event.target.value)}
-          onFocus={() => handleFieldFocus('message')}
-          onBlur={() => handleFieldBlur('message')}
-          placeholder="Cuéntanos sobre tu operación, volumen y objetivos."
-          autoComplete="off"
-          required
-          aria-invalid={Boolean(errors.message)}
-          aria-describedby={errors.message ? 'contact-message-error' : undefined}
-          className="w-full rounded-xl border border-brand-interactive/22 bg-slate-950/72 px-4 py-2.5 text-sm text-slate-100 outline-none ring-brand-interactive transition focus:ring-2"
-        />
-        {errors.message && <span id="contact-message-error" className="text-xs text-rose-300">{errors.message}</span>}
-      </label>
-      {error && (
-        <>
-          <div id={errorSummaryId} role="alert" aria-live="assertive" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
+    <div>
+      {/* Stepper header */}
+      <nav aria-label="Pasos del formulario" className="mb-6">
+        {/* ARIA live: announce step change to screen readers */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          Paso {currentStep} de {STEPS.length}: {STEPS[currentStep - 1]?.label}
+        </div>
+        <ol className="flex items-center">
+          {STEPS.map((step, i) => {
+            const isDone = currentStep > step.number
+            const isActive = currentStep === step.number
+            return (
+              <li key={step.number} className="flex flex-1 items-center">
+                <div className="flex flex-col items-center gap-1">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition ${isDone ? 'bg-brand-violet text-white' : isActive ? 'border-2 border-brand-violet bg-brand-card text-brand-lavender' : 'border border-brand-lavender/20 bg-brand-card text-text-subtle'}`}>
+                    {isDone ? <CheckCircle2 className="h-4 w-4" /> : step.number}
+                  </div>
+                  <span className={`hidden text-[10px] font-semibold uppercase tracking-wider sm:block ${isActive ? 'text-brand-lavender' : isDone ? 'text-text-muted' : 'text-text-subtle'}`}>
+                    {step.label}
+                  </span>
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div className={`mx-2 h-px flex-1 transition-colors ${currentStep > step.number ? 'bg-brand-violet/50' : 'bg-brand-lavender/15'}`} />
+                )}
+              </li>
+            )
+          })}
+        </ol>
+      </nav>
+
+      <form onSubmit={handleSubmit} noValidate>
+        {/* Honeypot */}
+        <div className="hidden" aria-hidden="true">
+          <label htmlFor="contact-website">Website</label>
+          <input id="contact-website" name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => updateField('website', e.target.value)} />
+        </div>
+
+        {/* Step 1 — ¿Quién eres? */}
+        {currentStep === 1 && (
+          <div className="space-y-4 reveal-slide-up">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block space-y-2 text-sm font-medium text-text-muted">
+                <span>Nombre</span>
+                <input value={form.name} onChange={(e) => updateField('name', e.target.value)} onFocus={() => handleFieldFocus('name')} onBlur={() => handleFieldBlur('name')} placeholder="Tu nombre" autoComplete="name" required aria-describedby={errors.name ? 'contact-name-error' : undefined} className={inputCls} />
+                {errors.name && <span id="contact-name-error" className="text-xs text-rose-300">{errors.name}</span>}
+              </label>
+              <label className="block space-y-2 text-sm font-medium text-text-muted">
+                <span>Correo empresarial</span>
+                <input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} onFocus={() => handleFieldFocus('email')} onBlur={() => handleFieldBlur('email')} placeholder="nombre@empresa.com" autoComplete="email" required aria-describedby={errors.email ? 'contact-email-error' : undefined} className={inputCls} />
+                {errors.email && <span id="contact-email-error" className="text-xs text-rose-300">{errors.email}</span>}
+              </label>
+            </div>
+            <label className="block space-y-2 text-sm font-medium text-text-muted">
+              <span>Empresa</span>
+              <input value={form.company} onChange={(e) => updateField('company', e.target.value)} onFocus={() => handleFieldFocus('company')} onBlur={() => handleFieldBlur('company')} placeholder="Nombre de empresa" autoComplete="organization" className={inputCls} />
+            </label>
           </div>
-          <Toast title="Falta informacion" message={error} variant="error" />
-        </>
-      )}
-      {submitted && <Toast title="Solicitud recibida" message={serverMessage || 'Tu mensaje fue enviado correctamente.'} variant="success" />}
-      <div className="rounded-xl border border-brand-interactive/18 bg-slate-950/72 px-4 py-3 text-xs text-slate-300" aria-live="polite">
-        Progreso del formulario: {completionRate}%
-      </div>
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="inline-flex items-center justify-center rounded-2xl bg-brand-cta px-5 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-medium disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isPending ? 'Enviando...' : 'Enviar solicitud'}
-        </button>
-        <span className="text-xs text-slate-400">Respuesta objetivo: menos de 24 horas hábiles.</span>
-      </div>
-    </form>
+        )}
+
+        {/* Step 2 — ¿Qué necesitas? */}
+        {currentStep === 2 && (
+          <div className="space-y-4 reveal-slide-up">
+            <label className="block space-y-2 text-sm font-medium text-text-muted">
+              <span>Interés principal</span>
+              <select value={form.interest} onChange={(e) => updateField('interest', e.target.value)} onFocus={() => handleFieldFocus('interest')} onBlur={() => handleFieldBlur('interest')} required aria-describedby={errors.interest ? 'contact-interest-error' : undefined} className={inputCls}>
+                {productInterestOptions.map((option) => (<option key={option}>{option}</option>))}
+              </select>
+              {errors.interest && <span id="contact-interest-error" className="text-xs text-rose-300">{errors.interest}</span>}
+            </label>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <label className="block space-y-2 text-sm font-medium text-text-muted">
+                <span>Volumen estimado</span>
+                <select value={form.leadVolume} onChange={(e) => updateField('leadVolume', e.target.value)} onFocus={() => handleFieldFocus('leadVolume')} onBlur={() => handleFieldBlur('leadVolume')} className={inputCls}>
+                  <option value="">Seleccionar</option>
+                  <option value="<100">Menos de 100</option>
+                  <option value="100-500">100 a 500</option>
+                  <option value="500-2000">500 a 2000</option>
+                  <option value="2000+">Más de 2000</option>
+                </select>
+              </label>
+              <label className="block space-y-2 text-sm font-medium text-text-muted">
+                <span>Urgencia</span>
+                <select value={form.urgency} onChange={(e) => updateField('urgency', e.target.value)} onFocus={() => handleFieldFocus('urgency')} onBlur={() => handleFieldBlur('urgency')} className={inputCls}>
+                  <option value="">Seleccionar</option>
+                  <option value="baja">Baja</option>
+                  <option value="media">Media</option>
+                  <option value="alta">Alta</option>
+                  <option value="critica">Crítica</option>
+                </select>
+              </label>
+              <label className="block space-y-2 text-sm font-medium text-text-muted">
+                <span>Horizonte</span>
+                <select value={form.implementationHorizon} onChange={(e) => updateField('implementationHorizon', e.target.value)} onFocus={() => handleFieldFocus('implementationHorizon')} onBlur={() => handleFieldBlur('implementationHorizon')} className={inputCls}>
+                  <option value="">Seleccionar</option>
+                  <option value="0-30">0 a 30 días</option>
+                  <option value="31-90">31 a 90 días</option>
+                  <option value="91-180">91 a 180 días</option>
+                  <option value="180+">Más de 180 días</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3 — Tu mensaje */}
+        {currentStep === 3 && (
+          <div className="space-y-4 reveal-slide-up">
+            <label className="block space-y-2 text-sm font-medium text-text-muted">
+              <span>Mensaje</span>
+              <textarea rows={5} value={form.message} onChange={(e) => updateField('message', e.target.value)} onFocus={() => handleFieldFocus('message')} onBlur={() => handleFieldBlur('message')} placeholder="Cuéntanos sobre tu operación, volumen y objetivos." autoComplete="off" required aria-describedby={errors.message ? 'contact-message-error' : undefined} className={inputCls} />
+              {errors.message && <span id="contact-message-error" className="text-xs text-rose-300">{errors.message}</span>}
+            </label>
+            {error && (
+              <div role="alert" aria-live="assertive" className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+                {error}
+              </div>
+            )}
+          </div>
+        )}
+
+        {submitted && <Toast title="Solicitud recibida" message={serverMessage || 'Tu mensaje fue enviado correctamente.'} variant="success" />}
+
+        {/* Navigation */}
+        <div className="mt-6 flex items-center justify-between gap-3">
+          {currentStep > 1 ? (
+            <button type="button" onClick={() => setCurrentStep((s) => s - 1)} className="rounded-xl border border-brand-lavender/20 px-4 py-2.5 text-sm font-medium text-text-muted transition hover:border-brand-lavender/40 hover:text-[#f0f8ff]">
+              ← Anterior
+            </button>
+          ) : <span />}
+          {currentStep < 3 ? (
+            <button type="button" onClick={handleNextStep} className="inline-flex items-center gap-2 rounded-2xl bg-brand-violet px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-iris">
+              Siguiente <ChevronRight className="h-4 w-4" />
+            </button>
+          ) : (
+            <button type="submit" disabled={isPending} className="inline-flex items-center justify-center rounded-2xl bg-brand-cta px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-medium disabled:cursor-not-allowed disabled:opacity-70">
+              {isPending ? 'Enviando...' : 'Enviar solicitud'}
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
   )
 }
+
+

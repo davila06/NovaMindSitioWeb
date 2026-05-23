@@ -14,7 +14,8 @@
     "perf:assets": "node scripts/generate-image-variants.mjs",
     "perf:lhci:collect": "lhci collect --config=lighthouserc.json",
     "perf:lhci:assert": "lhci assert --config=lighthouserc.json",
-    "perf:lhci": "lhci autorun --config=lighthouserc.json"
+    "perf:lhci": "lhci autorun --config=lighthouserc.json",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -26,6 +27,7 @@
     "react-dom": "^19.0.0",
     "remark-gfm": "^4.0.1",
     "resend": "^4.0.1",
+    "web-vitals": "^5.2.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

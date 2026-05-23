@@ -15,6 +15,9 @@ export const blogFrontmatterSchema = z.object({
   summary: z.string().min(20).max(220),
   category: z.string().min(2).max(80),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  tags: z.array(z.string().min(1).max(40)).optional(),
+  author: z.string().max(80).optional(),
+  readTime: z.number().int().positive().optional(),
 })
 
 const productSchema: z.ZodType<Product> = z.object({
@@ -24,6 +27,8 @@ const productSchema: z.ZodType<Product> = z.object({
   heroTitle: z.string().min(10),
   heroSubtitle: z.string().min(10),
   heroStats: z.array(z.object({ label: z.string().min(1), value: z.string().min(1) })).min(1),
+  screenshotUrl: z.string().optional(),
+  demoVideoId: z.string().optional(),
   problem: z.array(z.string().min(1)).min(1),
   solution: z.array(z.string().min(1)).min(1),
   benefits: z.array(z.string().min(1)).min(1),

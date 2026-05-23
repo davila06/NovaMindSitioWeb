@@ -32,29 +32,32 @@ export function ComparativeBattleSection() {
   return (
     <SectionWrapper>
       <Container>
-        <div className="rounded-2xl border border-brand-interactive/20 bg-gradient-futurist p-6 shadow-elevated sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-accent">Comparativa estratégica</p>
-          <h2 className="mt-3 font-display text-3xl tracking-[-0.02em] text-brand-surface sm:text-4xl">Novamind vs operación manual y sistemas fragmentados</h2>
-          <p className="mt-4 max-w-3xl text-slate-300">
+        <div className="rounded-2xl border border-brand-lavender/20 bg-brand-card/80 p-6 shadow-elevated backdrop-blur sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-gold">Comparativa estratégica</p>
+          <h2 className="mt-3 font-display text-3xl font-bold tracking-[-0.03em] text-[#f0f8ff] sm:text-4xl">
+            Novamind vs operación manual y sistemas fragmentados
+          </h2>
+          <p className="mt-4 max-w-3xl text-text-muted">
             Una vista clara para compradores enterprise: no vendemos solo software, vendemos mejor ejecución operativa.
           </p>
           <div className="mt-6 overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-y-2 text-sm">
+            <table className="min-w-full border-separate border-spacing-y-2 text-sm" aria-label="Comparativa: Novamind vs operación manual vs sistemas fragmentados">
+              <caption className="sr-only">Comparativa de criterios operativos entre enfoque manual, sistemas fragmentados y Novamind Global</caption>
               <thead>
                 <tr>
-                  <th className="rounded-l-xl bg-slate-800 px-4 py-3 text-left font-semibold text-slate-200">Criterio</th>
-                  <th className="bg-slate-800 px-4 py-3 text-left font-semibold text-slate-200">Manual</th>
-                  <th className="bg-slate-800 px-4 py-3 text-left font-semibold text-slate-200">Fragmentado</th>
-                  <th className="rounded-r-xl bg-gradient-brand px-4 py-3 text-left font-semibold text-white">Novamind</th>
+                  <th scope="col" className="rounded-l-xl bg-brand-elevated px-4 py-3 text-left font-semibold text-[#f0f8ff]">Criterio</th>
+                  <th scope="col" className="bg-brand-elevated px-4 py-3 text-left font-semibold text-text-muted">Manual</th>
+                  <th scope="col" className="bg-brand-elevated px-4 py-3 text-left font-semibold text-text-muted">Fragmentado</th>
+                  <th scope="col" className="rounded-r-xl bg-brand-violet/30 px-4 py-3 text-left font-semibold text-brand-lavender">Novamind ✓</th>
                 </tr>
               </thead>
               <tbody>
                 {comparisonRows.map((row) => (
                   <tr key={row.criteria}>
-                    <td className="rounded-l-xl border border-slate-700 bg-slate-900/70 px-4 py-3 font-medium text-slate-200">{row.criteria}</td>
-                    <td className="border border-slate-700 bg-slate-900/60 px-4 py-3 text-slate-300">{row.manual}</td>
-                    <td className="border border-slate-700 bg-slate-900/60 px-4 py-3 text-slate-300">{row.fragmented}</td>
-                    <td className="rounded-r-xl border border-brand-interactive/40 bg-brand-interactive/14 px-4 py-3 font-semibold text-brand-surface">{row.novamind}</td>
+                    <td className="rounded-l-xl border border-brand-lavender/12 bg-brand-void/60 px-4 py-3 font-medium text-[#f0f8ff]">{row.criteria}</td>
+                    <td className="border border-brand-lavender/12 bg-brand-void/40 px-4 py-3 text-text-muted">{row.manual}</td>
+                    <td className="border border-brand-lavender/12 bg-brand-void/40 px-4 py-3 text-text-muted">{row.fragmented}</td>
+                    <td className="rounded-r-xl border border-brand-violet/35 bg-brand-violet/12 px-4 py-3 font-semibold text-brand-lavender">{row.novamind}</td>
                   </tr>
                 ))}
               </tbody>

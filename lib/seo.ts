@@ -20,16 +20,19 @@ export function createPageMetadata({
   title,
   description,
   path,
+  extraKeywords = [],
 }: {
   title: string
   description: string
   path: string
+  extraKeywords?: string[]
 }): Metadata {
   const url = `${siteConfig.url}${path}`
+  const allKeywords = extraKeywords.length ? [...extraKeywords, ...keywords] : keywords
   return {
     title,
     description,
-    keywords,
+    keywords: allKeywords,
     openGraph: {
       title,
       description,
@@ -55,5 +58,43 @@ export function createPageMetadata({
     alternates: {
       canonical: path,
     },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-snippet': -1,
+        'max-image-preview': 'large',
+        'max-video-preview': -1,
+      },
+    },
   }
+}
+
+/** Product-specific metadata with tailored keywords for Google Search rich results */
+export function createProductMetadata({
+  name,
+  description,
+  slug,
+  extraKeywords = [],
+}: {
+  name: string
+  description: string
+  slug: string
+  extraKeywords?: string[]
+}): Metadata {
+  const productKeywords = [
+    `${name} Costa Rica`,
+    `${name} SaaS`,
+    `software ${name.toLowerCase()} empresarial`,
+    `automatización ${name.toLowerCase()} IA`,
+    ...extraKeywords,
+  ]
+  return createPageMetadata({
+    title: `${name} | Novamind Global`,
+    description,
+    path: `/productos/${slug}`,
+    extraKeywords: productKeywords,
+  })
 }

@@ -1,58 +1,86 @@
-import React from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ContactForm } from '@/components/shared/ui/ContactForm'
+import React from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ContactForm } from "@/components/shared/ui/ContactForm";
 
-describe('ContactForm', () => {
-  const fetchMock = vi.fn()
+describe("ContactForm", () => {
+  const fetchMock = vi.fn();
 
   beforeEach(() => {
-    fetchMock.mockReset()
-    vi.stubGlobal('fetch', fetchMock)
-  })
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+  });
 
   afterEach(() => {
-    vi.unstubAllGlobals()
-  })
+    vi.unstubAllGlobals();
+  });
 
-  it('muestra errores de validacion si faltan campos requeridos', async () => {
-    render(<ContactForm />)
+  it("muestra errores de validacion si faltan campos requeridos", async () => {
+    render(<ContactForm />);
 
-    fireEvent.click(screen.getByRole('button', { name: /enviar solicitud/i }))
+    // El formulario es multi-paso; en el paso 1 se muestra "Siguiente"
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
 
     await waitFor(() => {
-      expect(document.getElementById('contact-form-error-summary')).toBeInTheDocument()
-    })
-    expect(screen.getByText(/ingresa un nombre valido/i)).toBeInTheDocument()
-  })
+      expect(screen.getByText(/ingresa un nombre valido/i)).toBeInTheDocument();
+    });
+  });
 
-  it('envia el formulario y muestra confirmacion en caso exitoso', async () => {
+  it("envia el formulario y muestra confirmacion en caso exitoso", async () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ ok: true, channel: 'resend', requestId: 'req-123' }),
-    })
+      json: async () => ({ ok: true, channel: "resend", requestId: "req-123" }),
+    });
 
-    render(<ContactForm />)
+    render(<ContactForm />);
 
-    fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: 'Juan Perez' } })
-    fireEvent.change(screen.getByPlaceholderText(/nombre@empresa.com/i), { target: { value: 'juan@empresa.com' } })
-    fireEvent.change(screen.getByLabelText(/interes principal/i), { target: { value: 'MindFlow' } })
-    fireEvent.change(screen.getByPlaceholderText(/cuéntanos sobre tu operación/i), {
-      target: { value: 'Necesitamos automatizar procesos de seguimiento comercial este trimestre.' },
-    })
+    // Paso 1: llenar nombre y correo, avanzar
+    fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), {
+      target: { value: "Juan Perez" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/nombre@empresa.com/i), {
+      target: { value: "juan@empresa.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
 
-    fireEvent.click(screen.getByRole('button', { name: /enviar solicitud/i }))
+    // Paso 2: "Interés principal" ya tiene valor por defecto, avanzar
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /siguiente/i }),
+      ).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+
+    // Paso 3: llenar mensaje y enviar
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText(/cuéntanos sobre tu operación/i),
+      ).toBeInTheDocument();
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText(/cuéntanos sobre tu operación/i),
+      {
+        target: {
+          value:
+            "Necesitamos automatizar procesos de seguimiento comercial este trimestre.",
+        },
+      },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
-        '/api/contact',
+        "/api/contact",
         expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
         }),
-      )
-    })
+      );
+    });
 
-    expect(await screen.findByText(/solicitud enviada por resend/i)).toBeInTheDocument()
-  })
-})
+    expect(
+      await screen.findByText(/solicitud enviada por resend/i),
+    ).toBeInTheDocument();
+  });
+});

@@ -1,33 +1,23 @@
 'use client'
 
 import { useEffect } from 'react'
+import { captureClientError } from '@/lib/monitoring'
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    const payload = {
+    captureClientError({
       source: 'frontend.global_error_boundary',
       message: error.message,
       severity: 'critical',
       stack: error.stack,
-      context: {
-        digest: error.digest,
-      },
-    }
-
-    fetch('/api/monitoring/error', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      keepalive: true,
-    }).catch(() => {
-      // Avoid throwing from the global error boundary itself.
+      context: { digest: error.digest },
     })
   }, [error])
 
   return (
-    <html lang="es">
+    <html lang="es-CR">
       <body className="bg-slate-950 p-8 text-slate-100">
-        <main className="mx-auto mt-16 max-w-2xl rounded-2xl border border-rose-400/30 bg-slate-900/85 p-8 shadow-elevated">
+        <main role="alert" aria-live="assertive" className="mx-auto mt-16 max-w-2xl rounded-2xl border border-rose-400/30 bg-slate-900/85 p-8 shadow-elevated">
           <h1 className="font-display text-3xl">Error crítico de aplicación</h1>
           <p className="mt-3 text-slate-300">
             El equipo fue notificado automáticamente. Intenta recargar o vuelve en unos minutos.

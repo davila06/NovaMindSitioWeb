@@ -5,15 +5,17 @@ import { products } from '@/data/products'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://novamindglobal.com'
-  const siteUpdatedAt = new Date('2026-05-04')
+  const siteUpdatedAt = new Date('2026-05-23')
   const blogPosts = await getBlogPostSummaries()
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified: siteUpdatedAt, changeFrequency: 'weekly', priority: 1 },
+    { url: `${base}/sobre-nosotros`, lastModified: siteUpdatedAt, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/contacto`, lastModified: siteUpdatedAt, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/blog`, lastModified: siteUpdatedAt, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${base}/industrias`, lastModified: siteUpdatedAt, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/roles`, lastModified: siteUpdatedAt, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/privacidad`, lastModified: siteUpdatedAt, changeFrequency: 'yearly', priority: 0.3 },
   ]
 
   const productPages: MetadataRoute.Sitemap = products.map((product) => ({

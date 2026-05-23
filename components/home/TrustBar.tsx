@@ -1,17 +1,60 @@
 import { Container } from '@/components/layout/Container'
 import { trustBadges } from '@/data/site'
+import { ShieldCheck, Layers, Cloud, BarChart3, Lock, Cpu } from 'lucide-react'
+
+const icons = [ShieldCheck, Layers, Cloud, BarChart3, Lock, Cpu]
+
+const techBadges = ['Microsoft Azure', 'Next.js 15', 'TypeScript', 'Multi-tenant SaaS', 'Empresa Costarricense']
+
+const allBadges = [...trustBadges, ...techBadges]
 
 export function TrustBar() {
   return (
-    <div className="py-4">
+    <div className="py-4 overflow-hidden">
       <Container>
-        <div className="grid gap-3 rounded-2xl border border-brand-interactive/20 bg-slate-900/72 p-4 shadow-soft sm:grid-cols-2 xl:grid-cols-4">
-          {trustBadges.map((badge) => (
-            <div key={badge} className="rounded-xl border border-brand-interactive/16 bg-slate-950/72 px-4 py-3 text-center text-sm font-medium text-slate-200">
-              {badge}
-            </div>
-          ))}
-        </div>
+        {/* Línea de luz superior */}
+        <div className="light-line mb-6" />
+      </Container>
+
+      {/* Marquee de ancho completo */}
+      <div
+        className="relative flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
+        role="marquee"
+        aria-label="Certificaciones, tecnologías y características de confianza de Novamind Global"
+      >
+        <ul className="animate-marquee flex shrink-0 gap-4 pr-4" role="list">
+          {allBadges.map((badge, i) => {
+            const Icon = icons[i % icons.length]
+            return (
+              <li
+                key={`a-${badge}`}
+                className="flex shrink-0 items-center gap-2 rounded-full border border-brand-lavender/18 bg-brand-card/70 px-5 py-2.5 text-sm font-medium text-text-muted backdrop-blur whitespace-nowrap"
+              >
+                <Icon className="h-4 w-4 text-brand-lavender" aria-hidden="true" />
+                {badge}
+              </li>
+            )
+          })}
+        </ul>
+        {/* Duplicado para loop sin cortes */}
+        <ul className="animate-marquee flex shrink-0 gap-4 pr-4" aria-hidden="true" role="presentation">
+          {allBadges.map((badge, i) => {
+            const Icon = icons[i % icons.length]
+            return (
+              <li
+                key={`b-${badge}`}
+                className="flex shrink-0 items-center gap-2 rounded-full border border-brand-lavender/18 bg-brand-card/70 px-5 py-2.5 text-sm font-medium text-text-muted backdrop-blur whitespace-nowrap"
+              >
+                <Icon className="h-4 w-4 text-brand-lavender" aria-hidden="true" />
+                {badge}
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+
+      <Container>
+        <div className="light-line mt-6" />
       </Container>
     </div>
   )

@@ -1,20 +1,42 @@
+'use client'
+
 import { Button } from '@/components/shared/ui/Button'
 import { Container } from '@/components/layout/Container'
 import { SectionWrapper } from '@/components/layout/SectionWrapper'
+import { useScrollReveal } from '@/lib/useScrollReveal'
 
 export function CTASection() {
+  const headingRef = useScrollReveal<HTMLDivElement>()
+
   return (
-    <SectionWrapper>
+    <SectionWrapper className="overflow-hidden">
       <Container>
-        <div className="rounded-2xl bg-brand-deep p-8 text-white shadow-elevated sm:p-12">
-          <h2 className="font-display text-3xl">Listo para acelerar con IA aplicada?</h2>
-          <p className="mt-3 max-w-2xl text-slate-200">
-            Diseñamos una ruta de implementacion pragmatica para que conviertas procesos criticos en ventajas competitivas.
+        {/* Cierre tipográfico de impacto */}
+        <div ref={headingRef} className="relative py-16 text-center reveal">
+          {/* Halo de fondo decorativo */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          >
+            <div className="h-80 w-80 rounded-full bg-brand-violet/15 blur-3xl" />
+          </div>
+
+          <p className="relative text-sm font-semibold uppercase tracking-[0.22em] text-brand-gold">
+            ¿Listo para escalar?
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
+
+          {/* Statement tipográfico principal */}
+          <h2 className="relative mt-4 font-display text-[3rem] font-bold leading-[1.02] tracking-[-0.04em] text-transparent sm:text-[4.5rem] lg:text-[6rem] bg-gradient-to-r from-brand-violet via-brand-lavender to-brand-gold bg-clip-text">
+            Operaciones que escalan.
+          </h2>
+
+          <p className="relative mx-auto mt-6 max-w-xl text-lg text-text-muted">
+            El software que su equipo necesita para convertir procesos críticos en ventajas competitivas reales.
+          </p>
+
+          <div className="relative mt-10 flex flex-wrap justify-center gap-4">
             <Button
               href="/contacto"
-              className="bg-brand-cta"
               trackingContext={{
                 page: 'home',
                 section: 'final_cta',
@@ -23,12 +45,11 @@ export function CTASection() {
                 intent: 'demo',
               }}
             >
-              Quiero una demo
+              Agendar conversación →
             </Button>
             <Button
               href="/contacto"
               variant="ghost"
-              className="border-white/30 bg-white/10 text-white"
               trackingContext={{
                 page: 'home',
                 section: 'final_cta',
@@ -37,7 +58,7 @@ export function CTASection() {
                 intent: 'consultation',
               }}
             >
-              Hablar con experto
+              Hablar con un experto
             </Button>
           </div>
         </div>

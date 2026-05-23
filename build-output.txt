@@ -1,0 +1,87 @@
+   Γû▓ Next.js 15.5.15
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 6.7s
+   Linting and checking validity of types ...
+
+./app/layout.tsx
+82:9  Warning: Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+./components/products/ProductCompareWidget.tsx
+5:10  Warning: 'Check' is defined but never used.  @typescript-eslint/no-unused-vars
+5:17  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+5:20  Warning: 'Minus' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/51) ...
+   Generating static pages (12/51) 
+   Generating static pages (25/51) 
+   Generating static pages (38/51) 
+ Γ£ô Generating static pages (51/51)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                 Size  First Load JS
+Γöî Γùï /                                                    12.5 kB         137 kB
+Γö£ Γùï /_not-found                                            193 B         102 kB
+Γö£ ╞Æ /api/contact                                           193 B         102 kB
+Γö£ ╞Æ /api/monitoring/error                                  193 B         102 kB
+Γö£ Γùï /apple-icon                                            193 B         102 kB
+Γö£ ╞Æ /blog                                                2.09 kB         108 kB
+Γö£ ΓùÅ /blog/[slug]                                         2.49 kB         108 kB
+Γö£   Γö£ /blog/ia-y-nomina-en-costa-rica
+Γö£   Γö£ /blog/contact-center-con-voicebot
+Γö£   Γöö /blog/erp-con-ia-para-escalar
+Γö£ Γùï /casos                                               1.32 kB         107 kB
+Γö£ Γùï /comparar                                            3.17 kB         109 kB
+Γö£ Γùï /contacto                                            4.17 kB         125 kB
+Γö£ Γùï /demos                                               1.32 kB         107 kB
+Γö£ Γùï /gracias                                             1.32 kB         107 kB
+Γö£ Γùï /icon                                                  193 B         102 kB
+Γö£ Γùï /industrias                                            172 B         106 kB
+Γö£ ΓùÅ /industrias/[slug]                                   1.33 kB         107 kB
+Γö£   Γö£ /industrias/rrhh-y-planillas
+Γö£   Γö£ /industrias/contact-center-y-experiencia
+Γö£   Γö£ /industrias/seguros-y-cobranzas
+Γö£   Γöö /industrias/sector-publico-y-comunidades
+Γö£ Γùï /offline                                               385 B         106 kB
+Γö£ Γùï /opengraph-image                                       193 B         102 kB
+Γö£ Γùï /privacidad                                            193 B         102 kB
+Γö£ Γùï /productos/ccerp                                     3.26 kB         115 kB
+Γö£ Γùï /productos/ccerp/opengraph-image                       193 B         102 kB
+Γö£ Γùï /productos/iads                                      3.26 kB         115 kB
+Γö£ Γùï /productos/iads/opengraph-image                        193 B         102 kB
+Γö£ Γùï /productos/mindflow                                  3.26 kB         115 kB
+Γö£ Γùï /productos/mindflow-ai-sales-engine                  3.26 kB         115 kB
+Γö£ Γùï /productos/mindflow-ai-sales-engine/opengraph-image    193 B         102 kB
+Γö£ Γùï /productos/mindflow/opengraph-image                    193 B         102 kB
+Γö£ Γùï /productos/mindflowcc                                  193 B         102 kB
+Γö£ Γùï /productos/mindflowcc/opengraph-image                  193 B         102 kB
+Γö£ Γùï /productos/pawtrack                                  3.26 kB         115 kB
+Γö£ Γùï /productos/pawtrack/opengraph-image                    193 B         102 kB
+Γö£ Γùï /productos/planillascr                               3.26 kB         115 kB
+Γö£ Γùï /productos/planillascr/opengraph-image                 193 B         102 kB
+Γö£ Γùï /productos/voicebot                                  3.26 kB         115 kB
+Γö£ Γùï /productos/voicebot/opengraph-image                    193 B         102 kB
+Γö£ Γùï /robots.txt                                            193 B         102 kB
+Γö£ Γùï /roles                                                 172 B         106 kB
+Γö£ ΓùÅ /roles/[slug]                                        1.33 kB         107 kB
+Γö£   Γö£ /roles/ceo
+Γö£   Γö£ /roles/coo
+Γö£   Γö£ /roles/rrhh
+Γö£   Γöö /roles/servicio-al-cliente
+Γö£ Γùï /sitemap.xml                                           193 B         102 kB
+Γö£ Γùï /sobre-nosotros                                        193 B         102 kB
+Γö£ Γùï /terminos                                              193 B         102 kB
+Γöö Γùï /twitter-image                                         193 B         102 kB
++ First Load JS shared by all                             102 kB
+  Γö£ chunks/1255-5fe68596fe147850.js                        46 kB
+  Γö£ chunks/4bd1b696-f785427dddbba9fb.js                  54.2 kB
+  Γöö other shared chunks (total)                          1.99 kB
+
+
+Γùï  (Static)   prerendered as static content
+ΓùÅ  (SSG)      prerendered as static HTML (uses generateStaticParams)
+╞Æ  (Dynamic)  server-rendered on demand
+

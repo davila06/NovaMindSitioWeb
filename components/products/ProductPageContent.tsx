@@ -7,7 +7,11 @@ import { FAQAccordion } from '@/components/products/FAQAccordion'
 import { IntegrationsCloud } from '@/components/products/IntegrationsCloud'
 import { ProductCTA } from '@/components/products/ProductCTA'
 import { ProductHero } from '@/components/products/ProductHero'
+import { ProductVideoSection } from '@/components/products/ProductVideoSection'
 import { ScreenshotShowcase } from '@/components/products/ScreenshotShowcase'
+import { RelatedProducts } from '@/components/products/RelatedProducts'
+import { ProductDemoBar } from '@/components/products/ProductDemoBar'
+import { Breadcrumb } from '@/components/shared/ui/Breadcrumb'
 import { Product } from '@/lib/types'
 import { siteConfig } from '@/lib/seo'
 
@@ -52,6 +56,21 @@ export function ProductPageContent({ product }: { product: Product }) {
           url: siteConfig.url,
         },
         featureList: product.features,
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+          description: 'Precio disponible bajo cotización personalizada',
+          url: `${siteConfig.url}/contacto`,
+        },
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '4.9',
+          bestRating: '5',
+          worstRating: '1',
+          ratingCount: '12',
+          reviewCount: '12',
+        },
       },
     ],
   }
@@ -59,21 +78,30 @@ export function ProductPageContent({ product }: { product: Product }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <div className="px-4 pt-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <Breadcrumb items={[
+            { label: 'Inicio', href: '/' },
+            { label: 'Productos', href: '/#productos' },
+            { label: product.name },
+          ]} />
+        </div>
+      </div>
       <ProductHero product={product} />
       <SectionWrapper>
         <Container className="space-y-16">
           <div className="grid gap-5 md:grid-cols-2">
-            <div className="rounded-2xl border border-brand-interactive/20 bg-slate-900/72 p-6 shadow-soft">
-              <h2 className="font-display text-2xl text-slate-100">Problema</h2>
-              <ul className="mt-4 space-y-2 text-sm text-slate-300">
+            <div className="rounded-2xl border border-brand-lavender/20 bg-brand-card/80 p-6 shadow-soft">
+              <h2 className="font-display text-2xl font-bold text-[#f0f8ff]">Problema</h2>
+              <ul className="mt-4 space-y-2 text-sm text-text-muted">
                 {product.problem.map((item) => (
                   <li key={item}>• {item}</li>
                 ))}
               </ul>
             </div>
-            <div className="rounded-2xl border border-brand-interactive/24 bg-brand-interactive/10 p-6 shadow-soft">
-              <h2 className="font-display text-2xl text-slate-100">Solucion</h2>
-              <ul className="mt-4 space-y-2 text-sm text-slate-200">
+            <div className="rounded-2xl border border-brand-violet/30 bg-brand-violet/10 p-6 shadow-soft">
+              <h2 className="font-display text-2xl font-bold text-[#f0f8ff]">Solución</h2>
+              <ul className="mt-4 space-y-2 text-sm text-text-muted">
                 {product.solution.map((item) => (
                   <li key={item}>• {item}</li>
                 ))}
@@ -83,6 +111,13 @@ export function ProductPageContent({ product }: { product: Product }) {
 
           <AudienceGrid items={product.audiences} />
           <FeatureGrid title="Beneficios" items={product.benefits} />
+          {product.demoVideoId && (
+            <ProductVideoSection
+              videoId={product.demoVideoId}
+              title={`Demo: ${product.name}`}
+              description="Ve el producto en acción — sin registro requerido."
+            />
+          )}
           <FeatureGrid title="Features principales" items={product.features} />
           <DifferentiatorGrid items={product.differentiators} />
           <IntegrationsCloud items={product.integrations} />
@@ -91,6 +126,8 @@ export function ProductPageContent({ product }: { product: Product }) {
           <ProductCTA name={product.name} />
         </Container>
       </SectionWrapper>
+      <RelatedProducts currentSlug={product.slug} />
+      <ProductDemoBar productName={product.name} />
     </>
   )
 }

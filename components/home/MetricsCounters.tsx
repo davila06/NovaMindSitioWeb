@@ -1,24 +1,83 @@
-import { Container } from '@/components/layout/Container'
-import { SectionWrapper } from '@/components/layout/SectionWrapper'
-import { metrics } from '@/data/site'
-import { Card } from '@/components/shared/ui/Card'
+"use client";
+
+import { Container } from "@/components/layout/Container";
+import { SectionWrapper } from "@/components/layout/SectionWrapper";
+import { metrics } from "@/data/site";
+import { Card } from "@/components/shared/ui/Card";
+import { useCountUp } from "@/hooks/useCountUp";
+
+function SlotNumber({ value }: { value: number }) {
+  return (
+    <span className="inline-flex">
+      {String(value)
+        .split("")
+        .map((digit, i) => (
+          <span
+            key={i + "-" + digit}
+            className="slot-digit"
+            style={{ animationDelay: i * 60 + "ms" }}
+          >
+            {digit}
+          </span>
+        ))}
+    </span>
+  );
+}
+
+function AnimatedMetric({
+  value,
+  suffix,
+  label,
+  role,
+}: {
+  value: string;
+  suffix?: string;
+  label: string;
+  role?: string;
+}) {
+  const numericValue = parseInt(value, 10);
+  const isNumeric = !isNaN(numericValue);
+  const { count, ref } = useCountUp(isNumeric ? numericValue : 0, 1800);
+
+  return (
+    <div role={role}>
+    <Card variant="metric">
+      <div ref={ref}>
+        <span
+          aria-live="polite"
+          aria-atomic="true"
+          className="bg-gradient-to-r from-brand-violet via-brand-iris to-brand-lavender bg-clip-text font-display text-5xl font-bold text-transparent"
+        >
+          {isNumeric ? <SlotNumber value={count} /> : value}
+          {suffix}
+        </span>
+      </div>
+      <p className="mt-3 text-sm text-text-muted">{label}</p>
+    </Card>
+    </div>
+  );
+}
 
 export function MetricsCounters() {
   return (
     <SectionWrapper>
       <Container>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div
+          className="grid gap-4 md:grid-cols-3"
+          role="list"
+          aria-label="Métricas de impacto de Novamind Global"
+        >
           {metrics.map((metric) => (
-            <Card key={metric.label} className="text-center">
-              <span className="bg-gradient-to-r from-brand-accent via-brand-interactive to-brand-surface bg-clip-text font-display text-4xl text-transparent">
-                {metric.value}
-                {metric.suffix}
-              </span>
-              <p className="mt-2 text-sm text-slate-300">{metric.label}</p>
-            </Card>
+            <AnimatedMetric
+              role="listitem"
+              key={metric.label}
+              value={metric.value}
+              suffix={metric.suffix}
+              label={metric.label}
+            />
           ))}
         </div>
       </Container>
     </SectionWrapper>
-  )
+  );
 }

@@ -1,8 +1,10 @@
+'use client'
 import { Container } from '@/components/layout/Container'
 import { SectionWrapper } from '@/components/layout/SectionWrapper'
 import { Card } from '@/components/shared/ui/Card'
 import { Tabs } from '@/components/shared/ui/Tabs'
 import { trustCenterItems } from '@/data/site'
+import { useScrollReveal } from '@/lib/useScrollReveal'
 
 const tabs = [
   {
@@ -20,17 +22,18 @@ const tabs = [
 ]
 
 export function TrustCenterSection() {
+  const headingRef = useScrollReveal<HTMLDivElement>()
   return (
     <SectionWrapper>
       <Container>
         <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-accent">Arquitectura y confianza</p>
-            <h2 className="mt-3 bg-gradient-to-r from-brand-accent via-brand-interactive to-brand-surface bg-clip-text font-display text-3xl text-transparent sm:text-4xl">Base sólida para vender y operar como software enterprise</h2>
+          <div ref={headingRef} className="reveal">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-gold">Arquitectura y confianza</p>
+            <h2 className="mt-3 font-display text-3xl font-bold text-[#f0f8ff] sm:text-4xl">Base sólida para vender y operar como software enterprise</h2>
             <div className="mt-6 grid gap-3">
               {trustCenterItems.map((item) => (
                 <Card key={item} className="py-4">
-                  <p className="text-sm text-slate-300">{item}</p>
+                  <p className="text-sm text-text-muted">{item}</p>
                 </Card>
               ))}
             </div>

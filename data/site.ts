@@ -6,6 +6,7 @@ export const navLinks = [
   { href: '/industrias', label: 'Industrias' },
   { href: '/roles', label: 'Roles' },
   { href: '/blog', label: 'Blog' },
+  { href: '/sobre-nosotros', label: 'Nosotros' },
   { href: '/contacto', label: 'Contacto' },
 ]
 
@@ -32,19 +33,19 @@ export const differentiationPillars = [
 
 export const implementationSteps = [
   {
-    title: 'Diagnostico operativo',
+    title: 'Diagnóstico operativo',
     description: 'Detectamos fricciones, sistemas aislados, riesgos y oportunidades de automatización con impacto económico real.',
   },
   {
-    title: 'Diseño de solucion',
+    title: 'Diseño de solución',
     description: 'Traducimos prioridades del negocio en una arquitectura clara, roadmap y flujos orquestados con IA y SaaS.',
   },
   {
-    title: 'Implementacion incremental',
+    title: 'Implementación incremental',
     description: 'Conectamos sistemas, activamos automatizaciones y validamos valor por etapas sin frenar la operación.',
   },
   {
-    title: 'Escalado y optimizacion',
+    title: 'Escalado y optimización',
     description: 'Medimos adopción, refinamos procesos y abrimos nuevas capas de eficiencia, analítica y visibilidad ejecutiva.',
   },
 ]

@@ -6,24 +6,6 @@ import { metrics } from "@/data/site";
 import { Card } from "@/components/shared/ui/Card";
 import { useCountUp } from "@/hooks/useCountUp";
 
-function SlotNumber({ value }: { value: number }) {
-  return (
-    <span className="inline-flex">
-      {String(value)
-        .split("")
-        .map((digit, i) => (
-          <span
-            key={i + "-" + digit}
-            className="slot-digit"
-            style={{ animationDelay: i * 60 + "ms" }}
-          >
-            {digit}
-          </span>
-        ))}
-    </span>
-  );
-}
-
 function AnimatedMetric({
   value,
   suffix,
@@ -48,7 +30,7 @@ function AnimatedMetric({
           aria-atomic="true"
           className="bg-gradient-to-r from-brand-violet via-brand-iris to-brand-lavender bg-clip-text font-display text-5xl font-bold text-transparent"
         >
-          {isNumeric ? <SlotNumber value={count} /> : value}
+          {isNumeric ? count : value}
           {suffix}
         </span>
       </div>

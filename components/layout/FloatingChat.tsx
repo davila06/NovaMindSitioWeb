@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MessageCircle, X, CalendarDays, Send, LayoutGrid } from "lucide-react";
+import { Bot, X, CalendarDays, Send, LayoutGrid } from "lucide-react";
 
 const options = [
   {
@@ -61,7 +61,7 @@ export function FloatingChat() {
   }, [open]);
 
   return (
-    <div className="fixed bottom-20 right-4 z-40 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
+    <div className="fixed bottom-36 right-4 z-40 flex flex-col items-end gap-3 md:bottom-20 md:right-6">
       {/* Panel */}
       {open && (
         <div className="w-72 rounded-2xl border border-brand-lavender/25 bg-brand-surface/95 p-4 shadow-[0_8px_40px_rgba(249,115,22,0.22)] backdrop-blur-2xl">
@@ -112,7 +112,7 @@ export function FloatingChat() {
         {open ? (
           <X className="h-5 w-5" />
         ) : (
-          <MessageCircle className="h-5 w-5" />
+          <Bot className="h-5 w-5" />
         )}
       </button>
     </div>

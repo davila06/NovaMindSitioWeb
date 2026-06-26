@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { Container } from "@/components/layout/Container";
 import { SectionWrapper } from "@/components/layout/SectionWrapper";
 import { useScrollReveal } from "@/lib/useScrollReveal";
@@ -27,7 +27,7 @@ const nodes = [
 ];
 
 export function PlatformConstellationSection() {
-  const headingRef = useScrollReveal<HTMLDivElement>()
+  const headingRef = useScrollReveal<HTMLDivElement>();
   return (
     <SectionWrapper className="section-alt">
       <Container>
@@ -45,51 +45,16 @@ export function PlatformConstellationSection() {
               producto aporte a un sistema empresarial integrado, trazable y
               escalable.
             </p>
-            {/* Connector SVG decorativo */}
-            <svg
-              aria-hidden="true"
-              className="mt-8 hidden w-full max-w-xs opacity-40 lg:block"
-              viewBox="0 0 200 80"
-              fill="none"
-            >
-              <circle cx="20" cy="40" r="8" fill="#6d28d9" />
-              <circle cx="100" cy="20" r="8" fill="#c9a84c" />
-              <circle cx="180" cy="40" r="8" fill="#10b981" />
-              <line
-                x1="28"
-                y1="40"
-                x2="92"
-                y2="22"
-                stroke="#a78bfa"
-                strokeWidth="1.5"
-                strokeDasharray="4 3"
-              />
-              <line
-                x1="108"
-                y1="22"
-                x2="172"
-                y2="38"
-                stroke="#a78bfa"
-                strokeWidth="1.5"
-                strokeDasharray="4 3"
-              />
-              <line
-                x1="28"
-                y1="42"
-                x2="172"
-                y2="42"
-                stroke="#a78bfa"
-                strokeWidth="1"
-                strokeDasharray="4 3"
-                opacity="0.4"
-              />
-            </svg>
+            {/* 3D Orbital Constellation diagram */}
+            <div className="mt-8 hidden lg:flex lg:items-center lg:justify-center">
+              <OrbitalDiagram />
+            </div>
           </div>
           <div className="grid gap-4">
             {nodes.map((node, i) => (
               <div
                 key={node.title}
-                className={`reveal-slide-up delay-${i * 100} rounded-2xl border ${node.color} p-5 backdrop-blur`}
+                className={`reveal-slide-up delay-${i * 100} rounded-2xl border ${node.color} p-5 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:[transform:translateZ(8px)] [transform-style:preserve-3d]`}
               >
                 <div className="flex items-start gap-4">
                   <span className="mt-0.5 font-display text-3xl font-bold text-brand-lavender opacity-30">
@@ -110,5 +75,52 @@ export function PlatformConstellationSection() {
         </div>
       </Container>
     </SectionWrapper>
+  );
+}
+
+// ── 3D Orbital Constellation ──────────────────────────────────────────────
+function OrbitalDiagram() {
+  return (
+    <div
+      className="relative h-[200px] w-[240px] [perspective:500px]"
+      aria-hidden="true"
+    >
+      {/* Orbit ring — tilted isometric, animates rotation */}
+      <div className="absolute left-1/2 top-1/2 h-[170px] w-[170px] -translate-x-1/2 -translate-y-1/2 animate-orbit [transform-style:preserve-3d]">
+        {/* Ring border */}
+        <div className="absolute inset-0 rounded-full border border-brand-lavender/25" />
+
+        {/* Satellite 1 — Orquestación IA (violet) at 0° */}
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 animate-orbit-counter">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-violet/50 bg-brand-violet/20 text-[10px] font-bold text-brand-lavender shadow-[0_0_12px_rgba(139,92,246,0.4)]">
+            IA
+          </div>
+        </div>
+
+        {/* Satellite 2 — SaaS (gold) at 120° → bottom-right */}
+        <div className="absolute bottom-[12%] right-0 translate-x-1/2 translate-y-1/2 animate-orbit-counter">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-gold/40 bg-brand-gold/15 text-[10px] font-bold text-brand-gold shadow-[0_0_12px_rgba(201,168,76,0.35)]">
+            SaaS
+          </div>
+        </div>
+
+        {/* Satellite 3 — Data (emerald) at 240° → bottom-left */}
+        <div className="absolute bottom-[12%] left-0 -translate-x-1/2 translate-y-1/2 animate-orbit-counter">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/12 text-[9px] font-bold text-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]">
+            Data
+          </div>
+        </div>
+      </div>
+
+      {/* Central hub */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-float">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-violet/40 bg-gradient-to-b from-brand-violet/30 to-brand-iris/20 text-[10px] font-bold text-brand-lavender shadow-[0_0_24px_6px_rgba(139,92,246,0.25),inset_0_1px_0_rgba(255,255,255,0.12)]">
+          NM
+        </div>
+      </div>
+
+      {/* Outer glow */}
+      <div className="pointer-events-none absolute inset-0 rounded-full bg-brand-violet/5 blur-2xl" />
+    </div>
   );
 }

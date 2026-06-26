@@ -2,7 +2,6 @@
 
 import { navLinks } from "@/data/site";
 import { Button } from "@/components/shared/ui/Button";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,10 +43,10 @@ export function Navbar() {
 
   return (
     <header
-      className={`sticky top-4 z-40 transition-all ${scrolled ? "opacity-100" : "opacity-95"}`}
+      className={`sticky top-4 z-40 transition-all duration-300 [perspective:800px] ${scrolled ? "opacity-100" : "opacity-95"}`}
     >
       <div
-        className={`mx-auto flex max-w-7xl items-center justify-between rounded-[28px] border px-5 py-3 shadow-soft backdrop-blur-2xl transition-all sm:px-7 ${scrolled ? "border-brand-lavender/25 bg-[#06091a]/90" : "border-white/10 bg-[#06091a]/75"}`}
+        className={`mx-auto flex max-w-7xl items-center justify-between rounded-[28px] border px-5 py-3 shadow-soft backdrop-blur-2xl transition-all duration-300 [transform-style:preserve-3d] sm:px-7 ${scrolled ? "border-brand-lavender/25 bg-[#06091a]/95 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),0_2px_8px_-2px_rgba(139,92,246,0.15)] [transform:translateZ(8px)_rotateX(0.4deg)]" : "border-white/10 bg-[#06091a]/75 [transform:translateZ(0px)_rotateX(0deg)]"}`}
       >
         <Link
           href="/"
@@ -74,7 +73,10 @@ export function Navbar() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Navegación principal">
+        <nav
+          className="hidden items-center gap-1 md:flex"
+          aria-label="Navegación principal"
+        >
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -97,7 +99,6 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <ThemeToggle />
           <Button
             href="/contacto"
             trackingContext={{
@@ -115,7 +116,6 @@ export function Navbar() {
         <button
           className="md:hidden"
           aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
-          aria-expanded={mobileOpen ? "true" : "false"}
           aria-controls="mobile-navigation"
           onClick={() => setMobileOpen((current) => !current)}
         >

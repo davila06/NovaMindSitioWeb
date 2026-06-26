@@ -105,8 +105,18 @@ export default function SobreNosotrosPage() {
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Inicio", item: `${siteConfig.url}/` },
-          { "@type": "ListItem", position: 2, name: "Sobre Nosotros", item: `${siteConfig.url}/sobre-nosotros` },
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Inicio",
+            item: `${siteConfig.url}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Sobre Nosotros",
+            item: `${siteConfig.url}/sobre-nosotros`,
+          },
         ],
       },
     ],
@@ -140,14 +150,26 @@ export default function SobreNosotrosPage() {
             <p className="text-center text-sm font-bold uppercase tracking-[0.18em] text-brand-gold">
               El equipo
             </p>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {team.map((member) => (
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 [perspective:1000px]">
+              {team.map((member, idx) => (
                 <div
                   key={member.name}
-                  className="rounded-2xl border border-brand-lavender/20 bg-brand-card/80 p-6 shadow-soft"
+                  className="group relative rounded-2xl border border-brand-lavender/20 bg-brand-card/80 p-6 shadow-soft [transform-style:preserve-3d] transition-all duration-300 hover:[transform:rotateY(3deg)_translateZ(12px)] hover:shadow-[0_16px_40px_-12px_rgba(139,92,246,0.3)]"
                 >
+                  {/* Top shimmer */}
+                  <div
+                    className="pointer-events-none absolute inset-x-0 top-0 h-px rounded-t-2xl bg-gradient-to-r from-transparent via-brand-lavender/30 to-transparent"
+                    aria-hidden="true"
+                  />
+                  {/* Ordinal depth layer */}
+                  <div
+                    className="pointer-events-none absolute right-4 top-4 font-display text-5xl font-bold text-brand-lavender/6 [transform:translateZ(-8px)] select-none"
+                    aria-hidden="true"
+                  >
+                    {String(idx + 1).padStart(2, "0")}
+                  </div>
                   <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-violet/25 font-display text-xl font-bold text-brand-lavender">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-violet/25 font-display text-xl font-bold text-brand-lavender [transform:translateZ(10px)] shadow-[0_4px_16px_-4px_rgba(139,92,246,0.5)]">
                       {member.initials}
                     </div>
                     <div>
@@ -191,12 +213,18 @@ export default function SobreNosotrosPage() {
               Lo que guía cada decisión
             </h2>
           </div>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 [perspective:900px]">
             {values.map((v, i) => (
               <div
                 key={v.title}
-                className={`reveal-slide-up delay-${i * 100} rounded-2xl border border-brand-lavender/15 bg-brand-card/80 p-6`}
+                className="group relative rounded-2xl border border-brand-lavender/15 bg-brand-card/80 p-6 [transform-style:preserve-3d] transition-all duration-300 hover:[transform:rotateX(-2deg)_rotateY(4deg)_translateZ(8px)] hover:shadow-[0_14px_40px_-10px_rgba(139,92,246,0.25)]"
               >
+                <div
+                  className="pointer-events-none absolute right-4 top-4 font-display text-4xl font-bold text-brand-lavender/8 [transform:translateZ(-6px)] select-none"
+                  aria-hidden="true"
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </div>
                 <h3 className="font-display text-xl font-bold text-[#f0f8ff]">
                   {v.title}
                 </h3>

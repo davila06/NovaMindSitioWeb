@@ -8,7 +8,11 @@ import { trackEvent, trackFormProgress } from "@/lib/analytics-client";
 import { getStoredUTM } from "@/lib/useUTM";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
 
-const productInterestOptions = products.map((product) => product.name);
+const serviceInterestOptions = ['Consultoría', 'NovaClick — ClickFix (Residencial)', 'NovaClick — ITOn-Demand (Empresarial)', 'Suscripción SaaS']
+
+const productInterestOptions = products.map((product) => product.name)
+
+const allInterestOptions = [...serviceInterestOptions, ...productInterestOptions]
 
 type FormState = {
   name: string;
@@ -29,7 +33,7 @@ const initialState: FormState = {
   name: "",
   email: "",
   company: "",
-  interest: productInterestOptions[0] || "",
+  interest: allInterestOptions[0] || "",
   leadVolume: "",
   urgency: "",
   implementationHorizon: "",
@@ -464,7 +468,7 @@ export function ContactForm() {
                 }
                 className={inputCls}
               >
-                {productInterestOptions.map((option) => (
+                {allInterestOptions.map((option) => (
                   <option key={option}>{option}</option>
                 ))}
               </select>

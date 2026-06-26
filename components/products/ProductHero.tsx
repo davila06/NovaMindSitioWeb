@@ -71,7 +71,7 @@ export function ProductHero({ product }: { product: Product }) {
               src={product.screenshotUrl}
               alt={`Captura de pantalla de ${product.name}`}
             />
-          ) : (
+          ) : (product.heroStats?.length ?? 0) > 0 ? (
             <div className="rounded-2xl border border-brand-lavender/20 bg-brand-void/80 p-6 shadow-elevated">
               <p className="text-sm text-text-muted">Indicadores de valor</p>
               <div className="mt-5 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
@@ -93,7 +93,7 @@ export function ProductHero({ product }: { product: Product }) {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </Container>
     </SectionWrapper>

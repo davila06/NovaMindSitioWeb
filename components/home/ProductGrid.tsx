@@ -29,7 +29,6 @@ const iconMap = {
   pawtrack: PawPrint,
 };
 
-/** Color de acento único por producto — diferenciación visual premium */
 const accentMap: Record<
   string,
   {
@@ -38,6 +37,7 @@ const accentMap: Record<
     badge: string;
     label: string;
     category: string;
+    spotlight: string;
   }
 > = {
   voicebot: {
@@ -46,6 +46,7 @@ const accentMap: Record<
     badge: "bg-orange-400/10 text-orange-300",
     label: "IA Conversacional",
     category: "IA",
+    spotlight: "rgba(251,146,60,0.13)",
   },
   planillascr: {
     icon: "text-sky-400",
@@ -53,6 +54,7 @@ const accentMap: Record<
     badge: "bg-sky-400/10 text-sky-300",
     label: "Nómina & RRHH",
     category: "RRHH",
+    spotlight: "rgba(56,189,248,0.13)",
   },
   ccerp: {
     icon: "text-blue-400",
@@ -60,6 +62,7 @@ const accentMap: Record<
     badge: "bg-blue-400/10 text-blue-300",
     label: "ERP Multiempresa",
     category: "ERP",
+    spotlight: "rgba(96,165,250,0.13)",
   },
   mindflow: {
     icon: "text-amber-400",
@@ -67,6 +70,7 @@ const accentMap: Record<
     badge: "bg-amber-400/10 text-amber-300",
     label: "Ventas Automatizadas",
     category: "Ventas",
+    spotlight: "rgba(251,191,36,0.12)",
   },
   "mindflow-ai-sales-engine": {
     icon: "text-orange-400",
@@ -74,6 +78,7 @@ const accentMap: Record<
     badge: "bg-orange-400/10 text-orange-300",
     label: "Revenue Operations",
     category: "Ventas",
+    spotlight: "rgba(251,146,60,0.13)",
   },
   iads: {
     icon: "text-amber-400",
@@ -81,6 +86,7 @@ const accentMap: Record<
     badge: "bg-amber-400/10 text-amber-300",
     label: "Servicios Digitales",
     category: "Digital",
+    spotlight: "rgba(251,191,36,0.12)",
   },
   pawtrack: {
     icon: "text-sky-400",
@@ -88,13 +94,14 @@ const accentMap: Record<
     badge: "bg-sky-400/10 text-sky-300",
     label: "Comunidades",
     category: "Digital",
+    spotlight: "rgba(56,189,248,0.13)",
   },
 };
 
 const CATEGORIES = ["Todos", "IA", "ERP", "RRHH", "Ventas", "Digital"];
 
 export function ProductGrid() {
-  const headingRef = useScrollReveal<HTMLDivElement>()
+  const headingRef = useScrollReveal<HTMLDivElement>();
   const [activeCategory, setActiveCategory] = useState("Todos");
 
   function handleMouseMove(e: ReactMouseEvent<HTMLDivElement>) {
@@ -103,10 +110,11 @@ export function ProductGrid() {
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
     card.style.transform = `perspective(800px) rotateX(${-y * 8}deg) rotateY(${x * 8}deg) translateY(-4px)`;
-    // Spotlight radial gradient
+    // Per-product spotlight — reads accent color from data attribute
+    const color = card.dataset.spotlight ?? "rgba(139,92,246,0.12)";
     const relX = e.clientX - rect.left;
     const relY = e.clientY - rect.top;
-    card.style.backgroundImage = `radial-gradient(300px circle at ${relX}px ${relY}px, rgba(56,189,248,0.12), transparent 70%)`;
+    card.style.backgroundImage = `radial-gradient(300px circle at ${relX}px ${relY}px, ${color}, transparent 70%)`;
   }
 
   function handleMouseLeave(e: ReactMouseEvent<HTMLDivElement>) {
@@ -142,7 +150,7 @@ export function ProductGrid() {
                 setActiveCategory(cat);
                 trackEvent("product_grid_filter", { category: cat });
               }}
-              aria-pressed={activeCategory === cat}
+              data-active={activeCategory === cat ? "true" : "false"}
               className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition ${
                 activeCategory === cat
                   ? "border-brand-violet bg-brand-violet/20 text-brand-lavender"
@@ -154,7 +162,7 @@ export function ProductGrid() {
           ))}
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 [perspective:1400px]">
           {filtered.map((product, index) => {
             const Icon = iconMap[product.slug as keyof typeof iconMap];
             const accent = accentMap[product.slug] ?? {
@@ -171,8 +179,18 @@ export function ProductGrid() {
                 key={product.slug}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                className="rounded-2xl transition-[transform,box-shadow,background-image] duration-150 ease-out will-change-transform"
+                data-spotlight={accent.spotlight}
+                className="relative rounded-2xl transition-[transform,box-shadow,background-image] duration-150 ease-out will-change-transform [transform-style:preserve-3d]"
               >
+                {/* Stacked depth layer — pushed behind */}
+                <div
+                  className="pointer-events-none absolute inset-0.5 rounded-2xl bg-brand-violet/6 [transform:translateZ(-8px)]"
+                  aria-hidden="true"
+                />
+                <div
+                  className="pointer-events-none absolute inset-1 rounded-2xl bg-brand-violet/3 [transform:translateZ(-16px)]"
+                  aria-hidden="true"
+                />
                 <Card
                   ordinal={ordinal}
                   className={`group flex h-full flex-col justify-between border-brand-lavender/15 ${accent.border}`}

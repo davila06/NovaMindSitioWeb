@@ -82,17 +82,23 @@ export default async function BlogPage({
               datePublished: post.date,
               articleSection: post.category,
               inLanguage: "es-CR",
-              keywords: post.tags?.join(', ') ?? '',
+              keywords: post.tags?.join(", ") ?? "",
               image: {
                 "@type": "ImageObject",
                 url: `${siteConfig.url}/blog/${post.slug}/opengraph-image`,
                 width: 1200,
                 height: 630,
               },
-              author: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
+              author: {
+                "@type": "Organization",
+                name: siteConfig.name,
+                url: siteConfig.url,
+              },
             })),
             numberOfItems: allPosts.length,
-            keywords: Array.from(new Set(allPosts.flatMap((p) => p.tags ?? []))).slice(0, 20).join(', '),
+            keywords: Array.from(new Set(allPosts.flatMap((p) => p.tags ?? [])))
+              .slice(0, 20)
+              .join(", "),
           }),
         }}
       />
@@ -140,8 +146,16 @@ export default async function BlogPage({
 
         {/* Card featured */}
         {featured && (
-          <Link href={`/blog/${featured.slug}`} className="group mt-10 block">
-            <div className="rounded-2xl border border-brand-violet/30 bg-brand-card/80 p-8 transition hover:border-brand-lavender/50 hover:shadow-violet">
+          <Link
+            href={`/blog/${featured.slug}`}
+            className="group mt-10 block [perspective:800px]"
+          >
+            <div className="relative rounded-2xl border border-brand-violet/30 bg-brand-card/80 p-8 transition-all duration-300 hover:border-brand-lavender/50 hover:shadow-violet hover:[transform:translateY(-4px)_translateZ(12px)] [transform-style:preserve-3d]">
+              {/* Depth layer — pushed behind */}
+              <div
+                className="pointer-events-none absolute inset-1 rounded-2xl bg-brand-violet/8 blur-sm [transform:translateZ(-8px)]"
+                aria-hidden="true"
+              />
               <div className="flex items-center gap-2">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">
                   {featured.category}
@@ -151,7 +165,7 @@ export default async function BlogPage({
                   {featured.readingTime} lectura
                 </span>
               </div>
-              <h2 className="mt-3 font-display text-2xl font-bold text-[#f0f8ff] group-hover:text-brand-lavender transition-colors sm:text-3xl">
+              <h2 className="mt-3 font-display text-2xl font-bold text-[#f0f8ff] transition-colors group-hover:text-brand-lavender sm:text-3xl">
                 {featured.title}
               </h2>
               <p className="mt-3 max-w-2xl text-text-muted">
@@ -171,14 +185,24 @@ export default async function BlogPage({
 
         {/* Grid secundario */}
         {rest.length > 0 && (
-          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3 [perspective:1400px]">
             {rest.map((post) => (
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
                 className="group block"
               >
-                <div className="h-full rounded-2xl border border-brand-lavender/15 bg-brand-card/80 p-6 transition hover:border-brand-lavender/40 hover:-translate-y-1 hover:shadow-violet">
+                <div className="relative h-full rounded-2xl border border-brand-lavender/15 bg-brand-card/80 p-6 transition-all duration-300 hover:border-brand-lavender/40 hover:[transform:translateY(-6px)_translateZ(14px)_rotateX(-1deg)] hover:shadow-violet [transform-style:preserve-3d]">
+                  {/* Depth layer 1 — mid */}
+                  <div
+                    className="pointer-events-none absolute inset-1.5 rounded-xl bg-brand-lavender/5 [transform:translateZ(-6px)]"
+                    aria-hidden="true"
+                  />
+                  {/* Depth layer 2 — back */}
+                  <div
+                    className="pointer-events-none absolute inset-2.5 rounded-xl bg-brand-lavender/3 [transform:translateZ(-14px)]"
+                    aria-hidden="true"
+                  />
                   <div className="flex items-center gap-2">
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-gold">
                       {post.category}
@@ -187,7 +211,7 @@ export default async function BlogPage({
                       {post.readingTime}
                     </span>
                   </div>
-                  <h2 className="mt-2 font-display text-xl font-semibold leading-snug text-[#f0f8ff] group-hover:text-brand-lavender transition-colors">
+                  <h2 className="mt-2 font-display text-xl font-semibold leading-snug text-[#f0f8ff] transition-colors group-hover:text-brand-lavender">
                     {post.title}
                   </h2>
                   <p className="mt-2 text-sm text-text-muted line-clamp-3">

@@ -56,7 +56,7 @@ export function Button({ children, href, variant = 'solid', className = '', isLo
   }
 
   return (
-    <button className={classes} onClick={onClick ?? onTrackClick} disabled={isDisabled} type={type} aria-busy={isLoading || undefined}>
+    <button className={classes} onClick={onClick ?? onTrackClick} disabled={isDisabled} type={type} aria-busy={isLoading ? 'true' : undefined}>
       {isLoading && <SpinnerIcon />}
       {children}
     </button>

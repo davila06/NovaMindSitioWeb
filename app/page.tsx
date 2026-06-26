@@ -14,6 +14,7 @@ import { TrustBar } from '@/components/home/TrustBar'
 import { WhyNovamindSection } from '@/components/home/WhyNovamindSection'
 import { WaveDivider } from '@/components/layout/WaveDivider'
 import { SectionErrorBoundary } from '@/components/shared/SectionErrorBoundary'
+import { NovaClickSpotlight } from '@/components/home/NovaClickSpotlight'
 import { ProductCatalogSchema } from '@/components/home/ProductCatalogSchema'
 
 // Heavy interactive components loaded lazily (below-the-fold code-splitting)
@@ -60,6 +61,7 @@ export default function HomePage() {
       <SectionErrorBoundary section="WhyNovamindSection"><WhyNovamindSection /></SectionErrorBoundary>
       <SectionErrorBoundary section="CommercialProofSection"><CommercialProofSection /></SectionErrorBoundary>
       <SectionErrorBoundary section="ProductGrid"><ProductGrid /></SectionErrorBoundary>
+      <SectionErrorBoundary section="NovaClickSpotlight"><NovaClickSpotlight /></SectionErrorBoundary>
       <WaveDivider className="text-brand-surface/15" />
       <SectionErrorBoundary section="PlatformConstellationSection"><PlatformConstellationSection /></SectionErrorBoundary>
       <SectionErrorBoundary section="SolutionFinderSection"><SolutionFinderSection /></SectionErrorBoundary>

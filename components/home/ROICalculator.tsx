@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Container } from "@/components/layout/Container";
 import { SectionWrapper } from "@/components/layout/SectionWrapper";
 import { Button } from "@/components/shared/ui/Button";
@@ -177,6 +177,10 @@ export function ROICalculator() {
                       Ver propuesta personalizada →
                     </Button>
                   </div>
+                  {/* 3D bar chart */}
+                  <div className="sm:col-span-2">
+                    <Bars3D monthly={monthlySaving} annual={annualSaving!} />
+                  </div>
                 </div>
               ) : (
                 <p className="text-center text-sm text-text-subtle">
@@ -193,5 +197,57 @@ export function ROICalculator() {
         </div>
       </Container>
     </SectionWrapper>
+  );
+}
+
+// ── 3D Bar chart visualization ────────────────────────────────────────────
+function Bars3D({ monthly, annual }: { monthly: number; annual: number }) {
+  const monthlyRef = useRef<HTMLDivElement>(null);
+  const annualRef = useRef<HTMLDivElement>(null);
+  const MAX_H = 96;
+
+  useEffect(() => {
+    const mH = Math.max(14, Math.round((monthly / annual) * MAX_H));
+    const aH = MAX_H;
+    if (monthlyRef.current) monthlyRef.current.style.height = `${mH}px`;
+    if (annualRef.current) annualRef.current.style.height = `${aH}px`;
+  }, [monthly, annual]);
+
+  return (
+    <div
+      className="mt-5 flex items-end justify-center gap-8 [perspective:400px]"
+      aria-hidden="true"
+    >
+      {/* Monthly bar */}
+      <div className="flex flex-col items-center gap-2">
+        <div className="relative w-16 [transform-style:preserve-3d] hover:[transform:rotateY(-8deg)_rotateX(-2deg)] transition-transform duration-300">
+          {/* Front face */}
+          <div
+            ref={monthlyRef}
+            className="w-16 rounded-t-lg bg-gradient-to-t from-brand-violet to-brand-iris transition-all duration-700 ease-out"
+          />
+          {/* Top cap */}
+          <div className="absolute inset-x-0 top-0 h-3 rounded-t-lg bg-brand-lavender/35 [transform:rotateX(-90deg)_translateZ(6px)_translateY(-6px)]" />
+          {/* Right side */}
+          <div className="absolute bottom-0 right-0 top-0 w-3 bg-brand-violet/40 [transform:rotateY(-90deg)_translateX(6px)_translateZ(-6px)]" />
+        </div>
+        <span className="text-[10px] font-semibold text-text-muted">
+          Mensual
+        </span>
+      </div>
+
+      {/* Annual bar */}
+      <div className="flex flex-col items-center gap-2">
+        <div className="relative w-16 [transform-style:preserve-3d] hover:[transform:rotateY(-8deg)_rotateX(-2deg)] transition-transform duration-300">
+          <div
+            ref={annualRef}
+            className="w-16 rounded-t-lg bg-gradient-to-t from-brand-gold/70 to-brand-gold transition-all duration-700 ease-out"
+          />
+          <div className="absolute inset-x-0 top-0 h-3 rounded-t-lg bg-brand-gold/40 [transform:rotateX(-90deg)_translateZ(6px)_translateY(-6px)]" />
+          <div className="absolute bottom-0 right-0 top-0 w-3 bg-brand-gold/30 [transform:rotateY(-90deg)_translateX(6px)_translateZ(-6px)]" />
+        </div>
+        <span className="text-[10px] font-semibold text-text-muted">Anual</span>
+      </div>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import { Metric } from '@/lib/types'
 export const navLinks = [
   { href: '/', label: 'Inicio' },
   { href: '/#productos', label: 'Productos' },
+  { href: '/servicios', label: 'Servicios' },
   { href: '/industrias', label: 'Industrias' },
   { href: '/roles', label: 'Roles' },
   { href: '/blog', label: 'Blog' },
@@ -10,7 +11,7 @@ export const navLinks = [
   { href: '/contacto', label: 'Contacto' },
 ]
 
-export const trustBadges = ['Arquitectura multi-tenant', 'Integrable con ERP y CRM', 'Escalable sobre Azure', 'Trazabilidad operativa']
+export const trustBadges = ['Arquitectura multi-tenant', 'Integrable con ERP y CRM', 'Escalable sobre Azure', 'Trazabilidad operativa', 'Facturación electrónica', 'SLA garantizado']
 
 export const differentiationPillars = [
   {

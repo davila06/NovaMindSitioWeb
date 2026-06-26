@@ -494,11 +494,7 @@ export const products: Product[] = validateProductsContent([
       "Mi Mascotica: descarga gratuita para proteger y reunificar mascotas",
     heroSubtitle:
       "Disponible como descarga gratuita, combina identificacion por QR y matching visual asistido por IA para conectar reportes y hallazgos en menos tiempo.",
-    heroStats: [
-      { label: "Descarga", value: "Gratis" },
-      { label: "Cobertura", value: "Comunitaria" },
-      { label: "Matching", value: "IA visual" },
-    ],
+    heroStats: [],
     problem: [
       "Reportes dispersos en redes sociales",
       "Falta de trazabilidad en busquedas",

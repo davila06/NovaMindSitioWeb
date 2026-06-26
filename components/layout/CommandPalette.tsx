@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ChevronRight } from "lucide-react";
 import { navLinks } from "@/data/site";
@@ -26,6 +27,7 @@ const COMMANDS = [
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [focusedIndex, setFocusedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -50,6 +52,7 @@ export function CommandPalette() {
   useEffect(() => {
     if (open) {
       setQuery("");
+      setFocusedIndex(0);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
@@ -58,9 +61,27 @@ export function CommandPalette() {
     c.label.toLowerCase().includes(query.toLowerCase()),
   );
 
+  // Reset focused index when filtered list changes
+  useEffect(() => {
+    setFocusedIndex(0);
+  }, [query]);
+
   function navigate(href: string) {
     router.push(href);
     setOpen(false);
+  }
+
+  function handleInputKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedIndex((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (filtered[focusedIndex]) navigate(filtered[focusedIndex].href);
+    }
   }
 
   if (!open) return null;
@@ -95,9 +116,10 @@ export function CommandPalette() {
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleInputKeyDown}
             placeholder="Buscar páginas, productos, acciones…"
             className="flex-1 bg-transparent text-sm text-[#f0f8ff] outline-none placeholder:text-text-muted"
-            aria-label="Buscar"
+            aria-label="Buscar comandos"
           />
           <kbd className="hidden rounded border border-brand-lavender/20 px-1.5 py-0.5 text-[10px] text-text-subtle sm:block">
             ESC
@@ -111,27 +133,44 @@ export function CommandPalette() {
               Sin resultados para &ldquo;{query}&rdquo;
             </p>
           )}
-          {["Navegación", "Productos", "Acciones"].map((group) => {
-            const items = filtered.filter((c) => c.group === group);
-            if (!items.length) return null;
-            return (
-              <div key={group} className="mb-2">
-                <p className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-text-subtle">
-                  {group}
-                </p>
-                {items.map((cmd) => (
-                  <button
-                    key={cmd.href + cmd.label}
-                    onClick={() => navigate(cmd.href)}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm text-[#f0f8ff] transition hover:bg-brand-elevated"
-                  >
-                    {cmd.label}
-                    <ChevronRight className="h-3.5 w-3.5 text-text-muted" />
-                  </button>
-                ))}
-              </div>
-            );
-          })}
+          {(() => {
+            let flatIndex = -1;
+            return ["Navegación", "Productos", "Acciones"].map((group) => {
+              const items = filtered.filter((c) => c.group === group);
+              if (!items.length) return null;
+              return (
+                <div key={group} className="mb-2">
+                  <p className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-text-subtle">
+                    {group}
+                  </p>
+                  {items.map((cmd) => {
+                    flatIndex++;
+                    const isFocused = flatIndex === focusedIndex;
+                    const itemIndex = flatIndex;
+                    return (
+                      <button
+                        key={cmd.href + cmd.label}
+                        id={`cmd-item-${itemIndex}`}
+                        onClick={() => navigate(cmd.href)}
+                        onMouseEnter={() => setFocusedIndex(itemIndex)}
+                        data-focused={isFocused ? "true" : undefined}
+                        className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm text-[#f0f8ff] transition ${
+                          isFocused
+                            ? "bg-brand-violet/20 text-brand-lavender"
+                            : "hover:bg-brand-elevated"
+                        }`}
+                      >
+                        {cmd.label}
+                        <ChevronRight
+                          className={`h-3.5 w-3.5 transition ${isFocused ? "text-brand-lavender" : "text-text-muted"}`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            });
+          })()}
         </div>
 
         {/* Footer hint */}

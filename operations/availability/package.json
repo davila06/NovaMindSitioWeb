@@ -1,0 +1,17 @@
+{
+  "name": "novamind-availability",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "cf build",
+    "deploy": "cf deploy --prebuilt"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "2.0.0-beta.v.8",
+    "cf": "1.0.0-beta.26",
+    "vite": "^8.0.0"
+  }
+}

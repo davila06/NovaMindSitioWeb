@@ -9,7 +9,7 @@ Sitio corporativo construido con Next.js App Router, TypeScript estricto y Tailw
 - Tailwind CSS 3
 - Zod para validación de payloads y contenido
 - MDX local para contenido editorial del blog
-- Resend + SMTP fallback para entrega de leads
+- Cloudflare Email Service para entrega de leads en Workers; Resend y SMTP como alternativas
 
 ## Arquitectura del proyecto
 
@@ -26,6 +26,7 @@ Sitio corporativo construido con Next.js App Router, TypeScript estricto y Tailw
 
 - `npm run dev`: levanta entorno local.
 - `npm run lint`: análisis estático con ESLint.
+- `npm run typecheck`: regenera tipos de rutas de Next y ejecuta TypeScript; evita mezclar validadores de Next con tipos generados previamente por vinext.
 - `npm run build`: build de producción.
 - `npm run start`: ejecuta build en modo producción.
 - `npm run test:unit`: ejecuta pruebas unitarias con cobertura.
@@ -52,6 +53,11 @@ Usa `.env.example` como base.
 
 - `CONTACT_RATE_LIMIT_MAX_REQUESTS`
 - `CONTACT_RATE_LIMIT_WINDOW_MS`
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: clave publica del widget. En Workers se utiliza la clave publica del sitio; una cadena vacia desactiva la UI para E2E locales.
+- `TURNSTILE_ENABLED`: `true` en los bindings de Workers; `false` para desarrollo local sin verificacion externa.
+- `TURNSTILE_SECRET_KEY`: secreto de servidor, nunca en el repositorio ni en variables `NEXT_PUBLIC_*`. Se carga mediante `cf deploy --secrets-file` o GitHub Secrets.
+
+Contacto y ambos formularios de newsletter usan Turnstile. El servidor valida token, hostname y accion; rechaza solicitudes sin verificacion y no envia correo si el proveedor de verificacion falla. Las pruebas automatizadas locales sin widget no sustituyen una prueba real en staging.
 
 ### Analytics
 
@@ -68,6 +74,9 @@ Usa `.env.example` como base.
 ## Monitoreo y observabilidad
 
 - Captura de errores de frontend con listeners globales y error boundaries (`app/error.tsx`, `app/global-error.tsx`).
+- Alertas de Certificate Transparency activas solo para la zona Novamind, al emitirse certificados para sus dominios. No son alertas de expiracion ni de disponibilidad.
+- Monitor dedicado `novamind-availability`, en `operations/availability/`: cron cada 15 minutos, comprueba HTTP del sitio y readiness de correo/rate limiting en `/api/health?check=ready`, reintenta fallos transitorios, envia alertas de caida y recuperacion por Cloudflare Email Service y conserva el estado en KV para evitar avisos repetidos. No expone endpoints publicos de ejecucion.
+- El monitor independiente y el sitio comparten Cloudflare: no detecta una caida total del proveedor si tambien falla la ejecucion del cron. GitHub puede servir de comprobacion externa cuando su cuenta permita ejecutar Actions. Ninguno constituye un SLA.
 - Endpoint interno de ingestión: `POST /api/monitoring/error`.
 - Trazabilidad en `POST /api/contact` mediante `requestId` y header `X-Request-Id`.
 - Registro estructurado en servidor y forwarding opcional por webhook.
@@ -112,16 +121,30 @@ Los errores de entrega devuelven `503`; no se usa stdout como suscripcion recibi
 ### Plataforma acordada
 
 - Dominio web: `novamindglobalcr.com`; registro, DNS, TLS, seguridad y despliegues en Cloudflare. No se usara Vercel.
-- Hosting preparado: Cloudflare Workers con vinext, configuracion tipada `cloudflare.config.ts` y CLI `cf`. Build y E2E locales verificados; despliegue remoto pendiente.
+- Hosting publicado: Cloudflare Workers con vinext, configuracion tipada `cloudflare.config.ts` y CLI `cf`, en https://novamindglobalcr.com. Staging: https://staging.novamindglobalcr.com.
+- `www` redirige al dominio principal con 301 conservando ruta y query; HTTP redirige a HTTPS.
 - Marca de producto: PawTrack CR / NALA, inspirado por NALA, dentro del portafolio de NovaMind Global.
 - Portal de producto: [PawTrack CR](https://pawtrackcr.com); acceso a la aplicacion: [Login](https://app.pawtrackcr.com/login).
 - Dominios controlados confirmados: `novamindglobalcr.com` y `pawtrackcr.com`. No se controla `novamindglobal.com`.
-- Contacto principal: `info@novamindglobalcr.com`. Aliases previstos: `contacto`, `ventas`, `soporte`, `alianzas`, `privacidad` y `legal`, todos en `novamindglobalcr.com`.
-- Destino confirmado de Email Routing: `novamindglobalcr@gmail.com`. Los aliases y la verificacion del destino siguen pendientes de configurar en Cloudflare. Email Routing no proporciona un buzon corporativo ni sustituye el envio de los formularios.
-- Configuracion de ejemplo para formularios: `CONTACT_TO_EMAIL=novamindglobalcr@gmail.com` y `CONTACT_FROM_EMAIL=info@novamindglobalcr.com`. Requiere proveedor de envio habilitado y dominio remitente verificado; no se han aplicado variables de produccion.
-- Repositorio seleccionado para despliegues: este repositorio; su conexion con Workers Builds sigue pendiente.
+- Contacto principal: `info@novamindglobalcr.com`. Email Routing activo para `info`, `privacidad`, `legal`, `denis` y `dmarc`, sin catch-all.
+- Destino verificado de Email Routing: `novamindglobalcr@gmail.com`. MX, SPF y DKIM configurados por Cloudflare. Email Routing no proporciona un buzon corporativo ni SMTP para responder como el dominio.
+- Formularios publicados con `CONTACT_TO_EMAIL=novamindglobalcr@gmail.com`, `CONTACT_FROM_EMAIL=info@novamindglobalcr.com` y transporte nativo de Cloudflare. Una prueba autorizada fue aceptada con identificador de entrega; la recepcion en Gmail requiere confirmacion del destinatario.
+- DMARC en monitoreo: `v=DMARC1; p=none; rua=mailto:dmarc@novamindglobalcr.com`. No rechaza suplantaciones; evaluar informes y todos los remitentes antes de endurecer la politica.
 - El backend incluye transporte nativo Cloudflare Email Service y alternativas Resend/SMTP. Workers selecciona el binding nativo. Email Routing solo recibe/reenvia; los envios reales requieren verificar dominio remitente, destinatario y disponibilidad del servicio en la cuenta.
-- Evolucion de correo propuesta: Microsoft 365 Business; no esta configurado.
+- Buzon/proveedor corporativo saliente pospuesto por decision del propietario; se conservan los reenvios a Gmail.
+
+### Despliegues y disponibilidad en GitHub
+
+Los tres workflows estan publicados y habilitados en GitHub. Su ejecucion efectiva y la entrega de alertas deben verificarse por separado:
+
+- `.github/workflows/deploy.yml`: despliegue manual de `staging` o `production`, con lint, tipos, pruebas, audit, build y smoke test de salud.
+- `.github/workflows/availability.yml`: comprobacion cada 15 minutos del sitio y `/api/health`; abre un incidente GitHub sin duplicados y lo cierra al recuperarse. La programacion requiere estar en la rama por defecto; GitHub puede retrasar ejecuciones y esto no constituye un SLA.
+- Crear entornos GitHub `staging` y `production`; exigir aprobacion de produccion cuando el plan del repositorio lo permita.
+- Agregar `CLOUDFLARE_API_TOKEN` con permisos minimos de despliegue y `TURNSTILE_SECRET_KEY` como secretos de cada entorno, desde la interfaz segura de GitHub, no por chat. El token debe permitir los bindings y dominios utilizados por este proyecto.
+- Publicar los workflows y ejecutar primero staging, luego produccion. Activar las notificaciones de Actions e issues para recibir fallos e incidentes.
+- Estado observado: Actions no inicia jobs por un bloqueo de facturacion de la cuenta. El propietario debe resolverlo en GitHub Settings > Billing; estar habilitado no significa que el workflow este ejecutandose.
+
+Para actualizar el monitor dedicado, ejecutar `npm run build:availability` y `npm run deploy:availability` desde la raiz tras `npm ci`. Es un proyecto independiente con su propia configuracion de Vite/Cloudflare; resuelve las mismas dependencias instaladas y bloqueadas en la raiz. No se declara la raiz como workspace porque la deteccion de aplicaciones de `cf` no permite compilar alli un workspace root. Su KV guarda solo estado operativo, no leads; si se migra de cuenta, crear una nueva namespace y actualizar el binding antes del despliegue. No simular incidentes modificando el estado remoto de produccion.
 
 Compatible con despliegue estándar de Next.js en servicios gestionados o contenedores. Para despliegue productivo, asegurar:
 

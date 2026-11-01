@@ -7,7 +7,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     ignores: [
-      ".cloudflare/**",
+      "**/.cloudflare/**",
       ".next/**",
       "build/**",
       "coverage/**",

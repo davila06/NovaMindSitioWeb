@@ -54,6 +54,7 @@ jobs:
           npx cf deploy --prebuilt --mode "$DEPLOY_MODE" --secrets-file "$secrets_file"
       - name: Verify deployment
         run: |
+          set -o pipefail
           if [ "$DEPLOY_MODE" = "production" ]; then
             url="https://novamindglobalcr.com"
           else

@@ -30,6 +30,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm run build:cloudflare
+      - run: npm run build:availability
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm audit --omit=dev

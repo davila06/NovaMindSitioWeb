@@ -58,4 +58,17 @@ describe('lib/security', () => {
     expect(csp).toContain("frame-ancestors 'none'")
     expect(csp).toContain("object-src 'none'")
   })
+
+  it('permite el beacon de Cloudflare solo en las directivas necesarias', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    const directives = buildContentSecurityPolicy().split('; ')
+    const script = directives.find(value => value.startsWith('script-src '))
+    const connect = directives.find(value => value.startsWith('connect-src '))
+
+    expect(script?.split(' ')).toContain('https://static.cloudflareinsights.com')
+    expect(connect?.split(' ')).toContain('https://cloudflareinsights.com')
+    expect(script).not.toContain("'unsafe-eval'")
+    expect(directives.some(value => value.includes('*'))).toBe(false)
+    expect(directives.filter(value => value.includes('cloudflareinsights.com'))).toHaveLength(2)
+  })
 })

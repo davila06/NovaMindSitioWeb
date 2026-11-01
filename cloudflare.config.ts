@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
       traces: { enabled: true, headSamplingRate: 0.1 },
     },
     env: {
+      ASSETS: bindings.assets(),
       NODE_ENV: bindings.text("production"),
       MAIL_PROVIDER: bindings.text("cloudflare"),
       CONTACT_FROM_EMAIL: bindings.text("info@novamindglobalcr.com"),

@@ -161,17 +161,6 @@ export function Footer() {
               <LinkedInIcon />
             </a>
           </div>
-          {/* Badges de tecnología con shimmer */}
-          <div className="mt-5 flex flex-wrap gap-2">
-            {["Next.js 15", "TypeScript"].map((tech) => (
-              <span
-                key={tech}
-                className="animate-shimmer rounded-full border border-brand-lavender/15 px-2.5 py-1 text-[11px] font-medium text-text-subtle"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
         </div>
 
         {/* Links rápidos */}

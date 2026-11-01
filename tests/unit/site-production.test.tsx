@@ -133,21 +133,19 @@ describe("production destinations", () => {
     configureMail();
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              name: "validation_error",
-              message: "Sender not verified",
-            }),
-            { status: 422 },
-          ),
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            name: "validation_error",
+            message: "Sender not verified",
+          }),
+          { status: 422 },
         ),
+      ),
     );
     const response = await submitContact(requestFor("/api/contact", contact));
     expect(response.status).toBe(503);
-    expect((await response.json()).ok).toBe(false);
+    expect(await response.json()).toMatchObject({ ok: false });
   });
 
   it("does not accept newsletter without a delivery provider", async () => {

@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CONSENT_EVENT, readAnalyticsConsent, updateAnalyticsConsent } from "@/lib/analytics-client";
+import {
+  CONSENT_EVENT,
+  readAnalyticsConsent,
+  updateAnalyticsConsent,
+} from "@/lib/analytics-client";
 
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
@@ -22,7 +26,18 @@ export function CookieConsent() {
   }
 
   if (!mounted) return null;
-  if (!visible) return <button type="button" onClick={() => setVisible(true)} className="fixed bottom-20 left-4 z-30 rounded-lg bg-brand-card px-3 py-2 text-xs text-text-muted md:bottom-4">Preferencias de cookies</button>;
+  if (!visible)
+    return (
+      <div className="bg-brand-void px-4 py-4 pb-24 text-center md:pb-4">
+        <button
+          type="button"
+          onClick={() => setVisible(true)}
+          className="rounded-lg px-3 py-2 text-xs text-text-muted hover:text-text-primary"
+        >
+          Preferencias de cookies
+        </button>
+      </div>
+    );
 
   return (
     <div
@@ -38,7 +53,7 @@ export function CookieConsent() {
         Utilizamos cookies analíticas (Google Analytics, Microsoft Clarity) para
         mejorar la experiencia y medir el rendimiento. Conforme a la{" "}
         <Link
-          href="/privacidad#cookies"
+          href="/privacidad"
           className="text-brand-lavender hover:underline"
         >
           Ley 8968 de Costa Rica

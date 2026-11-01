@@ -61,6 +61,7 @@ export function Navbar() {
           <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-brand-lavender/30 bg-brand-card shadow-soft sm:h-11 sm:w-11">
             <Image
               src="/img/novamind-brand.webp"
+              unoptimized
               alt="NovaMind Global"
               fill
               className="object-cover object-center"

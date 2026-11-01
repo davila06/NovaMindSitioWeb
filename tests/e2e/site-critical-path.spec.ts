@@ -14,6 +14,17 @@ test("home, navegación y viewport estable", async ({ page }, testInfo) => {
   await page.evaluate(() => document.fonts.ready);
   await expect
     .poll(() =>
+      page
+        .getByRole("img", { name: "NovaMind Global", exact: true })
+        .evaluate(
+          (image) =>
+            (image as HTMLImageElement).complete &&
+            (image as HTMLImageElement).naturalWidth > 0,
+        ),
+    )
+    .toBe(true);
+  await expect
+    .poll(() =>
       page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),

@@ -45,7 +45,7 @@ const config: Config = {
         text: {
           primary: "#eff6ff",
           muted: "#9cb3d9",
-          subtle: "#4c638d",
+          subtle: "#93a7c4",
         },
       },
       fontFamily: {

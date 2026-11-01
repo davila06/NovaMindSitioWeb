@@ -3,11 +3,12 @@ import { Container } from '@/components/layout/Container'
 import { SectionWrapper } from '@/components/layout/SectionWrapper'
 import { Button } from '@/components/shared/ui/Button'
 import { createPageMetadata } from '@/lib/seo'
+import { commercialEvidenceEnabled } from '@/data/site'
 import { TrendingUp, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Casos de Éxito | Novamind Global',
-  description: 'Empresas costarricenses que automatizaron operaciones críticas con Novamind Global. Resultados reales, medibles.',
+  title: 'Casos de uso | Novamind Global',
+  description: 'Explora cómo las plataformas de Novamind pueden abordar retos operativos empresariales.',
   path: '/casos',
 })
 
@@ -75,17 +76,20 @@ const cases = [
 ]
 
 export default function CasosPage() {
+  const publishedCases = commercialEvidenceEnabled ? cases : [];
+
   return (
     <>
       <SectionWrapper className="pt-12">
         <Container>
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.22em] text-brand-gold">Resultados reales</p>
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-brand-gold">Aplicaciones empresariales</p>
             <h1 className="mt-3 font-display text-4xl font-bold leading-tight tracking-[-0.03em] text-[#f0f8ff] sm:text-5xl">
-              Empresas que operan diferente
+              Casos de uso y resultados
             </h1>
             <p className="mt-4 text-lg text-text-muted">
-              No hablamos de potencial — mostramos lo que ya logramos junto a nuestros clientes.
+              Publicamos resultados de clientes únicamente cuando el alcance,
+              las métricas y la autorización para compartirlos están confirmados.
             </p>
           </div>
         </Container>
@@ -94,7 +98,7 @@ export default function CasosPage() {
       <SectionWrapper>
         <Container>
           <div className="space-y-8">
-            {cases.map((c, i) => (
+            {publishedCases.map((c, i) => (
               <article
                 key={c.company}
                 className="rounded-2xl border border-brand-lavender/18 bg-brand-card/80 p-6 shadow-soft lg:p-8"
@@ -142,17 +146,30 @@ export default function CasosPage() {
             ))}
           </div>
 
+          {!commercialEvidenceEnabled && (
+            <div className="mt-8 rounded-2xl border border-brand-lavender/18 bg-brand-card/70 p-7 text-center">
+              <p className="mx-auto max-w-2xl text-sm leading-6 text-text-muted">
+                Estamos preparando casos verificables y autorizados para
+                publicación. Mientras tanto, puedes consultar las plataformas
+                y conversar sobre su posible encaje con tu operación.
+              </p>
+              <Button href="/productos/saas" className="mt-5">
+                Explorar plataformas
+              </Button>
+            </div>
+          )}
+
           <div className="mt-12 rounded-2xl border border-brand-violet/30 bg-brand-violet/10 p-8 text-center">
             <TrendingUp className="mx-auto h-10 w-10 text-brand-lavender" />
             <h2 className="mt-4 font-display text-2xl font-bold text-[#f0f8ff]">
-              ¿Tu empresa podría ser el siguiente caso?
+              ¿Quieres conversar sobre un reto operativo?
             </h2>
             <p className="mt-3 text-text-muted">
-              Empezamos con un diagnóstico gratuito para identificar dónde está el mayor impacto.
+              Comparte el contexto y revisaremos contigo los posibles siguientes pasos.
             </p>
             <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Button href="/contacto">
-                Solicitar diagnóstico <ArrowRight className="ml-1.5 h-4 w-4" />
+                Contactar al equipo <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
               <Button href="/demos" variant="ghost">Ver demos →</Button>
             </div>

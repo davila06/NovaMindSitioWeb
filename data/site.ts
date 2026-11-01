@@ -1,53 +1,69 @@
 import { Metric } from '@/lib/types'
 
+export const contactInterests = [
+  "Servicios Nova Assist: consultoría y automatización",
+  "Soporte tecnológico para hogares",
+  "Soporte TI para empresas",
+  "Productos SaaS / consultar disponibilidad",
+  "Sitio web o comercio electrónico",
+  "Cloud & Security",
+  "Nova Assist / implementación de SaaS",
+]
+
+export const contactDetails = { email: 'info@novamindglobalcr.com', recipient: 'novamindglobalcr@gmail.com', phone: '+506 8766 9318', phoneHref: 'tel:+50687669318', whatsapp: '50687669318', privacyEmail: 'privacidad@novamindglobalcr.com', legalEmail: 'legal@novamindglobalcr.com' }
+
+// Keep quantified claims, pricing, service levels, testimonials, and cases unpublished until reviewed.
+export const commercialEvidenceEnabled = false
+
 export const navLinks = [
   { href: '/', label: 'Inicio' },
+  { href: '/hogares', label: 'Para hogares' },
+  { href: '/empresas', label: 'Para empresas' },
   { href: '/#productos', label: 'Productos' },
-  { href: '/servicios', label: 'Servicios' },
-  { href: '/industrias', label: 'Industrias' },
-  { href: '/roles', label: 'Roles' },
+  { href: '/productos/pawtrack', label: 'PawTrack' },
   { href: '/blog', label: 'Blog' },
-  { href: '/sobre-nosotros', label: 'Nosotros' },
   { href: '/contacto', label: 'Contacto' },
 ]
 
-export const trustBadges = ['Arquitectura multi-tenant', 'Integrable con ERP y CRM', 'Escalable sobre Azure', 'Trazabilidad operativa', 'Facturación electrónica', 'SLA garantizado']
+export const trustBadges = commercialEvidenceEnabled
+  ? ['Arquitectura multi-tenant', 'Integrable con ERP y CRM', 'Escalable sobre Azure', 'Trazabilidad operativa', 'Facturación electrónica']
+  : ['Alcance definido por proyecto', 'Condiciones documentadas en propuesta', 'Soluciones para organizaciones', 'Atención en Costa Rica']
 
 export const differentiationPillars = [
   {
-    title: 'IA accionable, no experimental',
-    description: 'Diseñamos flujos que reducen tiempos operativos y convierten datos en decisiones útiles para áreas críticas.',
+    title: 'IA aplicada al proceso',
+    description: 'Evaluamos dónde la inteligencia artificial puede apoyar tareas y decisiones dentro de un flujo operativo.',
   },
   {
-    title: 'Diseño vertical para industrias complejas',
-    description: 'No partimos de software genérico: modelamos procesos reales de nómina, seguros, ERP y atención al cliente.',
+    title: 'Diseño según el contexto',
+    description: 'Revisamos procesos, reglas y necesidades de cada organización antes de definir una solución.',
   },
   {
-    title: 'Time-to-value acelerado',
-    description: 'Iteramos rápido, validamos antes de escalar y priorizamos entregables que generan impacto desde la primera fase.',
+    title: 'Implementación por etapas',
+    description: 'Acordamos entregables y prioridades para validar cada fase antes de ampliar el alcance.',
   },
   {
-    title: 'Base enterprise-ready',
-    description: 'Roles, trazabilidad, escalabilidad y conectividad para convivir con el stack actual de cada organización.',
+    title: 'Condiciones explícitas',
+    description: 'Definimos responsabilidades, integraciones y condiciones del servicio en la propuesta correspondiente.',
   },
 ]
 
 export const implementationSteps = [
   {
     title: 'Diagnóstico operativo',
-    description: 'Detectamos fricciones, sistemas aislados, riesgos y oportunidades de automatización con impacto económico real.',
+    description: 'Revisamos procesos, sistemas y necesidades para identificar el contexto del proyecto.',
   },
   {
     title: 'Diseño de solución',
-    description: 'Traducimos prioridades del negocio en una arquitectura clara, roadmap y flujos orquestados con IA y SaaS.',
+    description: 'Definimos una propuesta técnica, prioridades y entregables acordes al alcance solicitado.',
   },
   {
     title: 'Implementación incremental',
-    description: 'Conectamos sistemas, activamos automatizaciones y validamos valor por etapas sin frenar la operación.',
+    description: 'Desarrollamos y configuramos los componentes acordados, con revisiones según las etapas de trabajo.',
   },
   {
     title: 'Escalado y optimización',
-    description: 'Medimos adopción, refinamos procesos y abrimos nuevas capas de eficiencia, analítica y visibilidad ejecutiva.',
+    description: 'Revisamos el trabajo entregado y acordamos cualquier ampliación o ajuste posterior.',
   },
 ]
 
@@ -141,4 +157,3 @@ export const clientLogoWall = [
   'Operadora de Seguros Local',
   'Unidad Municipal Digital',
 ]
-

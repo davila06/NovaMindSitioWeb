@@ -1,21 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { products } from "@/data/products";
+import { businessProducts } from "@/data/products";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Toast } from "@/components/shared/ui/Toast";
-import { trackEvent, trackFormProgress } from "@/lib/analytics-client";
+import {
+  trackEvent,
+  trackFormProgress,
+  trackLeadConversion,
+} from "@/lib/analytics-client";
+import { contactInterests } from "@/data/site";
+import { resolveContactIntent } from "@/lib/contact-intent";
 import { getStoredUTM } from "@/lib/useUTM";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
+import { z } from "zod";
 
-const serviceInterestOptions = [
-  "Consultoría",
-  "NovaClick — ClickFix (Residencial)",
-  "NovaClick — ITOn-Demand (Empresarial)",
-  "Suscripción SaaS",
-];
+const serviceInterestOptions = contactInterests;
 
-const productInterestOptions = products.map((product) => product.name);
+const productInterestOptions = businessProducts.map((product) => product.name);
 
 const allInterestOptions = [
   ...serviceInterestOptions,
@@ -36,6 +38,13 @@ type FormState = {
 };
 
 type FormErrors = Partial<Record<keyof FormState, string>>;
+
+const contactResponseSchema = z.object({
+  ok: z.boolean(),
+  message: z.string().optional(),
+  channel: z.string().optional(),
+  requestId: z.string().optional(),
+});
 
 const initialState: FormState = {
   name: "",
@@ -80,7 +89,7 @@ function validateField(field: keyof FormState, value: string): string {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailPattern.test(value.trim())
       ? ""
-      : "Ingresa un correo empresarial valido.";
+      : "Ingresa un correo electrónico válido.";
   }
   if (field === "interest") {
     return value.trim().length >= 2 ? "" : "Selecciona un interes principal.";
@@ -99,8 +108,12 @@ function validateField(field: keyof FormState, value: string): string {
   return "";
 }
 
-export function ContactForm() {
-  const [form, setForm] = useState<FormState>(initialState);
+export function ContactForm({ plan }: { plan?: string } = {}) {
+  const intent = resolveContactIntent(plan);
+  const [form, setForm] = useState<FormState>(() => ({
+    ...initialState,
+    interest: intent.interest,
+  }));
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [serverMessage, setServerMessage] = useState("");
@@ -109,32 +122,49 @@ export function ContactForm() {
   const focusedFieldsRef = useRef<Set<keyof FormState>>(new Set());
   const hasSubmittedRef = useRef(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const formRef = useRef<HTMLFormElement>(null);
+  const progressRef = useRef({ started: false, completionRate: 0 });
 
-  // Auto-save form progress to localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("nm-contact-draft");
-      if (saved) {
-        const parsed = JSON.parse(saved) as Partial<FormState>;
-        setForm((prev) => ({ ...prev, ...parsed }));
-      }
+      localStorage.removeItem("nm-contact-draft");
     } catch {
       /* ignore */
     }
+    if (intent.plan)
+      setForm((current) => ({ ...current, interest: intent.interest }));
+  }, [intent.plan, intent.interest]);
+
+  useEffect(() => {
+    formRef.current
+      ?.querySelector<HTMLElement>("input:not([tabindex='-1']),select,textarea")
+      ?.focus();
+  }, [currentStep]);
+
+  useEffect(() => {
+    formRef.current
+      ?.querySelector<HTMLElement>('[aria-invalid="true"]')
+      ?.focus();
+  }, [errors]);
+
+  useEffect(() => {
+    let reported = false;
+    const report = () => {
+      if (reported || hasSubmittedRef.current || !progressRef.current.started)
+        return;
+      reported = true;
+      trackFormProgress({
+        form: "contact_request",
+        step: "abandon",
+        completionRate: progressRef.current.completionRate,
+      });
+    };
+    window.addEventListener("pagehide", report);
+    return () => {
+      window.removeEventListener("pagehide", report);
+      report();
+    };
   }, []);
-
-  useEffect(() => {
-    if (hasSubmittedRef.current) return;
-    try {
-      const hasData = Object.values(form).some((v) =>
-        typeof v === "string" ? v.trim().length > 0 : v === true,
-      );
-      if (hasData)
-        localStorage.setItem("nm-contact-draft", JSON.stringify(form));
-    } catch {
-      /* ignore */
-    }
-  }, [form]);
 
   const completionRate = useMemo(() => {
     const total = requiredFields.length;
@@ -144,6 +174,9 @@ export function ContactForm() {
     }).length;
     return Math.round((completed / total) * 100);
   }, [form]);
+  useEffect(() => {
+    progressRef.current.completionRate = completionRate;
+  }, [completionRate]);
 
   function buildSuccessMessage(channel: string | undefined) {
     if (!channel || channel === "protected") {
@@ -161,6 +194,8 @@ export function ContactForm() {
     field: K,
     value: FormState[K],
   ) {
+    progressRef.current.started = true;
+    hasSubmittedRef.current = false;
     setForm((current) => ({ ...current, [field]: value }));
     if (errors[field]) {
       const fieldError = validateField(field, String(value));
@@ -194,22 +229,6 @@ export function ContactForm() {
       valid: !fieldError,
     });
   }
-
-  useEffect(() => {
-    return () => {
-      if (hasSubmittedRef.current) return;
-      const hasProgress = Object.values(form).some((value) =>
-        typeof value === "string" ? value.trim().length > 0 : value === true,
-      );
-      if (!hasProgress) return;
-
-      trackFormProgress({
-        form: "contact_request",
-        step: "abandon",
-        completionRate,
-      });
-    };
-  }, [completionRate, form]);
 
   function handleNextStep() {
     const stepFields = STEP_REQUIRED[currentStep] ?? [];
@@ -273,12 +292,27 @@ export function ContactForm() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...form,
+            plan: intent.plan || undefined,
             consentPrivacy: true,
             utm: getStoredUTM() ?? undefined,
           }),
         });
 
-        const result = await response.json();
+        const parsedResult = contactResponseSchema.safeParse(
+          await response.json(),
+        );
+        if (!parsedResult.success) {
+          trackEvent("contact_submit_error", { reason: "invalid_response" });
+          trackFormProgress({
+            form: "contact_request",
+            step: "submit_error",
+            completionRate,
+            valid: false,
+          });
+          setError("No se pudo interpretar la respuesta. Intenta nuevamente.");
+          return;
+        }
+        const result = parsedResult.data;
 
         if (!response.ok || !result.ok) {
           trackEvent("contact_submit_error", {
@@ -300,6 +334,12 @@ export function ContactForm() {
         hasSubmittedRef.current = true;
         setSubmitted(true);
         setServerMessage(buildSuccessMessage(result.channel));
+        if (result.channel !== "protected" && result.requestId)
+          trackLeadConversion(result.requestId, {
+            source: "contact_form",
+            product: form.interest,
+            plan: intent.plan,
+          });
         trackEvent("contact_submit_success", {
           channel: result.channel || "unknown",
           interest: form.interest,
@@ -310,7 +350,7 @@ export function ContactForm() {
           completionRate: 100,
           valid: true,
         });
-        setForm(initialState);
+        setForm({ ...initialState, interest: intent.interest });
         setErrors({});
         setCurrentStep(1);
         try {
@@ -377,7 +417,12 @@ export function ContactForm() {
         </ol>
       </nav>
 
-      <form onSubmit={handleSubmit} noValidate>
+      <form
+        ref={formRef}
+        aria-label="Solicitud comercial"
+        onSubmit={handleSubmit}
+        noValidate
+      >
         {/* Honeypot */}
         <div className="hidden" aria-hidden="true">
           <label htmlFor="contact-website">Website</label>
@@ -404,6 +449,7 @@ export function ContactForm() {
                   onBlur={() => handleFieldBlur("name")}
                   placeholder="Tu nombre"
                   autoComplete="name"
+                  aria-invalid={Boolean(errors.name)}
                   required
                   aria-describedby={
                     errors.name ? "contact-name-error" : undefined
@@ -427,8 +473,9 @@ export function ContactForm() {
                   onChange={(e) => updateField("email", e.target.value)}
                   onFocus={() => handleFieldFocus("email")}
                   onBlur={() => handleFieldBlur("email")}
-                  placeholder="nombre@empresa.com"
+                  placeholder="correo@ejemplo.com"
                   autoComplete="email"
+                  aria-invalid={Boolean(errors.email)}
                   required
                   aria-describedby={
                     errors.email ? "contact-email-error" : undefined
@@ -467,6 +514,7 @@ export function ContactForm() {
               <span>Interés principal</span>
               <select
                 value={form.interest}
+                aria-invalid={Boolean(errors.interest)}
                 onChange={(e) => updateField("interest", e.target.value)}
                 onFocus={() => handleFieldFocus("interest")}
                 onBlur={() => handleFieldBlur("interest")}
@@ -551,6 +599,7 @@ export function ContactForm() {
               <span>Mensaje</span>
               <textarea
                 rows={5}
+                aria-invalid={Boolean(errors.message)}
                 value={form.message}
                 onChange={(e) => updateField("message", e.target.value)}
                 onFocus={() => handleFieldFocus("message")}

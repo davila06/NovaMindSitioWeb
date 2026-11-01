@@ -9,14 +9,196 @@ import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { ProductCTA } from "@/components/products/ProductCTA";
 import { productBySlug } from "@/data/products";
 import { POST as subscribeNewsletter } from "@/app/api/newsletter/route";
+import { POST as submitContact } from "@/app/api/contact/route";
+import { GET as health } from "@/app/api/health/route";
+import { Footer } from "@/components/layout/Footer";
+import { contactDetails } from "@/data/site";
 
 afterEach(() => {
   cleanup();
+  globalThis.__novamindRateLimitStore = undefined;
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
 
 describe("production destinations", () => {
+  it("publishes only organization facts that are configured as public", () => {
+    for (const file of ["app/layout.tsx", "app/sobre-nosotros/page.tsx"]) {
+      const source = readFileSync(resolve(file), "utf8");
+      for (const unsupportedField of [
+        '"@type": "LocalBusiness"',
+        "foundingDate:",
+        "numberOfEmployees:",
+        "foundingLocation:",
+        "foundedBy:",
+        "priceRange:",
+        "openingHours:",
+        "SearchAction",
+      ]) {
+        expect(source, file).not.toContain(unsupportedField);
+      }
+    }
+
+    const footer = readFileSync(
+      resolve("components/layout/Footer.tsx"),
+      "utf8",
+    );
+    expect(footer).toContain(
+      'href="https://www.linkedin.com/company/novamind-global"',
+    );
+    expect(footer).not.toContain('href="https://github.com"');
+  });
+
+  it("keeps the home page focused on audience, offerings, process, and contact", () => {
+    const home = readFileSync(resolve("app/page.tsx"), "utf8");
+    for (const section of [
+      "AudienceRoutesSection",
+      "ProductGrid",
+      "PawTrackCommunitySection",
+      "ImplementationSection",
+      "FAQSection",
+      "FinalCTA",
+    ]) {
+      expect(home).toContain(section);
+    }
+    for (const removedSection of [
+      "PricingTeaser",
+      "TrustCenterSection",
+      "NewsletterSection",
+      "SolutionFinderSection",
+    ]) {
+      expect(home).not.toContain(removedSection);
+    }
+  });
+
+  it("keeps liveness independent from optional monitoring", async () => {
+    vi.stubEnv("MONITORING_WEBHOOK_URL", undefined);
+    expect(
+      (await health(new Request("https://novamindglobalcr.com/api/health")))
+        .status,
+    ).toBe(200);
+  });
+
+  it("reports unavailable delivery as not ready", async () => {
+    vi.stubEnv("RESEND_API_KEY", undefined);
+    vi.stubEnv("SMTP_HOST", undefined);
+    expect(
+      (
+        await health(
+          new Request("https://novamindglobalcr.com/api/health?check=ready"),
+        )
+      ).status,
+    ).toBe(503);
+  });
+
+  function configureMail() {
+    globalThis.__novamindRateLimitStore = undefined;
+    vi.stubEnv("RESEND_API_KEY", "test-only");
+    vi.stubEnv("CONTACT_TO_EMAIL", "novamindglobalcr@gmail.com");
+    vi.stubEnv("CONTACT_FROM_EMAIL", "info@novamindglobalcr.com");
+    vi.stubEnv("SMTP_HOST", undefined);
+    vi.stubEnv("MONITORING_WEBHOOK_URL", undefined);
+  }
+
+  function requestFor(path: string, payload: Record<string, unknown>) {
+    return new Request(`https://novamindglobalcr.com${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  const contact = {
+    name: "Audit User",
+    email: "audit@example.com",
+    interest: "Consultoria",
+    message: "Solicito informacion sobre servicios.",
+    consentPrivacy: true,
+  };
+
+  it("accepts empty optional contact fields", async () => {
+    const response = await submitContact(
+      requestFor("/api/contact", {
+        ...contact,
+        website: "honeypot",
+        leadVolume: "",
+        urgency: "",
+        implementationHorizon: "",
+      }),
+    );
+    expect(response.status).toBe(200);
+  });
+
+  it("does not report a rejected contact email as delivered", async () => {
+    configureMail();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              name: "validation_error",
+              message: "Sender not verified",
+            }),
+            { status: 422 },
+          ),
+        ),
+    );
+    const response = await submitContact(requestFor("/api/contact", contact));
+    expect(response.status).toBe(503);
+    expect((await response.json()).ok).toBe(false);
+  });
+
+  it("does not accept newsletter without a delivery provider", async () => {
+    configureMail();
+    vi.stubEnv("RESEND_API_KEY", undefined);
+    const response = await subscribeNewsletter(
+      requestFor("/api/newsletter", {
+        email: "reader@example.com",
+        consentPrivacy: true,
+      }),
+    );
+    expect(response.status).toBe(503);
+  });
+
+  it("does not report a rejected newsletter email as delivered", async () => {
+    configureMail();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("{}", { status: 422 })),
+    );
+    const response = await subscribeNewsletter(
+      requestFor("/api/newsletter", {
+        email: "reader@example.com",
+        consentPrivacy: true,
+      }),
+    );
+    expect(response.status).toBe(503);
+  });
+
+  it("escapes newsletter HTML and supplies plain text", async () => {
+    configureMail();
+    const send = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ id: "email-test" }), { status: 200 }),
+      );
+    vi.stubGlobal("fetch", send);
+    const response = await subscribeNewsletter(
+      requestFor("/api/newsletter", {
+        email: "reader@example.com",
+        interest: "<img src=x>",
+        consentPrivacy: true,
+      }),
+    );
+    expect(response.status).toBe(200);
+    const payload = JSON.parse(send.mock.calls[0][1].body);
+    expect(payload.html).toContain("&lt;img src=x&gt;");
+    expect(payload.html).not.toContain("<img src=x>");
+    expect(payload.text).toContain("reader@example.com");
+  });
+
   it("uses the PawTrack brand and preserves access to its app", () => {
     expect(productBySlug.pawtrack.name).toBe("PawTrack CR / NALA");
     expect(productBySlug.pawtrack.heroSubtitle).toContain("Inspirado por NALA");
@@ -40,9 +222,10 @@ describe("production destinations", () => {
   });
 
   it("publishes the selected primary email and example recipient", () => {
+    render(<Footer />);
     expect(
-      readFileSync(resolve("components/layout/Footer.tsx"), "utf8"),
-    ).toContain("mailto:info@novamindglobalcr.com");
+      screen.getByRole("link", { name: contactDetails.email }),
+    ).toHaveAttribute("href", "mailto:info@novamindglobalcr.com");
     const example = readFileSync(resolve(".env.example"), "utf8");
     expect(example).toContain("CONTACT_TO_EMAIL=novamindglobalcr@gmail.com");
     expect(example).toContain("CONTACT_FROM_EMAIL=info@novamindglobalcr.com");
@@ -57,7 +240,9 @@ describe("production destinations", () => {
     vi.stubEnv("FROM_EMAIL", undefined);
     const sendMail = vi
       .fn()
-      .mockResolvedValue(new Response("{}", { status: 200 }));
+      .mockResolvedValue(
+        new Response(JSON.stringify({ id: "email-test" }), { status: 200 }),
+      );
     vi.stubGlobal("fetch", sendMail);
     const response = await subscribeNewsletter(
       new Request("https://novamindglobalcr.com/api/newsletter", {
@@ -90,7 +275,6 @@ describe("production destinations", () => {
       "app/blog/[slug]/opengraph-image.tsx",
       "components/products/ProductHero.tsx",
       "components/layout/Footer.tsx",
-      "components/layout/DemoCalendarModal.tsx",
       "components/shared/ui/ContactForm.tsx",
       "app/api/newsletter/route.ts",
     ]) {

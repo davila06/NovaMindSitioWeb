@@ -1,9 +1,33 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildContentSecurityPolicy, checkRateLimit, getClientIp } from '@/lib/security'
+import { POST as submitContact } from '@/app/api/contact/route'
 
 describe('lib/security', () => {
   beforeEach(() => {
     globalThis.__novamindRateLimitStore = undefined
+  })
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('rechaza origen ajeno antes de procesar datos', async () => {
+    const response = await submitContact(new Request('https://novamindglobalcr.com/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'https://attacker.example' }, body: '{}' }))
+    expect(response.status).toBe(403)
+  })
+
+  it('limita el tamano de cuerpos JSON', async () => {
+    const response = await submitContact(new Request('https://novamindglobalcr.com/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'x'.repeat(40000) }) }))
+    expect(response.status).toBe(413)
+  })
+
+  it('devuelve 400 para JSON malformado', async () => {
+    const response = await submitContact(new Request('https://novamindglobalcr.com/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{' }))
+    expect(response.status).toBe(400)
+  })
+
+  it('no usa limites locales en produccion sin binding', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('MONITORING_WEBHOOK_URL', undefined)
+    const response = await submitContact(new Request('https://novamindglobalcr.com/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Audit', email: 'audit@example.com', interest: 'Consultoria', message: 'Mensaje de auditoria local.', consentPrivacy: true, website: 'honeypot' }) }))
+    expect(response.status).toBe(503)
   })
 
   it('obtiene el client ip desde x-forwarded-for', () => {

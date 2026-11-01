@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, BookOpen, Mail } from 'lucide-react'
+import { Home, House, Building2, Mail } from 'lucide-react'
 
 const mobileNavItems = [
   { href: '/',         icon: Home,      label: 'Inicio' },
-  { href: '/#productos', icon: Grid3X3,  label: 'Productos' },
-  { href: '/blog',     icon: BookOpen,  label: 'Blog' },
+  { href: '/hogares',  icon: House,     label: 'Hogares' },
+  { href: '/empresas', icon: Building2, label: 'Empresas' },
   { href: '/contacto', icon: Mail,      label: 'Contacto' },
 ]
 
@@ -15,6 +15,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   function isActive(href: string) {
+    if (href.includes('#')) return false
     const path = href.split('#')[0]
     if (path === '/') return pathname === '/'
     return pathname.startsWith(path) && path !== ''

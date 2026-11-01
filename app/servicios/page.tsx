@@ -5,6 +5,7 @@ import { ServiceCard } from '@/components/products/ServiceCard'
 import { Button } from '@/components/shared/ui/Button'
 import { Badge } from '@/components/shared/ui/Badge'
 import { createPageMetadata, siteConfig } from '@/lib/seo'
+import { commercialEvidenceEnabled } from '@/data/site'
 import {
   Code2,
   Users,
@@ -24,8 +25,8 @@ import {
 import Link from 'next/link'
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Servicios | Novamind Global',
-  description: 'Consultoría y desarrollo de software en Costa Rica. Profesionales con amplia experiencia en apps empresariales, infraestructura cloud, ciberseguridad, QA y soporte TI.',
+  title: 'Servicios Nova Assist | Novamind Global',
+  description: 'Consultoría y desarrollo de software en Costa Rica: aplicaciones empresariales, infraestructura cloud, ciberseguridad, QA y soporte TI.',
   path: '/servicios',
   extraKeywords: [
     'consultoría de software Costa Rica',
@@ -42,43 +43,43 @@ const services = [
   {
     icon: <Code2 className="h-5 w-5" aria-hidden="true" />,
     title: 'Desarrollo de apps',
-    description: 'Arquitectos de software con más de 20 años de experiencia construyendo aplicaciones empresariales IA-native, multi-tenant y cloud-first sobre Azure — desde el diagnóstico hasta producción.',
+    description: 'Diseño y desarrollo de aplicaciones empresariales. La arquitectura, las integraciones y el entorno de despliegue se definen según los requisitos del proyecto.',
     features: [
-      'Arquitectura SaaS multi-tenant enterprise',
-      'Integración con ERP y CRM existentes',
-      'APIs REST documentadas y seguras',
-      'CI/CD y despliegue en Azure App Service',
+      'Diseño de arquitectura según requisitos',
+      'Integraciones sujetas a compatibilidad y alcance',
+      'APIs y documentación según entregables acordados',
+      'Automatización de build y despliegue según entorno',
     ],
     accent: 'violet' as const,
   },
   {
     icon: <Users className="h-5 w-5" aria-hidden="true" />,
     title: 'Servicios de desarrollador',
-    description: 'Talento técnico senior certificado para complementar equipos o liderar proyectos críticos. Desarrolladores con historial comprobado en sistemas de alta disponibilidad y operación continua.',
+    description: 'Acompañamiento de desarrollo para complementar equipos o abordar iniciativas específicas, sujeto a perfil y disponibilidad.',
     features: [
-      'Ingenieros senior y semi-senior certificados',
-      'Perfiles full-stack, backend y cloud',
-      'Incorporación en menos de 1 semana',
-      'Supervisión técnica y entregables claros',
+      'Perfiles técnicos según necesidad y disponibilidad',
+      'Experiencia full-stack, backend o cloud por confirmar',
+      'Fecha de incorporación definida en la propuesta',
+      'Responsabilidades y entregables acordados',
     ],
     accent: 'sky' as const,
   },
   {
     icon: <Cloud className="h-5 w-5" aria-hidden="true" />,
     title: 'Consultoría en infraestructura',
-    description: 'Especialistas Microsoft Azure con experiencia real en migraciones de cargas críticas, diseño de alta disponibilidad y optimización de costos cloud en entornos productivos.',
+    description: 'Evaluación y diseño de infraestructura cloud o híbrida; las recomendaciones y el plan de migración dependen del entorno actual.',
     features: [
-      'Diagnóstico y auditoría de infraestructura',
-      'Diseño de arquitectura cloud resiliente',
-      'Migración on-premise → Azure sin downtime',
-      'Alta disponibilidad, DR y failover',
+      'Revisión del entorno y sus dependencias',
+      'Alternativas de arquitectura y costos',
+      'Plan de migración con riesgos y ventanas de cambio',
+      'Requisitos de continuidad y recuperación',
     ],
     accent: 'sky' as const,
   },
   {
     icon: <Layers className="h-5 w-5" aria-hidden="true" />,
     title: 'Consultoría en desarrollo de software',
-    description: 'Consultores con experiencia en proyectos enterprise que guían a equipos en clean architecture, Domain-Driven Design y patrones de integración SaaS de nivel industria.',
+    description: 'Revisión y acompañamiento técnico para definir una arquitectura de software, límites de dominio e integraciones acordes al contexto del proyecto.',
     features: [
       'Revisión de arquitectura y deuda técnica',
       'DDD, CQRS y patrones de dominio',
@@ -90,11 +91,11 @@ const services = [
   {
     icon: <GitBranch className="h-5 w-5" aria-hidden="true" />,
     title: 'Metodologías ágiles',
-    description: 'Scrum Masters y Agile Coaches con experiencia en transformación digital de empresas medianas y grandes, reduciendo tiempos de entrega y aumentando la predictibilidad de cada sprint.',
+    description: 'Facilitación de planificación, seguimiento y mejora de equipos. La cadencia y los indicadores se acuerdan según la forma de trabajo del cliente.',
     features: [
       'Facilitación de sprints y retrospectivas',
       'Pipelines CI/CD con GitHub Actions / Azure DevOps',
-      'OKRs y métricas de entrega cuantificables',
+      'Objetivos e indicadores acordados con el equipo',
       'Coaching de equipos técnicos y liderazgo',
     ],
     accent: 'violet' as const,
@@ -102,36 +103,36 @@ const services = [
   {
     icon: <FlaskConical className="h-5 w-5" aria-hidden="true" />,
     title: 'QA y validación',
-    description: 'Ingenieros de calidad especializados en automatización de pruebas, performance testing y estrategias de testing shift-left que garantizan cero regresiones en producción.',
+    description: 'Diseño y ejecución de actividades de aseguramiento de calidad. La estrategia de pruebas se define con base en los riesgos y criterios de aceptación.',
     features: [
       'Pruebas unitarias, integración y E2E',
       'Automatización con Playwright y Vitest',
       'Performance budgets y Lighthouse CI',
-      'Reportes de cobertura para dirección técnica',
+      'Resultados y cobertura reportados según el alcance',
     ],
     accent: 'sky' as const,
   },
   {
     icon: <ShieldCheck className="h-5 w-5" aria-hidden="true" />,
     title: 'Ciberseguridad',
-    description: 'Especialistas en seguridad ofensiva y defensiva con experiencia en sectores regulados: banca, seguros y gobierno. Implementamos Zero Trust y cumplimiento normativo de extremo a extremo.',
+    description: 'Revisión de riesgos y controles de seguridad con límites documentados. No sustituye una certificación ni una evaluación especializada fuera del alcance acordado.',
     features: [
-      'Auditoría de vulnerabilidades OWASP Top 10',
+      'Revisión de riesgos de aplicaciones con criterios acordados',
       'Gestión de identidades y accesos (IAM)',
-      'Cifrado en reposo y en tránsito',
-      'Cumplimiento ISO 27001 y normativa CR',
+      'Revisión de controles de acceso y protección de datos',
+      'Requisitos regulatorios y marcos de referencia por validar',
     ],
     accent: 'orange' as const,
   },
   {
     icon: <Network className="h-5 w-5" aria-hidden="true" />,
     title: 'Redes',
-    description: 'Ingenieros de redes certificados con vasta experiencia en diseño LAN/WAN para operaciones críticas, segmentación avanzada y optimización de tráfico en entornos multisite.',
+    description: 'Evaluación y diseño de redes LAN/WAN según topología, dispositivos, necesidades de conectividad y cobertura acordada.',
     features: [
-      'Diagnóstico y diseño de red de alto rendimiento',
+      'Levantamiento y propuesta de diseño de red',
       'Segmentación VLANs, IoT y redes invitado',
       'QoS priorizado para aplicaciones de negocio',
-      'Monitoreo proactivo y alertas de red',
+      'Opciones de monitoreo y alertas según alcance',
     ],
     accent: 'sky' as const,
   },
@@ -163,8 +164,8 @@ export default function ServiciosPage() {
         '@type': 'CollectionPage',
         '@id': `${siteConfig.url}/servicios`,
         url: `${siteConfig.url}/servicios`,
-        name: 'Servicios | Novamind Global',
-        description: 'Consultoría y desarrollo de software en Costa Rica con profesionales de amplia experiencia.',
+        name: 'Servicios Nova Assist | Novamind Global',
+        description: 'Consultoría y desarrollo de software en Costa Rica, sujeto al alcance de cada proyecto.',
         inLanguage: 'es-CR',
         about: { '@id': `${siteConfig.url}/#organization` },
       },
@@ -195,17 +196,17 @@ export default function ServiciosPage() {
       <SectionWrapper className="pb-8 pt-14">
         <Container>
           <div className="mx-auto max-w-3xl text-center">
-            <Badge>Consultoría · Desarrollo · Soporte</Badge>
+            <Badge>Nova Assist · Consultoría · Desarrollo · Soporte</Badge>
             <h1 className="mt-5 font-display text-4xl font-bold leading-tight tracking-tight text-[#f0f8ff] sm:text-5xl lg:text-6xl">
-              Profesionales con{' '}
+              Servicios de Nova Assist con{' '}
               <span className="bg-gradient-to-r from-brand-violet via-brand-iris to-brand-lavender bg-clip-text text-transparent">
-                vasta experiencia
+                alcance claro
               </span>{' '}
-              en cada rama
+              para cada organización
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-text-muted">
-              Nuestro equipo combina más de dos décadas de experiencia en desarrollo de software, infraestructura cloud,
-              ciberseguridad y redes — con enfoque en resultados medibles para organizaciones que no pueden permitirse errores.
+              Reunimos capacidades de desarrollo de software, infraestructura cloud,
+              ciberseguridad y redes para ayudar a las organizaciones a definir y ejecutar sus prioridades tecnológicas.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Button
@@ -220,20 +221,22 @@ export default function ServiciosPage() {
                 variant="ghost"
                 trackingContext={{ page: 'servicios', section: 'hero', ctaLabel: 'agenda_diagnostico', destination: '/contacto', intent: 'contact' }}
               >
-                Agenda un diagnóstico
+                Consultar servicios
               </Button>
             </div>
           </div>
 
           {/* Credential stats */}
-          <div className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
-            {credentials.map(({ label, value }) => (
-              <div key={label} className="rounded-xl border border-brand-lavender/15 bg-brand-card/60 px-4 py-5 text-center">
-                <div className="font-display text-3xl font-bold text-[#f0f8ff]">{value}</div>
-                <div className="mt-1 text-xs text-text-muted">{label}</div>
-              </div>
-            ))}
-          </div>
+          {commercialEvidenceEnabled && (
+            <div className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
+              {credentials.map(({ label, value }) => (
+                <div key={label} className="rounded-xl border border-brand-lavender/15 bg-brand-card/60 px-4 py-5 text-center">
+                  <div className="font-display text-3xl font-bold text-[#f0f8ff]">{value}</div>
+                  <div className="mt-1 text-xs text-text-muted">{label}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </Container>
       </SectionWrapper>
 
@@ -265,24 +268,22 @@ export default function ServiciosPage() {
                   Nuestro equipo
                 </div>
                 <h2 id="equipo-heading" className="mt-4 font-display text-2xl font-bold text-[#f0f8ff] sm:text-3xl">
-                  Más de dos décadas resolviendo problemas reales
+                  Colaboración técnica según el alcance
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-text-muted">
-                  No somos una agencia genérica. Cada profesional de Novamind Global cuenta con experiencia comprobada
-                  en proyectos de alta exigencia — sistemas de nómina para grupos empresariales, plataformas de seguros,
-                  contact centers omnicanal y migraciones cloud críticas.
+                  Acordamos objetivos, roles, dependencias y criterios de aceptación antes de iniciar cada proyecto.
+                  Los perfiles, certificaciones y disponibilidad se confirman según la necesidad y la propuesta.
                 </p>
                 <p className="mt-3 text-sm leading-relaxed text-text-muted">
-                  Trabajamos con metodologías ágiles, entregamos con documentación clara y nos mantenemos como
-                  referencia técnica durante y después de cada proyecto.
+                  El seguimiento, la documentación y el acompañamiento posterior se definen junto con el cliente.
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 {[
-                  { icon: <Zap className="h-4 w-4 text-brand-gold" aria-hidden="true" />, title: 'Time-to-value real', desc: 'Primera versión productiva en semanas, no meses.' },
-                  { icon: <ShieldCheck className="h-4 w-4 text-brand-lavender" aria-hidden="true" />, title: 'Calidad certificada', desc: 'Prácticas OWASP, ISO-alineadas y trazables desde el inicio.' },
-                  { icon: <Users className="h-4 w-4 text-sky-400" aria-hidden="true" />, title: 'Equipo dedicado', desc: 'Profesionales asignados al proyecto, no rotación constante.' },
-                  { icon: <Award className="h-4 w-4 text-brand-gold" aria-hidden="true" />, title: 'Experiencia probada', desc: 'Historial en banca, seguros, retail, gobierno y SaaS.' },
+                  { icon: <Zap className="h-4 w-4 text-brand-gold" aria-hidden="true" />, title: 'Entregas por etapas', desc: 'Fases y criterios de aceptación definidos en la propuesta.' },
+                  { icon: <ShieldCheck className="h-4 w-4 text-brand-lavender" aria-hidden="true" />, title: 'Seguridad en contexto', desc: 'Requisitos y controles considerados según el sistema y los datos.' },
+                  { icon: <Users className="h-4 w-4 text-sky-400" aria-hidden="true" />, title: 'Equipo y disponibilidad', desc: 'Roles y disponibilidad confirmados antes de contratar.' },
+                  { icon: <Award className="h-4 w-4 text-brand-gold" aria-hidden="true" />, title: 'Alcance documentado', desc: 'Responsabilidades, dependencias y entregables acordados.' },
                 ].map(({ icon, title, desc }) => (
                   <div key={title} className="rounded-xl border border-brand-lavender/15 bg-brand-surface/40 p-4">
                     <div className="mb-2 flex items-center gap-2">
@@ -307,7 +308,7 @@ export default function ServiciosPage() {
               Servicios de consultoría y desarrollo
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-text-muted">
-              Ocho líneas de servicio respaldadas por profesionales especializados. Cada área cuenta con equipo propio, metodología y entregables definidos.
+              Las capacidades, los perfiles disponibles, las dependencias y los entregables se confirman para cada proyecto.
             </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -327,7 +328,7 @@ export default function ServiciosPage() {
               Solicita tu consultoría Novamind
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-text-muted">
-              Diagnóstico sin costo, respuesta en menos de 24 horas hábiles y propuesta con roadmap priorizado por impacto.
+              Comparte el contexto de tu iniciativa. Revisaremos el alcance y las opciones de colaboración disponibles.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Button
@@ -342,7 +343,7 @@ export default function ServiciosPage() {
       </SectionWrapper>
 
       {/* ══════════════════════════════════════════════════════════════════
-          NOVACLICK — Servicio especializado (sub-marca)
+          NOVACLICK — Presencia digital
       ══════════════════════════════════════════════════════════════════ */}
       <div className="border-t border-orange-500/15 bg-gradient-to-b from-orange-950/10 to-transparent">
         <SectionWrapper aria-labelledby="novaclick-heading">
@@ -351,7 +352,7 @@ export default function ServiciosPage() {
             <div className="mx-auto max-w-2xl text-center">
               <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/35 bg-orange-500/10 px-5 py-2 text-sm font-bold uppercase tracking-[0.16em] text-orange-300">
                 <Zap className="h-4 w-4" aria-hidden="true" />
-                Servicio especializado
+                Presencia digital · Comercio electrónico
               </div>
               <h2 id="novaclick-heading" className="mt-5 font-display text-4xl font-bold text-[#f0f8ff] sm:text-5xl">
                 <span className="bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent">
@@ -359,33 +360,32 @@ export default function ServiciosPage() {
                 </span>
               </h2>
               <p className="mt-1 text-base font-semibold text-orange-300/80">
-                Una unidad especializada dentro de Novamind Global
+                Una línea de servicios de Novamind
               </p>
               <p className="mt-4 text-lg text-text-muted">
-                NovaClick es nuestra división de soporte técnico inmediato — con identidad, equipo y procesos propios.
-                Diseñada para resolver con rapidez lo que ninguna consultoría generalista atiende con la misma eficiencia.
+                NovaClick ayuda a profesionales y PYMES a crear una presencia digital útil:
+                sitios web, captación de clientes y comercio electrónico con alcances acordados.
               </p>
             </div>
 
             {/* Dual service cards */}
             <div className="mt-12 grid gap-6 lg:grid-cols-2">
-              {/* ClickFix */}
+              {/* NovaClick */}
               <div className="relative overflow-hidden rounded-2xl border border-orange-500/30 bg-brand-card/80 p-8 shadow-[0_0_40px_rgba(249,115,22,0.06)]">
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15">
                     <Home className="h-5 w-5 text-orange-400" aria-hidden="true" />
                   </div>
                   <div>
-                    <div className="font-display text-lg font-bold text-[#f0f8ff]">ClickFix</div>
-                    <div className="text-xs font-medium text-orange-300">Servicio residencial</div>
+                    <div className="font-display text-lg font-bold text-[#f0f8ff]">NovaClick</div>
+                    <div className="text-xs font-medium text-orange-300">Web y comercio digital</div>
                   </div>
                 </div>
                 <p className="text-sm leading-relaxed text-text-muted">
-                  Soporte técnico a domicilio para hogares, estudiantes y usuarios individuales.
-                  Técnicos especializados que resuelven desde virus hasta configuración de SmartHome e IoT.
+                  Diseño y desarrollo de sitios web para profesionales, comercios y pequeñas empresas.
                 </p>
                 <ul className="mt-5 space-y-2">
-                  {['Diagnóstico rápido en sitio', 'Respaldo en nube incluido', 'Seguridad digital del hogar', 'Configuración IoT y SmartHome', '7 planes desde ₡19,500'].map((feat) => (
+                  {['Landing pages y sitios informativos', 'Captación de clientes y contacto directo', 'Tiendas en línea según alcance', 'SEO y analítica inicial', 'Revisiones y entregables definidos'].map((feat) => (
                     <li key={feat} className="flex items-center gap-2 text-sm text-text-muted">
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-orange-400" aria-hidden="true" />
                       {feat}
@@ -393,10 +393,10 @@ export default function ServiciosPage() {
                   ))}
                 </ul>
                 <Link
-                  href="/productos/novaclick#planes"
+                  href="/productos/novaclick"
                   className="mt-7 inline-flex items-center gap-2 rounded-2xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400"
                 >
-                  Ver planes ClickFix
+                  Explorar NovaClick
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </div>
@@ -413,11 +413,11 @@ export default function ServiciosPage() {
                   </div>
                 </div>
                 <p className="text-sm leading-relaxed text-text-muted">
-                  TI gestionado para PyMEs y empresas que quieren operar con nivel enterprise sin montar
-                  un área de TI interna. Desde soporte básico hasta CTO as a Service.
+                  Acompañamiento para PYMES que necesitan soporte y administración tecnológica sin
+                  construir un departamento interno de TI.
                 </p>
                 <ul className="mt-5 space-y-2">
-                  {['Soporte remoto y presencial', 'Ciberseguridad avanzada', 'Migración cloud a Azure', 'ERP/CRM integrados', '7 planes desde ₡130,000'].map((feat) => (
+                  {['Soporte remoto y presencial según alcance', 'Microsoft 365 y administración de usuarios', 'Evaluación y mejoras de seguridad', 'Cloud, continuidad e integraciones', 'Alcance y condiciones acordados por propuesta'].map((feat) => (
                     <li key={feat} className="flex items-center gap-2 text-sm text-text-muted">
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-brand-lavender" aria-hidden="true" />
                       {feat}
@@ -425,10 +425,10 @@ export default function ServiciosPage() {
                   ))}
                 </ul>
                 <Link
-                  href="/productos/novaclick#planes"
+                  href="/empresas#servicios"
                   className="mt-7 inline-flex items-center gap-2 rounded-2xl bg-brand-violet px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-iris"
                 >
-                  Ver planes ITOn-Demand
+                  Explorar servicios empresariales
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </div>
@@ -443,11 +443,11 @@ export default function ServiciosPage() {
                 Conocer NovaClick completo
               </Button>
               <Button
-                href="/contacto?plan=novaclick"
+                href="/contacto?plan=novaclick-web"
                 variant="ghost"
                 trackingContext={{ page: 'servicios', section: 'novaclick', ctaLabel: 'contacto_novaclick', destination: '/contacto', intent: 'demo' }}
               >
-                Hablar con un especialista NovaClick
+                Solicitar una propuesta NovaClick
               </Button>
             </div>
           </Container>

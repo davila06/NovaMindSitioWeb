@@ -14,11 +14,11 @@ const before = [
 ];
 
 const after = [
-  "IA integrada en flujos reales",
-  "SaaS centralizado y conectado",
-  "Cumplimiento automatizado",
-  "Dashboards ejecutivos en tiempo real",
-  "Escalabilidad enterprise sobre Azure",
+  "Automatización de tareas seleccionadas",
+  "Integraciones según compatibilidad",
+  "Controles definidos según requisitos",
+  "Indicadores según datos disponibles",
+  "Arquitectura de nube según el entorno",
 ];
 
 export function ProblemSolutionSplit() {
@@ -32,7 +32,7 @@ export function ProblemSolutionSplit() {
             La transformación
           </p>
           <h2 className="mt-3 font-display text-3xl font-bold text-[#f0f8ff] sm:text-4xl">
-            Del caos operativo a la ventaja competitiva
+            De los retos operativos a un plan de mejora
           </h2>
         </div>
 
@@ -50,7 +50,7 @@ export function ProblemSolutionSplit() {
             </p>
             <ul
               className="space-y-3"
-              aria-label="Situación actual sin Novamind"
+              aria-label="Retos operativos frecuentes"
             >
               {before.map((item) => (
                 <li
@@ -90,9 +90,9 @@ export function ProblemSolutionSplit() {
               aria-hidden="true"
             />
             <p className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-brand-lavender">
-              Después
+              Opciones a evaluar
             </p>
-            <ul className="space-y-3" aria-label="Resultado con Novamind">
+            <ul className="space-y-3" aria-label="Opciones de mejora por evaluar">
               {after.map((item) => (
                 <li
                   key={item}

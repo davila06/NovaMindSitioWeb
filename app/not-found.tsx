@@ -48,7 +48,7 @@ const quickLinks = [
 function scoreMatch(query: string, text: string): number {
   const words = query
     .toLowerCase()
-    .split(/[-\/\s]+/)
+    .split(/[-\s]+|[/]/)
     .filter((w) => w.length > 2);
   const hay = text.toLowerCase();
   return words.reduce((acc, w) => acc + (hay.includes(w) ? 1 : 0), 0);

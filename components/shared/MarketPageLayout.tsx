@@ -19,12 +19,12 @@ export function MarketPageLayout({ page }: { page: MarketPage }) {
                 trackingContext={{
                   page: `market/${page.slug}`,
                   section: 'market_hero',
-                  ctaLabel: 'solicitar_demo',
+                  ctaLabel: 'consultar_disponibilidad',
                   destination: '/contacto',
-                  intent: 'demo',
+                  intent: 'contact',
                 }}
               >
-                Solicitar demo
+                Consultar disponibilidad
               </Button>
               <Button
                 href="/"

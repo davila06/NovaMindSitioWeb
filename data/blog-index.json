@@ -1,0 +1,48 @@
+[
+  {
+    "slug": "contact-center-con-voicebot",
+    "title": "Contact center con IA: 5 palancas para mejorar SLA y experiencia",
+    "summary": "Buenas prácticas para implementar omnicanalidad con asistentes conversacionales.",
+    "category": "VoiceBot",
+    "date": "2026-05-01",
+    "tags": [
+      "contact center",
+      "voicebot",
+      "omnicanalidad",
+      "SLA",
+      "automatización"
+    ],
+    "content": "La promesa de la IA conversacional no es solo responder más rápido, sino responder mejor y con consistencia. Un contact center gana cuando combina automatización, contexto y una ruta clara de escalamiento.\n\nEl primer cambio suele venir de la clasificación automática, la priorización de casos y la resolución de preguntas frecuentes. A partir de ahí, el verdadero salto ocurre cuando el asistente se integra con CRM, telefonía y canales digitales.\n\nVoiceBot funciona mejor cuando se diseña alrededor de KPIs operativos concretos: SLA, costo por contacto, tasa de resolución y satisfacción del cliente. Sin eso, la IA queda como una capa cosmética."
+  },
+  {
+    "slug": "erp-con-ia-para-escalar",
+    "title": "ERP con IA: la ventaja de unificar datos antes de crecer",
+    "summary": "Por qué centralizar operación y analítica acelera decisiones ejecutivas.",
+    "category": "CCERP",
+    "date": "2026-04-29",
+    "tags": [
+      "ERP",
+      "inteligencia artificial",
+      "analítica",
+      "PYMES",
+      "Costa Rica"
+    ],
+    "content": "Muchas organizaciones llegan a su techo operativo no por falta de demanda, sino por exceso de fricción interna. Finanzas, inventario, ventas y operaciones viven en sistemas distintos y eso frena la ejecución.\n\nUn ERP moderno con IA no solo centraliza módulos. También detecta patrones, anticipa desviaciones y entrega contexto más útil a la gerencia. Eso acorta el camino entre dato y decisión.\n\nEl valor aparece cuando el ERP deja de ser un repositorio y se convierte en sistema nervioso de la operación. Ahí es donde CCERP puede construir una ventaja real."
+  },
+  {
+    "slug": "ia-y-nomina-en-costa-rica",
+    "title": "IA y nómina en Costa Rica: de la carga operativa al control inteligente",
+    "summary": "Cómo automatizar procesos de planilla con cumplimiento legal y trazabilidad.",
+    "category": "PlanillasCR",
+    "date": "2026-05-02",
+    "tags": [
+      "planilla",
+      "nómina",
+      "CCSS",
+      "Costa Rica",
+      "automatización",
+      "RRHH"
+    ],
+    "content": "La nómina suele concentrar fricciones operativas, riesgo legal y desgaste del equipo de RRHH. Cuando la empresa crece, el error manual deja de ser un problema aislado y se convierte en un costo estructural.\n\nLa oportunidad de la IA en este contexto no es reemplazar criterio humano, sino automatizar validaciones, detectar inconsistencias y reducir tiempos en tareas repetitivas. Eso libera al equipo para enfocarse en decisiones de talento y cumplimiento.\n\nUna solución como PlanillasCR agrega valor cuando unifica reglas laborales, genera trazabilidad y mantiene visibilidad ejecutiva sobre el proceso. La clave no es solo pagar bien, sino pagar con control."
+  }
+]

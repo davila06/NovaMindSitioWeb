@@ -21,7 +21,7 @@ const nextSteps = [
     icon: CheckCircle2,
     title: "Recibimos tu mensaje",
     description:
-      "Tu consulta llegó correctamente. Revisamos cada solicitud dentro de 1 día hábil.",
+      "Tu consulta llegó correctamente. El equipo revisará la información que compartiste.",
   },
   {
     icon: Calendar,
@@ -31,9 +31,9 @@ const nextSteps = [
   },
   {
     icon: ArrowRight,
-    title: "Diagnóstico gratuito",
+    title: "Siguiente paso",
     description:
-      "Realizamos un diagnóstico operativo sin costo para identificar el producto que más valor entrega a tu empresa.",
+      "Si hace falta, nos pondremos en contacto para aclarar el alcance y las opciones disponibles.",
   },
 ];
 
@@ -47,7 +47,7 @@ export default function GraciasPage() {
         url: `${siteConfig.url}/gracias`,
         name: '\u00a1Mensaje recibido! | Novamind Global',
         inLanguage: 'es-CR',
-        description: 'Hemos recibido tu consulta. Un especialista de Novamind Global te contactar\u00e1 pronto.',
+        description: 'Hemos recibido tu consulta. El equipo revisar\u00e1 la informaci\u00f3n compartida.',
         breadcrumb: {
           '@type': 'BreadcrumbList',
           itemListElement: [
@@ -75,7 +75,7 @@ export default function GraciasPage() {
         <p className="mt-4 text-lg text-text-muted">
           Gracias por contactar a{" "}
           <strong className="text-[#f0f8ff]">Novamind Global</strong>. Revisamos
-          tu consulta y te responderemos dentro de 1 día hábil.
+          tu consulta. Si necesitamos información adicional, nos pondremos en contacto.
         </p>
 
         {/* Próximos pasos */}

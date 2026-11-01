@@ -1,4 +1,4 @@
-import { products } from '@/data/products'
+import { businessProducts } from '@/data/products'
 import { siteConfig } from '@/lib/seo'
 
 /**
@@ -13,8 +13,8 @@ export function ProductCatalogSchema() {
     name: 'Productos Novamind Global',
     description: 'Plataformas SaaS de inteligencia artificial para empresas en LATAM',
     url: `${siteConfig.url}/#productos`,
-    numberOfItems: products.length,
-    itemListElement: products.map((product, index) => ({
+    numberOfItems: businessProducts.length,
+    itemListElement: businessProducts.map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       item: {
@@ -25,12 +25,6 @@ export function ProductCatalogSchema() {
         url: `${siteConfig.url}/productos/${product.slug}`,
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
-        offers: {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: 'USD',
-          description: 'Contactar para cotización personalizada',
-        },
         publisher: {
           '@type': 'Organization',
           name: siteConfig.name,

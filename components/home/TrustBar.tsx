@@ -5,10 +5,8 @@ import { ShieldCheck, Layers, Cloud, BarChart3, Lock, Cpu } from "lucide-react";
 const icons = [ShieldCheck, Layers, Cloud, BarChart3, Lock, Cpu];
 
 const techBadges = [
-  "Microsoft Azure",
   "Next.js 15",
   "TypeScript",
-  "Multi-tenant SaaS",
   "Empresa Costarricense",
 ];
 
@@ -25,8 +23,8 @@ export function TrustBar() {
       {/* Conveyor belt — perspective tilt gives 3D belt feel */}
       <div
         className="relative flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] [perspective:900px]"
-        role="marquee"
-        aria-label="Certificaciones, tecnologías y características de confianza de Novamind Global"
+        role="region"
+        aria-label="Tecnologías y principios de servicio de Novamind Global"
       >
         {/* The belt strip itself is tilted in 3D */}
         <div className="flex w-full [transform:rotateX(-6deg)] [transform-style:preserve-3d]">

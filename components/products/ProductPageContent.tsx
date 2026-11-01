@@ -14,6 +14,7 @@ import { ProductDemoBar } from '@/components/products/ProductDemoBar'
 import { Breadcrumb } from '@/components/shared/ui/Breadcrumb'
 import { Product } from '@/lib/types'
 import { siteConfig } from '@/lib/seo'
+import { commercialEvidenceEnabled } from '@/data/site'
 
 export function ProductPageContent({ product }: { product: Product }) {
   const productUrl = `${siteConfig.url}/productos/${product.slug}`
@@ -56,21 +57,6 @@ export function ProductPageContent({ product }: { product: Product }) {
           url: siteConfig.url,
         },
         featureList: product.features,
-        offers: {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: 'USD',
-          description: 'Precio disponible bajo cotización personalizada',
-          url: `${siteConfig.url}/contacto`,
-        },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.9',
-          bestRating: '5',
-          worstRating: '1',
-          ratingCount: '12',
-          reviewCount: '12',
-        },
       },
     ],
   }
@@ -110,7 +96,9 @@ export function ProductPageContent({ product }: { product: Product }) {
           </div>
 
           <AudienceGrid items={product.audiences} />
-          <FeatureGrid title="Beneficios" items={product.benefits} />
+          {commercialEvidenceEnabled && (
+            <FeatureGrid title="Beneficios" items={product.benefits} />
+          )}
           {product.demoVideoId && (
             <ProductVideoSection
               videoId={product.demoVideoId}
@@ -127,7 +115,7 @@ export function ProductPageContent({ product }: { product: Product }) {
         </Container>
       </SectionWrapper>
       <RelatedProducts currentSlug={product.slug} />
-      <ProductDemoBar productName={product.name} />
+      {product.slug !== 'pawtrack' && <ProductDemoBar productName={product.name} />}
     </>
   )
 }

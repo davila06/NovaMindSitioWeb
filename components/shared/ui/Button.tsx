@@ -30,6 +30,8 @@ export function Button({ children, href, variant = 'solid', className = '', isLo
   const classes = `inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 overflow-hidden ${isDisabled ? 'opacity-60 pointer-events-none' : ''} ${style} ${className}`
 
   function onTrackClick() {
+    if (isDisabled) return
+    onClick?.()
     if (trackingContext) {
       trackCtaClick({
         ...trackingContext,
@@ -47,6 +49,7 @@ export function Button({ children, href, variant = 'solid', className = '', isLo
   }
 
   if (href) {
+    if (isDisabled) return <a role="link" tabIndex={-1} aria-disabled="true" className={classes}>{children}</a>
     return (
       <Link href={href} className={classes} onClick={onTrackClick} aria-disabled={isDisabled || undefined}>
         {isLoading && <SpinnerIcon />}
@@ -56,7 +59,7 @@ export function Button({ children, href, variant = 'solid', className = '', isLo
   }
 
   return (
-    <button className={classes} onClick={onClick ?? onTrackClick} disabled={isDisabled} type={type} aria-busy={isLoading ? 'true' : undefined}>
+    <button className={classes} onClick={onTrackClick} disabled={isDisabled} type={type} aria-busy={isLoading ? 'true' : undefined}>
       {isLoading && <SpinnerIcon />}
       {children}
     </button>

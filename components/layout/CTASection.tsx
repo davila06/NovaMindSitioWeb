@@ -27,17 +27,17 @@ export function CTASection() {
           </div>
 
           <p className="relative text-sm font-semibold uppercase tracking-[0.22em] text-brand-gold">
-            ¿Listo para escalar?
+            Un siguiente paso claro
           </p>
 
           {/* Statement tipográfico principal — Z-elevated */}
           <h2 className="relative mt-4 font-display text-[3rem] font-bold leading-[1.02] tracking-[-0.04em] text-transparent sm:text-[4.5rem] lg:text-[6rem] bg-gradient-to-r from-brand-violet via-brand-lavender to-brand-gold bg-clip-text [transform:translateZ(8px)]">
-            Operaciones que escalan.
+            Tecnología con contexto.
           </h2>
 
           <p className="relative mx-auto mt-6 max-w-xl text-lg text-text-muted">
-            El software que su equipo necesita para convertir procesos críticos
-            en ventajas competitivas reales.
+            Comparte lo que necesitas. Revisaremos el alcance y la
+            disponibilidad de la opción adecuada.
           </p>
 
           <div className="relative mt-10 flex flex-wrap justify-center gap-4">
@@ -46,25 +46,25 @@ export function CTASection() {
               trackingContext={{
                 page: "home",
                 section: "final_cta",
-                ctaLabel: "quiero_demo",
+                ctaLabel: "consultar_disponibilidad",
                 destination: "/contacto",
-                intent: "demo",
+                intent: "contact",
               }}
             >
-              Agendar conversación →
+              Consultar disponibilidad →
             </Button>
             <Button
-              href="/contacto"
+              href="/empresas"
               variant="ghost"
               trackingContext={{
                 page: "home",
                 section: "final_cta",
-                ctaLabel: "hablar_experto",
-                destination: "/contacto",
-                intent: "consultation",
+                ctaLabel: "explorar_empresas",
+                destination: "/empresas",
+                intent: "explore",
               }}
             >
-              Hablar con un experto
+              Explorar soluciones empresariales
             </Button>
           </div>
         </div>

@@ -27,7 +27,7 @@ export const products: Product[] = validateProductsContent([
       "Monitoreo en tiempo real",
     ],
     benefits: [
-      "Disponibilidad 24/7",
+      "Atención automatizada de conversaciones",
       "Mejor experiencia de cliente",
       "Escalado por unidad de negocio",
     ],
@@ -82,7 +82,7 @@ export const products: Product[] = validateProductsContent([
       {
         question: "Cuanto tarda la implementacion?",
         answer:
-          "En promedio, una version inicial operativa puede estar lista entre 2 y 4 semanas.",
+          "El calendario de implementación se define según el alcance, las integraciones y los datos disponibles.",
       },
     ],
   },
@@ -109,7 +109,7 @@ export const products: Product[] = validateProductsContent([
       "Reportes auditables",
     ],
     benefits: [
-      "80% menos errores",
+      "Validaciones para apoyar la consistencia de planilla",
       "Menos riesgo legal",
       "Mas tiempo para estrategia de talento",
     ],
@@ -500,14 +500,14 @@ export const products: Product[] = validateProductsContent([
       "Retrasos al coordinar hallazgos",
     ],
     solution: [
-      "Descarga gratuita y registro inmediato",
+      "Registro de perfiles para mascotas",
       "Perfil unico por mascota",
       "Matching visual con IA, alertas y mapas de actividad",
     ],
     benefits: [
-      "Acceso gratuito para la comunidad",
-      "Reunificacion mas rapida",
-      "Coordinacion colaborativa con mejor trazabilidad",
+      "Acceso a herramientas para la comunidad",
+      "Apoyo a la coordinacion de recuperacion",
+      "Seguimiento de reportes según las funciones disponibles",
     ],
     features: [
       "QR inteligente",
@@ -529,15 +529,15 @@ export const products: Product[] = validateProductsContent([
       "Panel web",
     ],
     differentiators: [
-      "Descarga gratuita y adopcion sin barreras",
+      "Enfoque de colaboracion comunitaria",
       "Combinación de QR con matching visual",
       "Diseño para colaboración comunitaria",
     ],
     showcase: [
       {
-        title: "Alta inmediata y gratuita",
+        title: "Registro de mascotas",
         detail:
-          "Cualquier persona puede descargar la app y registrar mascotas o reportes sin costo.",
+          "Consulta en PawTrack CR las opciones de registro, disponibilidad y condiciones vigentes.",
         accent: "bg-orange-400",
       },
       {
@@ -557,7 +557,7 @@ export const products: Product[] = validateProductsContent([
       {
         question: "PawTrack CR / NALA tiene costo?",
         answer:
-          "PawTrack CR ofrece un alcance gratuito con limites definidos. Consulta los planes y las condiciones vigentes en pawtrackcr.com.",
+          "Consulta en pawtrackcr.com los costos, alcances y condiciones vigentes.",
       },
       {
         question: "Se pueden registrar multiples mascotas?",
@@ -570,4 +570,8 @@ export const products: Product[] = validateProductsContent([
 
 export const productBySlug = Object.fromEntries(
   products.map((product) => [product.slug, product]),
+);
+
+export const businessProducts = products.filter(
+  (product) => product.slug !== "pawtrack",
 );

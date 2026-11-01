@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, RefreshCw } from 'lucide-react'
+import { commercialEvidenceEnabled } from '@/data/site'
 
 type ProductSummary = {
   slug: string
@@ -87,6 +88,9 @@ export function ProductCompareWidget({ products }: Props) {
 
   const otherThanLeft = products.filter((p) => p.slug !== leftSlug)
   const otherThanRight = products.filter((p) => p.slug !== rightSlug)
+  const visibleSections = commercialEvidenceEnabled
+    ? SECTIONS
+    : SECTIONS.filter((section) => section.key !== 'benefits')
 
   return (
     <div className="rounded-3xl border border-brand-lavender/18 bg-brand-card/60 p-6 backdrop-blur-sm sm:p-8">
@@ -148,7 +152,7 @@ export function ProductCompareWidget({ products }: Props) {
                 </p>
                 <p className="mt-1 font-display text-base font-bold text-[#f0f8ff] sm:text-lg">{product.name}</p>
                 <p className="mt-1 text-xs text-text-muted line-clamp-2">{product.shortDescription}</p>
-                {product.heroStats.length > 0 && (
+                {commercialEvidenceEnabled && product.heroStats.length > 0 && (
                   <div className="mt-3 grid grid-cols-3 gap-1.5">
                     {product.heroStats.slice(0, 3).map((s) => (
                       <StatBadge key={s.label} label={s.label} value={s.value} />
@@ -161,7 +165,7 @@ export function ProductCompareWidget({ products }: Props) {
 
           {/* Section rows */}
           <div className="mt-6 space-y-6">
-            {SECTIONS.map((section) => (
+            {visibleSections.map((section) => (
               <div key={section.key}>
                 <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">{section.label}</p>
                 <div className="grid grid-cols-2 gap-4">

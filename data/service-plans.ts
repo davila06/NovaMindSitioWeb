@@ -1,11 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// NovaClick — Catálogo de planes ClickFix (residencial) e ITOn-Demand (empresarial)
+// Catálogo de soporte residencial y servicios de TI administrados.
 // Todos los precios incluyen IVA (13 %)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type PaymentType = "single" | "monthly";
 
-export type NovaClickPlan = {
+export type ServicePlan = {
   slug: string;
   name: string;
   /** Precio en colones costarricenses, IVA incluido */
@@ -88,7 +88,7 @@ export const coverageZones: CoverageZone[] = [
 
 // ─── ClickFix — Servicio residencial ─────────────────────────────────────────
 
-export const clickFixPlans: NovaClickPlan[] = [
+export const homeSupportPlans: ServicePlan[] = [
   {
     slug: "express",
     name: "Visita Express",
@@ -252,7 +252,7 @@ export const clickFixPlans: NovaClickPlan[] = [
 
 // ─── ITOn-Demand — Servicio empresarial ──────────────────────────────────────
 
-export const itonDemandPlans: NovaClickPlan[] = [
+export const itManagedPlans: ServicePlan[] = [
   {
     slug: "basico",
     name: "Básico",
@@ -419,9 +419,9 @@ export const itonDemandPlans: NovaClickPlan[] = [
   },
 ];
 
-// ─── Condiciones generales ClickFix ──────────────────────────────────────────
+// ─── Condiciones generales de soporte residencial ────────────────────────────
 
-export const clickFixGeneralConditions = {
+export const homeSupportConditions = {
   coverageRadius:
     "10 km desde San José centro (Parque Central como referencia)",
   surchargeNearby:
@@ -445,9 +445,9 @@ export const clickFixGeneralConditions = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-export const clickFixBySlug = Object.fromEntries(
-  clickFixPlans.map((p) => [p.slug, p]),
+export const homeSupportBySlug = Object.fromEntries(
+  homeSupportPlans.map((p) => [p.slug, p]),
 );
-export const itonDemandBySlug = Object.fromEntries(
-  itonDemandPlans.map((p) => [p.slug, p]),
+export const itManagedBySlug = Object.fromEntries(
+  itManagedPlans.map((p) => [p.slug, p]),
 );

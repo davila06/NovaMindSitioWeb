@@ -28,7 +28,7 @@ export function StickyCTABar() {
         href="/contacto"
         className="w-full max-w-sm rounded-2xl bg-brand-violet py-3.5 text-center text-sm font-bold text-white shadow-[0_4px_24px_rgba(249,115,22,0.38)] transition hover:bg-brand-iris active:scale-95"
       >
-        Solicitar demo gratuita →
+        Consultar una demostración →
       </Link>
     </div>
   );

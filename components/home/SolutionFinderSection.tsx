@@ -3,7 +3,6 @@
 import { Container } from "@/components/layout/Container";
 import { SectionWrapper } from "@/components/layout/SectionWrapper";
 import { Button } from "@/components/shared/ui/Button";
-import { Card } from "@/components/shared/ui/Card";
 import { productBySlug } from "@/data/products";
 import { useMemo, useState } from "react";
 import { trackEvent } from "@/lib/analytics-client";
@@ -16,7 +15,7 @@ const options = [
     recommendation: {
       productSlug: "voicebot",
       reason:
-        "Es la mejor entrada cuando el dolor principal está en SLA, consistencia de respuesta y omnicanalidad.",
+        "Puede ser una alternativa cuando la prioridad está en los canales de atención, la consistencia de respuesta y el enrutamiento.",
     },
   },
   {
@@ -57,20 +56,11 @@ const options = [
   },
   {
     key: "insurance",
-    label: "Quiero controlar pólizas, cobros y renovaciones",
+    label: "Quiero administrar pólizas, cobros y renovaciones",
     recommendation: {
       productSlug: "iads",
       reason:
         "Está diseñado para operaciones de seguros donde cobranza y trazabilidad son críticas.",
-    },
-  },
-  {
-    key: "community",
-    label: "Necesito una solución comunitaria con alto impacto social",
-    recommendation: {
-      productSlug: "pawtrack",
-      reason:
-        "Es ideal para comunidades que necesitan una app gratuita para reportar, coordinar y reunificar mascotas con trazabilidad.",
     },
   },
 ];

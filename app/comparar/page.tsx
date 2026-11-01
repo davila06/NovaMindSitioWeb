@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { Container } from "@/components/layout/Container";
 import { SectionWrapper } from "@/components/layout/SectionWrapper";
 import { Button } from "@/components/shared/ui/Button";
 import { createPageMetadata } from "@/lib/seo";
 import { Check, X, Minus } from "lucide-react";
-import { products } from "@/data/products";
+import { businessProducts } from "@/data/products";
 import { ProductCompareWidget } from "@/components/products/ProductCompareWidget";
+import { commercialEvidenceEnabled } from "@/data/site";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Novamind vs. Software Tradicional | Comparar",
+  title: "Comparar plataformas | Novamind",
   description:
-    "Comparación directa entre Novamind Global y el software empresarial tradicional. Funcionalidad, IA, tiempo de implementación y soporte.",
+    "Compara las capacidades descritas de las plataformas empresariales de Novamind.",
   path: "/comparar",
 });
 
@@ -161,16 +163,16 @@ function Cell({ value }: { value: CellValue }) {
 
 export default function CompararPage() {
   // Slim product summaries for the client widget (avoids sending full data)
-  const productSummaries = products.map((p) => ({
+  const productSummaries = businessProducts.map((p) => ({
     slug: p.slug,
     name: p.name,
     shortDescription: p.shortDescription,
     features: p.features,
-    benefits: p.benefits,
+    benefits: commercialEvidenceEnabled ? p.benefits : [],
     audiences: p.audiences,
     integrations: p.integrations,
     differentiators: p.differentiators,
-    heroStats: p.heroStats,
+    heroStats: commercialEvidenceEnabled ? p.heroStats : [],
   }));
 
   return (
@@ -182,11 +184,11 @@ export default function CompararPage() {
               Comparativa directa
             </p>
             <h1 className="mt-3 font-display text-4xl font-bold leading-tight tracking-[-0.03em] text-[#f0f8ff] sm:text-5xl">
-              Novamind vs. Software Tradicional
+              Compara plataformas Novamind
             </h1>
             <p className="mt-4 text-lg text-text-muted">
-              Sin rodeos. Así se compara un SaaS IA-native con el software
-              empresarial de la generación anterior.
+              Revisa las capacidades descritas y consulta al equipo para
+              confirmar alcance, disponibilidad e integraciones.
             </p>
           </div>
         </Container>
@@ -208,6 +210,7 @@ export default function CompararPage() {
         </Container>
       </SectionWrapper>
 
+      {commercialEvidenceEnabled ? (
       <SectionWrapper>
         <Container>
           {/* Leyenda */}
@@ -246,9 +249,8 @@ export default function CompararPage() {
               </thead>
               <tbody>
                 {features.map((group) => (
-                  <>
+                  <Fragment key={group.category}>
                     <tr
-                      key={group.category}
                       className="border-b border-brand-lavender/10 bg-brand-surface/30"
                     >
                       <td
@@ -274,7 +276,7 @@ export default function CompararPage() {
                         </td>
                       </tr>
                     ))}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -282,18 +284,30 @@ export default function CompararPage() {
 
           <div className="mt-10 rounded-2xl border border-brand-violet/30 bg-brand-violet/10 p-8 text-center">
             <h2 className="font-display text-2xl font-bold text-[#f0f8ff]">
-              Verifique cada punto con una demo real
+              Solicite información sobre una demostración
             </h2>
             <p className="mt-3 text-text-muted">
-              Agendamos una sesión de 30 minutos donde puede hacer todas las
-              preguntas técnicas.
+              Confirme la disponibilidad, el formato y el alcance de la
+              demostración para las plataformas que desea evaluar.
             </p>
             <Button href="/contacto" className="mt-6">
-              Solicitar demo de comparación →
+              Consultar disponibilidad de demo →
             </Button>
           </div>
         </Container>
       </SectionWrapper>
+      ) : (
+        <SectionWrapper>
+          <Container>
+            <p className="mx-auto max-w-3xl rounded-2xl border border-brand-lavender/18 bg-brand-card/70 p-6 text-center text-sm leading-6 text-text-muted">
+              No publicamos comparaciones generales con otras categorías de
+              software sin criterios verificables y vigentes. La comparativa
+              entre plataformas Novamind muestra la información funcional
+              disponible; confirma los requisitos específicos con el equipo.
+            </p>
+          </Container>
+        </SectionWrapper>
+      )}
     </>
   );
 }

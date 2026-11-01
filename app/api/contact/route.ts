@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
-import nodemailer from "nodemailer";
+import { escapeHtml, sendMail } from "@/lib/email";
 import { z } from "zod";
 import { captureServerError } from "@/lib/monitoring";
-import { checkRateLimit, getClientIp } from "@/lib/security";
+import { enforceRateLimit, getClientIp } from "@/lib/security";
+import { ApiRequestError, readJsonRequest } from "@/lib/http";
+import { getServerEnv } from "@/lib/env";
 
 const leadVolumeOptions = ["<100", "100-500", "500-2000", "2000+"] as const;
 const urgencyOptions = ["baja", "media", "alta", "critica"] as const;
 const horizonOptions = ["0-30", "31-90", "91-180", "180+"] as const;
-
-const DEFAULT_RATE_LIMIT = 5;
-const DEFAULT_RATE_WINDOW_MS = 10 * 60 * 1000;
 
 const utmSchema = z
   .object({
@@ -29,37 +27,31 @@ const contactSchema = z.object({
   name: z.string().trim().min(2).max(120),
   email: z.string().trim().email().max(254),
   company: z.string().trim().max(160).optional(),
+  plan: z.string().trim().max(80).optional(),
   interest: z.string().trim().min(2).max(120),
-  leadVolume: z.enum(leadVolumeOptions).optional(),
-  urgency: z.enum(urgencyOptions).optional(),
-  implementationHorizon: z.enum(horizonOptions).optional(),
+  leadVolume: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.enum(leadVolumeOptions).optional(),
+  ),
+  urgency: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.enum(urgencyOptions).optional(),
+  ),
+  implementationHorizon: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.enum(horizonOptions).optional(),
+  ),
   message: z.string().trim().min(10).max(4000),
   website: z.string().trim().max(200).optional(),
   utm: utmSchema,
   // Consentimiento explícito — obligatorio Ley 8968 Costa Rica
   consentPrivacy: z.literal(true, {
-    errorMap: () => ({
-      message:
-        "Se requiere consentimiento explícito para el tratamiento de datos.",
-    }),
+    message:
+      "Se requiere consentimiento explícito para el tratamiento de datos.",
   }),
 });
 
 type ContactPayload = z.infer<typeof contactSchema>;
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function getPositiveNumber(value: string | undefined, fallback: number) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
 
 function buildEmailHtml(data: ContactPayload) {
   const safeName = escapeHtml(data.name);
@@ -90,6 +82,7 @@ function buildEmailHtml(data: ContactPayload) {
     <p><strong>Email:</strong> ${safeEmail}</p>
     <p><strong>Empresa:</strong> ${safeCompany}</p>
     <p><strong>Interes:</strong> ${safeInterest}</p>
+    <p><strong>Plan:</strong> ${escapeHtml(data.plan || "No indicado")}</p>
     <p><strong>Volumen operativo:</strong> ${safeLeadVolume}</p>
     <p><strong>Urgencia:</strong> ${safeUrgency}</p>
     <p><strong>Horizonte de implementacion:</strong> ${safeHorizon}</p>
@@ -101,60 +94,6 @@ function buildEmailHtml(data: ContactPayload) {
     <p><strong>Timestamp ISO:</strong> ${new Date().toISOString()}</p>
     ${utmBlock}
   `;
-}
-
-async function sendWithResend(data: ContactPayload) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.CONTACT_TO_EMAIL;
-  const from = process.env.CONTACT_FROM_EMAIL;
-
-  if (!apiKey || !to || !from) {
-    return false;
-  }
-
-  const resend = new Resend(apiKey);
-  await resend.emails.send({
-    from,
-    to,
-    subject: `[Novamind] Nuevo lead: ${data.interest}`,
-    html: buildEmailHtml(data),
-    replyTo: data.email,
-  });
-
-  return true;
-}
-
-async function sendWithSmtp(data: ContactPayload) {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT || "0");
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const to = process.env.CONTACT_TO_EMAIL;
-  const from = process.env.CONTACT_FROM_EMAIL;
-
-  if (!host || !port || !user || !pass || !to || !from) {
-    return false;
-  }
-
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: {
-      user,
-      pass,
-    },
-  });
-
-  await transporter.sendMail({
-    from,
-    to,
-    subject: `[Novamind] Nuevo lead: ${data.interest}`,
-    html: buildEmailHtml(data),
-    replyTo: data.email,
-  });
-
-  return true;
 }
 
 function withRequestId(response: NextResponse, requestId: string) {
@@ -199,16 +138,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const rateLimit = checkRateLimit({
+    const payload = await readJsonRequest(request);
+    const config = getServerEnv();
+    const rateLimit = await enforceRateLimit({
       key: `contact:${clientIp}`,
-      limit: getPositiveNumber(
-        process.env.CONTACT_RATE_LIMIT_MAX_REQUESTS,
-        DEFAULT_RATE_LIMIT,
-      ),
-      windowMs: getPositiveNumber(
-        process.env.CONTACT_RATE_LIMIT_WINDOW_MS,
-        DEFAULT_RATE_WINDOW_MS,
-      ),
+      limit: config.CONTACT_RATE_LIMIT_MAX_REQUESTS,
+      windowMs: config.CONTACT_RATE_LIMIT_WINDOW_MS,
     });
 
     if (!rateLimit.allowed) {
@@ -231,7 +166,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const payload = await request.json();
     const parsed = contactSchema.safeParse(payload);
 
     if (!parsed.success) {
@@ -273,40 +207,35 @@ export async function POST(request: Request) {
       );
     }
 
-    const sentByResend = await sendWithResend(data);
-    if (sentByResend) {
+    try {
+      const delivery = await sendMail({
+        subject: `[Novamind] Nuevo lead: ${data.interest}`,
+        html: buildEmailHtml(data),
+        text: `Nombre: ${data.name}\nEmail: ${data.email}\nEmpresa: ${data.company || "No indicada"}\nInteres: ${data.interest}\nMensaje: ${data.message}`,
+        replyTo: data.email,
+        requestId,
+      });
       return withRequestId(
-        NextResponse.json({ ok: true, channel: "resend", requestId }),
+        NextResponse.json({ ok: true, ...delivery, requestId }),
+        requestId,
+      );
+    } catch {
+      await captureServerError({
+        source: "api.contact.delivery_unavailable",
+        message: "No se pudo entregar la solicitud.",
+        severity: "critical",
+        requestId,
+        route: "/api/contact",
+      });
+      return buildErrorResponse(
+        503,
+        "No se pudo entregar tu solicitud. Intenta nuevamente o contactanos por WhatsApp.",
         requestId,
       );
     }
-
-    const sentBySmtp = await sendWithSmtp(data);
-    if (sentBySmtp) {
-      return withRequestId(
-        NextResponse.json({ ok: true, channel: "smtp", requestId }),
-        requestId,
-      );
-    }
-
-    await captureServerError({
-      source: "api.contact.delivery_unavailable",
-      message: "No hay proveedor de correo habilitado para contacto.",
-      severity: "critical",
-      requestId,
-      route: "/api/contact",
-      context: {
-        clientIp,
-        interest: data.interest,
-      },
-    });
-
-    return buildErrorResponse(
-      503,
-      "Configura RESEND_API_KEY o SMTP_* y CONTACT_TO_EMAIL/CONTACT_FROM_EMAIL.",
-      requestId,
-    );
   } catch (error) {
+    if (error instanceof ApiRequestError)
+      return buildErrorResponse(error.status, error.message, requestId);
     await captureServerError({
       source: "api.contact.unhandled_exception",
       message:
@@ -323,7 +252,7 @@ export async function POST(request: Request) {
     });
 
     return buildErrorResponse(
-      500,
+      503,
       "No se pudo procesar la solicitud.",
       requestId,
     );

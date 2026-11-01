@@ -2,67 +2,34 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-const STORAGE_KEY = "nm-cookie-consent";
-const POLICY_VERSION = "2026-01";
-
-type ConsentState = "accepted" | "rejected" | null;
+import { CONSENT_EVENT, readAnalyticsConsent, updateAnalyticsConsent } from "@/lib/analytics-client";
 
 export function CookieConsent() {
-  const [consent, setConsent] = useState<ConsentState>(null);
+  const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as {
-          decision: ConsentState;
-          version: string;
-        };
-        // Re-ask if policy version changed
-        if (parsed.version === POLICY_VERSION) {
-          setConsent(parsed.decision);
-        }
-      }
-    } catch {
-      /* ignore */
-    }
+    setVisible(readAnalyticsConsent() === null);
     setMounted(true);
+    const sync = () => setVisible(false);
+    window.addEventListener(CONSENT_EVENT, sync);
+    return () => window.removeEventListener(CONSENT_EVENT, sync);
   }, []);
 
   function saveConsent(decision: "accepted" | "rejected") {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          decision,
-          version: POLICY_VERSION,
-          timestamp: new Date().toISOString(),
-        }),
-      );
-    } catch {
-      /* ignore */
-    }
-    setConsent(decision);
-
-    // If analytics was accepted, fire a custom event so GTM / GA can initialise
-    if (decision === "accepted" && typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("nm:cookie-consent", { detail: { analytics: true } }),
-      );
-    }
+    updateAnalyticsConsent(decision === "accepted");
+    setVisible(false);
   }
 
-  // Don't render until client-side hydration to avoid layout shift
-  if (!mounted || consent !== null) return null;
+  if (!mounted) return null;
+  if (!visible) return <button type="button" onClick={() => setVisible(true)} className="fixed bottom-20 left-4 z-30 rounded-lg bg-brand-card px-3 py-2 text-xs text-text-muted md:bottom-4">Preferencias de cookies</button>;
 
   return (
     <div
       role="dialog"
       aria-modal="false"
       aria-label="Aviso de cookies"
-      className="fixed bottom-4 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 rounded-2xl border border-brand-lavender/20 bg-brand-card/95 px-5 py-4 shadow-xl backdrop-blur-md"
+      className="fixed bottom-20 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 rounded-2xl border border-brand-lavender/20 bg-brand-card/95 px-5 py-4 shadow-xl backdrop-blur-md md:bottom-4"
     >
       <p className="text-sm font-semibold text-[#f0f8ff]">
         Este sitio usa cookies

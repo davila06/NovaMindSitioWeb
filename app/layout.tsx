@@ -6,6 +6,7 @@ import { AnalyticsScripts } from "@/components/layout/AnalyticsScripts";
 import { GlobalErrorListeners } from "@/components/layout/GlobalErrorListeners";
 import { CookieConsent } from "@/components/shared/ui/CookieConsent";
 import { createPageMetadata, siteConfig } from "@/lib/seo";
+import { contactDetails } from "@/data/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,7 +28,7 @@ const playfair = Playfair_Display({
 const homeMetadata = createPageMetadata({
   title: "Novamind Global | IA aplicada a los negocios",
   description:
-    "Soluciones SaaS e inteligencia artificial para nomina, ERP, seguros, contact center y comunidades.",
+    "Software empresarial, inteligencia artificial y servicios tecnológicos para empresas, hogares y comunidades.",
   path: "/",
 });
 
@@ -74,9 +75,7 @@ export default function RootLayout({
           width: 240,
           height: 60,
         },
-        email: "info@novamindglobalcr.com",
-        foundingDate: "2022",
-        numberOfEmployees: { "@type": "QuantitativeValue", value: 20 },
+        email: contactDetails.email,
         knowsAbout: [
           "Inteligencia Artificial",
           "SaaS Empresarial",
@@ -92,36 +91,10 @@ export default function RootLayout({
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "sales",
-          email: "info@novamindglobalcr.com",
+          email: contactDetails.email,
           availableLanguage: ["Spanish", "English"],
           areaServed: ["CR", "LATAM"],
         },
-      },
-      {
-        "@type": "LocalBusiness",
-        "@id": `${siteConfig.url}/#localbusiness`,
-        name: siteConfig.name,
-        url: siteConfig.url,
-        email: "info@novamindglobalcr.com",
-        address: {
-          "@type": "PostalAddress",
-          addressCountry: "CR",
-          addressLocality: "San José",
-          addressRegion: "San José",
-        },
-        geo: {
-          "@type": "GeoCoordinates",
-          latitude: 9.9281,
-          longitude: -84.0907,
-        },
-        description:
-          "Empresa costarricense de software empresarial IA-native: nómina, ERP, contact center, ventas y más.",
-        priceRange: "$$$",
-        currenciesAccepted: "CRC, USD",
-        paymentAccepted: "Transferencia bancaria, Tarjeta",
-        areaServed: ["CR", "LATAM"],
-        openingHours: "Mo-Fr 08:00-18:00",
-        sameAs: ["https://www.linkedin.com/company/novamind-global"],
       },
       {
         "@type": "WebSite",
@@ -130,14 +103,6 @@ export default function RootLayout({
         name: siteConfig.name,
         inLanguage: "es-CR",
         publisher: { "@id": `${siteConfig.url}/#organization` },
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: `${siteConfig.url}/blog?q={search_term_string}`,
-          },
-          "query-input": "required name=search_term_string",
-        },
       },
     ],
   };
@@ -153,19 +118,6 @@ export default function RootLayout({
         {/* DNS prefetch for analytics — non-blocking */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.clarity.ms" />
-        {/* Preconnect */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        {/* Preload critical fonts */}
-        <link
-          rel="preload"
-          as="style"
-          href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
-        />
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -188,8 +140,6 @@ export default function RootLayout({
           title="Novamind Global Blog RSS"
           href="/blog/feed.xml"
         />
-        {/* DNS prefetch para terceros */}
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         {/* Preconnect for YouTube embeds (ProductVideoSection) */}
         <link rel="preconnect" href="https://www.youtube-nocookie.com" />

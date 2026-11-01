@@ -57,13 +57,6 @@ export default async function IndustryDetailPage({ params }: IndustryPageProps) 
         areaServed: ['Costa Rica', 'LATAM'],
         serviceType: 'AI and SaaS enterprise solutions',
         inLanguage: 'es-CR',
-        offers: {
-          '@type': 'Offer',
-          url: `${siteConfig.url}/contacto`,
-          description: 'Solicita una demo o diagnóstico operativo gratuito',
-          price: '0',
-          priceCurrency: 'USD',
-        },
       },
       {
         '@type': 'WebPage',

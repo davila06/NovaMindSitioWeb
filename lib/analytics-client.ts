@@ -1,11 +1,26 @@
-/** Checks if the user has granted analytics consent (stored by CookieConsent). */
-export function isAnalyticsConsented(): boolean {
-  if (typeof window === "undefined") return false;
+export const CONSENT_VERSION = "2026-11";
+export const CONSENT_EVENT = "nm:consent-change";
+
+export function readAnalyticsConsent(): {
+  analytics: boolean;
+  version: string;
+} | null {
+  if (typeof window === "undefined") return null;
   try {
-    return localStorage.getItem("nm-cookie-consent") === "all";
+    const value = JSON.parse(
+      localStorage.getItem("nm-cookie-consent") || "null",
+    );
+    return value?.version === CONSENT_VERSION &&
+      typeof value.analytics === "boolean"
+      ? value
+      : null;
   } catch {
-    return false;
+    return null;
   }
+}
+
+export function isAnalyticsConsented(): boolean {
+  return readAnalyticsConsent()?.analytics === true;
 }
 
 /**
@@ -15,7 +30,14 @@ export function isAnalyticsConsented(): boolean {
 export function updateAnalyticsConsent(granted: boolean) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem("nm-cookie-consent", granted ? "all" : "essential");
+    localStorage.setItem(
+      "nm-cookie-consent",
+      JSON.stringify({
+        analytics: granted,
+        version: CONSENT_VERSION,
+        timestamp: new Date().toISOString(),
+      }),
+    );
   } catch {
     /* ignore */
   }
@@ -25,17 +47,34 @@ export function updateAnalyticsConsent(granted: boolean) {
     const consentValue = granted ? "granted" : "denied";
     window.gtag("consent", "update", {
       analytics_storage: consentValue,
-      ad_storage: consentValue,
-      ad_user_data: consentValue,
-      ad_personalization: consentValue,
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
     });
   }
   // Microsoft Clarity consent
   if (typeof window.clarity === "function") {
-    if (granted) {
-      window.clarity("consent");
-    }
+    window.clarity("consentv2", {
+      analytics_Storage: granted ? "granted" : "denied",
+      ad_Storage: "denied",
+    });
   }
+  window.dispatchEvent(new Event(CONSENT_EVENT));
+}
+
+export function trackLeadConversion(
+  requestId: string,
+  params: Record<string, string>,
+) {
+  if (!isAnalyticsConsented()) return;
+  try {
+    const key = `nm-lead:${requestId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+  } catch {
+    return;
+  }
+  trackEvent("lead_conversion", { ...params, request_id: requestId });
 }
 
 export function trackEvent(

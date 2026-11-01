@@ -31,13 +31,13 @@ export function ProductDemoBar({ productName }: ProductDemoBarProps) {
         <div className="flex items-center gap-3">
           <CalendarDays className="h-5 w-5 shrink-0 text-brand-lavender" aria-hidden="true" />
           <p className="text-sm font-semibold text-[#f0f8ff]">
-            <span className="hidden sm:inline">¿Listo para ver {productName} en acción? </span>
-            Agenda tu demo de 30 minutos
+            <span className="hidden sm:inline">¿Quieres conocer {productName}? </span>
+            Consulta la disponibilidad de una demostración
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button href="/contacto" className="text-xs">
-            Agendar ahora
+            Consultar
           </Button>
           <button
             onClick={() => { setVisible(false); setDismissed(true) }}

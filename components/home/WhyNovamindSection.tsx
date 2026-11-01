@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Container } from "@/components/layout/Container";
 import { SectionWrapper } from "@/components/layout/SectionWrapper";
-import { Card } from "@/components/shared/ui/Card";
 import { differentiationPillars } from "@/data/site";
 import { useScrollReveal } from "@/lib/useScrollReveal";
 
@@ -50,8 +49,8 @@ export function WhyNovamindSection() {
           </h2>
           <p className="mt-4 text-text-muted">
             La diferencia no está en sumar features. Está en convertir procesos
-            complejos en plataformas claras, escalables y listas para generar
-            valor medible.
+            complejos en plataformas claras, con alcance y prioridades definidos
+            según cada organización.
           </p>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-2 [perspective:1000px]">

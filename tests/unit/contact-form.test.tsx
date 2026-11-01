@@ -2,17 +2,48 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ContactForm } from "@/components/shared/ui/ContactForm";
+import { updateAnalyticsConsent } from "@/lib/analytics-client";
 
 describe("ContactForm", () => {
   const fetchMock = vi.fn();
 
   beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
     fetchMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("preserva el plan del enlace sin persistir datos personales", () => {
+    render(<ContactForm plan="clickfix-express" />);
+    fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana Perez" } });
+    fireEvent.change(screen.getByPlaceholderText(/correo@ejemplo.com/i), { target: { value: "ana@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    expect(screen.getByLabelText(/interés principal/i)).toHaveValue("Soporte tecnológico para hogares");
+    expect(localStorage.getItem("nm-contact-draft")).toBeNull();
+  });
+
+  it("mantiene PawTrack fuera de los intereses comerciales", () => {
+    render(<ContactForm />);
+    fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana Perez" } });
+    fireEvent.change(screen.getByPlaceholderText(/correo@ejemplo.com/i), { target: { value: "ana@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+
+    expect(screen.queryByRole("option", { name: /PawTrack/i })).not.toBeInTheDocument();
+  });
+
+  it("no registra abandono mientras se editan campos", () => {
+    const gtag = vi.fn();
+    vi.stubGlobal("gtag", gtag);
+    updateAnalyticsConsent(true);
+    render(<ContactForm />);
+    fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana" } });
+    fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana Perez" } });
+    expect(gtag.mock.calls.some(call => call[1] === "form_progress" && call[2]?.step === "abandon")).toBe(false);
   });
 
   it("muestra errores de validacion si faltan campos requeridos", async () => {
@@ -38,7 +69,7 @@ describe("ContactForm", () => {
     fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), {
       target: { value: "Juan Perez" },
     });
-    fireEvent.change(screen.getByPlaceholderText(/nombre@empresa.com/i), {
+    fireEvent.change(screen.getByPlaceholderText(/correo@ejemplo.com/i), {
       target: { value: "juan@empresa.com" },
     });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
@@ -67,6 +98,7 @@ describe("ContactForm", () => {
       },
     );
 
+    fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
 
     await waitFor(() => {

@@ -1,3 +1,5 @@
+import { getPlatformBindings } from './platform'
+
 type RateLimitEntry = {
   count: number
   resetAt: number
@@ -34,6 +36,8 @@ function pruneExpiredEntries(now: number) {
 }
 
 export function getClientIp(request: Request) {
+  if (getPlatformBindings().runtime === 'cloudflare') return request.headers.get('cf-connecting-ip') || 'unknown'
+  if (process.env.NODE_ENV === 'production') return 'unknown'
   const forwardedFor = request.headers.get('x-forwarded-for')
   if (forwardedFor) {
     return forwardedFor.split(',')[0]?.trim() || 'unknown'
@@ -50,6 +54,17 @@ export function getClientIp(request: Request) {
   }
 
   return 'unknown'
+}
+
+export async function enforceRateLimit(options: RateLimitOptions) {
+  const scope = options.key.split(':')[0] as 'contact' | 'newsletter' | 'monitor'
+  const binding = getPlatformBindings().rateLimiters?.[scope]
+  if (binding) {
+    const result = await binding.limit({ key: options.key })
+    return { allowed: result.success, retryAfterSeconds: 60, remaining: result.success ? 1 : 0 }
+  }
+  if (process.env.NODE_ENV === 'production' || getPlatformBindings().runtime === 'cloudflare') throw new Error('Production rate limiter binding missing.')
+  return checkRateLimit(options)
 }
 
 export function checkRateLimit({ key, limit, windowMs }: RateLimitOptions) {

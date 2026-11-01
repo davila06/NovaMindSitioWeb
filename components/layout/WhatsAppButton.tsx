@@ -1,8 +1,9 @@
 "use client";
 
 import { AtSign } from "lucide-react";
+import { contactDetails } from "@/data/site";
 
-const WA_NUMBER = "50687669318";
+const WA_NUMBER = contactDetails.whatsapp;
 const WA_MESSAGE =
   "Hola, me interesa conocer más sobre los productos de Novamind Global.";
 

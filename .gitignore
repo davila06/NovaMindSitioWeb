@@ -15,6 +15,13 @@ dist-ssr
 coverage
 playwright-report
 test-results
+.cloudflare/
+.vinext/
+.dev.vars*
+.env
+.env.*
+!.env.example
+.tsupgrader/
 
 # Editor directories and files
 .vscode/*

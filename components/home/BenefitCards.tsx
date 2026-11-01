@@ -14,7 +14,7 @@ const benefits = [
     bg: "bg-brand-gold/10",
     title: "Automatización inteligente",
     description:
-      "Procesos críticos automatizados con IA para empresas y comunidades que necesitan escalar.",
+      "Exploramos IA y automatización para abordar flujos definidos por empresas y comunidades.",
   },
   {
     number: "02",
@@ -24,7 +24,7 @@ const benefits = [
     bg: "bg-brand-violet/15",
     title: "IA aplicada al negocio",
     description:
-      "Inteligencia artificial que mejora la experiencia del cliente y la eficiencia operativa real.",
+      "Evaluamos casos de uso donde la inteligencia artificial puede apoyar la experiencia del cliente o la operación.",
   },
   {
     number: "03",
@@ -34,7 +34,7 @@ const benefits = [
     bg: "bg-brand-lavender/10",
     title: "Arquitectura enterprise",
     description:
-      "SaaS multi-tenant sobre Azure, diseñado para crecer sin duplicar complejidad.",
+      "Plataformas y servicios alineados al entorno y los requisitos de cada organización.",
   },
 ];
 

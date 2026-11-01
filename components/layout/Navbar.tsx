@@ -5,7 +5,8 @@ import { Button } from "@/components/shared/ui/Button";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 import { usePathname, useRouter } from "next/navigation";
 
 export function Navbar() {
@@ -13,6 +14,9 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  useFocusTrap(menuRef, mobileOpen, triggerRef);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -37,6 +41,7 @@ export function Navbar() {
   }, [mobileOpen]);
 
   function isActive(href: string) {
+    if (href.includes("#")) return false;
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href.split("#")[0]) && href.split("#")[0] !== "";
   }
@@ -104,16 +109,19 @@ export function Navbar() {
             trackingContext={{
               page: "global",
               section: "navbar",
-              ctaLabel: "solicitar_demo",
+              ctaLabel: "consultar_disponibilidad",
               destination: "/contacto",
-              intent: "demo",
+              intent: "contact",
             }}
           >
-            Solicitar Demo
+            Consultar disponibilidad
           </Button>
         </div>
 
         <button
+          ref={triggerRef}
+          type="button"
+          aria-expanded={mobileOpen}
           className="md:hidden"
           aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
           aria-controls="mobile-navigation"
@@ -130,6 +138,10 @@ export function Navbar() {
       {mobileOpen && (
         <div className="px-4 md:hidden">
           <div
+            ref={menuRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menú de navegación móvil"
             id="mobile-navigation"
             className="mt-3 rounded-2xl border border-brand-lavender/20 bg-[#06091a]/97 p-4 shadow-medium backdrop-blur-2xl"
           >
@@ -156,12 +168,12 @@ export function Navbar() {
               trackingContext={{
                 page: "global",
                 section: "mobile_nav",
-                ctaLabel: "solicitar_demo",
+                ctaLabel: "consultar_disponibilidad",
                 destination: "/contacto",
-                intent: "demo",
+                intent: "contact",
               }}
             >
-              Solicitar Demo
+              Consultar disponibilidad
             </Button>
           </div>
         </div>

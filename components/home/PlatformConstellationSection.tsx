@@ -14,7 +14,7 @@ const nodes = [
     number: "02",
     title: "Capa SaaS",
     detail:
-      "Aplicaciones modulares por vertical: nómina, seguros, ERP y experiencia.",
+      "Aplicaciones modulares para nómina, ERP, ventas y experiencia de cliente.",
     color: "border-brand-gold/30 bg-brand-gold/8",
   },
   {

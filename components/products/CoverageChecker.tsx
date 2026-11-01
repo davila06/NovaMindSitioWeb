@@ -8,7 +8,7 @@ import {
   ChevronDown,
   Navigation,
 } from "lucide-react";
-import { coverageZones, type CoverageZone } from "@/data/novaclick";
+import { coverageZones, type CoverageZone } from "@/data/service-plans";
 
 type CheckResult = {
   zone: CoverageZone;
@@ -224,12 +224,12 @@ export function CoverageChecker() {
           },
           {
             label: "Zona cercana",
-            sub: "+ ₡5,000 · 10–25 km",
+            sub: "+ ₡5,000 · 10–18 km",
             color: "border-amber-500/20 bg-amber-500/5 text-amber-300",
           },
           {
             label: "Zona lejana",
-            sub: "+ ₡10,000 · > 25 km",
+            sub: "+ ₡10,000 · > 18 km",
             color: "border-orange-500/20 bg-orange-500/5 text-orange-300",
           },
         ].map(({ label, sub, color }) => (

@@ -2,7 +2,7 @@
 
 import { Container } from "@/components/layout/Container";
 import { SectionWrapper } from "@/components/layout/SectionWrapper";
-import { products } from "@/data/products";
+import { businessProducts } from "@/data/products";
 import { Card } from "@/components/shared/ui/Card";
 import { Button } from "@/components/shared/ui/Button";
 import {
@@ -124,8 +124,8 @@ export function ProductGrid() {
 
   const filtered =
     activeCategory === "Todos"
-      ? products
-      : products.filter(
+      ? businessProducts
+      : businessProducts.filter(
           (p) => (accentMap[p.slug]?.category ?? "") === activeCategory,
         );
 

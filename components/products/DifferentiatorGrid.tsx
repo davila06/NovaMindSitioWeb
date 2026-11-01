@@ -1,5 +1,3 @@
-import { Card } from "@/components/shared/ui/Card";
-
 export function DifferentiatorGrid({ items }: { items: string[] }) {
   return (
     <section>

@@ -17,7 +17,7 @@ const team = [
     role: "CEO & Co-Fundador",
     bio: "Arquitecto de soluciones empresariales con enfoque en automatización operativa e IA aplicada a negocios críticos.",
     initials: "DA",
-    linkedin: "https://linkedin.com",
+    linkedin: null,
   },
   {
     name: "Equipo Técnico",
@@ -70,37 +70,7 @@ export default function SobreNosotrosPage() {
         description:
           "Conoce al equipo detrás de Novamind Global — empresa costarricense de software empresarial IA-native.",
         inLanguage: "es-CR",
-        about: {
-          "@type": "Organization",
-          "@id": `${siteConfig.url}/#organization`,
-          name: siteConfig.name,
-          url: siteConfig.url,
-          foundingDate: "2022",
-          foundingLocation: {
-            "@type": "Place",
-            addressCountry: "CR",
-            addressLocality: "San José",
-          },
-          foundedBy: {
-            "@type": "Person",
-            name: "Equipo fundador Novamind Global",
-            jobTitle: "Co-fundadores",
-            nationality: { "@type": "Country", name: "Costa Rica" },
-          },
-          knowsAbout: [
-            "Inteligencia Artificial",
-            "SaaS Empresarial",
-            "Nómina Digital",
-            "Contact Center IA",
-          ],
-          employee: team.map((member) => ({
-            "@type": "Person",
-            name: member.name,
-            jobTitle: member.role,
-            description: member.bio,
-            ...(member.linkedin ? { sameAs: [member.linkedin] } : {}),
-          })),
-        },
+        about: { "@id": `${siteConfig.url}/#organization` },
       },
       {
         "@type": "BreadcrumbList",
@@ -248,8 +218,8 @@ export default function SobreNosotrosPage() {
               Construido sobre tecnología enterprise
             </h2>
             <p className="mt-3 text-text-muted">
-              Cada componente fue elegido para garantizar escala, seguridad y
-              velocidad de desarrollo.
+              La selección de componentes depende de los requisitos de
+              seguridad, escala e integración de cada proyecto.
             </p>
           </div>
           <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">

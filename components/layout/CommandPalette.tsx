@@ -19,8 +19,8 @@ const COMMANDS = [
     href: `/productos/${p.slug}`,
     group: "Productos",
   })),
-  { label: "Agendar demo", href: "/contacto", group: "Acciones" },
-  { label: "Ver precios", href: "/#precios", group: "Acciones" },
+  { label: "Consultar disponibilidad", href: "/contacto", group: "Acciones" },
+  { label: "Explorar servicios", href: "/empresas#servicios", group: "Acciones" },
   { label: "FAQ / Preguntas frecuentes", href: "/#faq", group: "Acciones" },
 ];
 

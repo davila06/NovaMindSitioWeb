@@ -10,12 +10,10 @@ function AnimatedMetric({
   value,
   suffix,
   label,
-  index,
 }: {
   value: string;
   suffix?: string;
   label: string;
-  index: number;
 }) {
   const numericValue = parseInt(value, 10);
   const isNumeric = !isNaN(numericValue);
@@ -84,13 +82,12 @@ export function MetricsCounters() {
           className="grid list-none gap-6 md:grid-cols-3 pl-0"
           aria-label="Métricas de impacto de Novamind Global"
         >
-          {metrics.map((metric, i) => (
+          {metrics.map((metric) => (
             <AnimatedMetric
               key={metric.label}
               value={metric.value}
               suffix={metric.suffix}
               label={metric.label}
-              index={i}
             />
           ))}
         </ul>

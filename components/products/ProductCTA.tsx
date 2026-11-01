@@ -15,7 +15,7 @@ export function ProductCTA({ name }: { name: string }) {
       <p className="mt-3 text-slate-200">
         {isPawTrack
           ? "Crea tu cuenta o inicia sesion en PawTrack CR. Consulta sus funciones, planes y condiciones en el portal del producto."
-          : "Agenda una sesion y te mostramos una ruta de implementacion por etapas."}
+          : "Consulta la disponibilidad de una demostración y el alcance de implementación para esta plataforma."}
       </p>
       <div className="mt-5 flex flex-wrap gap-3">
         {isPawTrack ? (
@@ -27,13 +27,13 @@ export function ProductCTA({ name }: { name: string }) {
               trackingContext={{
                 page: `product/${name}`,
                 section: "product_cta",
-                ctaLabel: "quiero_demo",
+                ctaLabel: "consultar_disponibilidad",
                 destination: primaryHref,
                 product: name,
-                intent: "demo",
+                intent: "contact",
               }}
             >
-              Quiero una demo
+              Consultar disponibilidad
             </Button>
             <Button
               href="/contacto"
@@ -42,13 +42,13 @@ export function ProductCTA({ name }: { name: string }) {
               trackingContext={{
                 page: `product/${name}`,
                 section: "product_cta",
-                ctaLabel: "hablar_con_experto",
+                ctaLabel: "consultar_alcance",
                 destination: "/contacto",
                 product: name,
-                intent: "consultation",
+                intent: "contact",
               }}
             >
-              Hablar con experto
+              Consultar alcance
             </Button>
           </>
         )}

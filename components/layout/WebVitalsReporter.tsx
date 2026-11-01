@@ -11,7 +11,8 @@ function sendMetric(metric: { name: string; value: number; id: string; rating: s
     severity: 'info',
     context: {
       metric: metric.name,
-      value: roundedValue,
+      value: metric.value,
+      unit: metric.name === 'CLS' ? 'ratio' : 'milliseconds',
       rating: metric.rating,
       id: metric.id,
       route: window.location.pathname,
@@ -19,7 +20,7 @@ function sendMetric(metric: { name: string; value: number; id: string; rating: s
   })
 
   if (navigator.sendBeacon) {
-    navigator.sendBeacon('/api/monitoring/error', body)
+    navigator.sendBeacon('/api/monitoring/error', new Blob([body], { type: 'application/json' }))
   } else {
     fetch('/api/monitoring/error', {
       method: 'POST',

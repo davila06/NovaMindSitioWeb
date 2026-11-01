@@ -21,9 +21,12 @@ export function ScreenshotShowcase({ product }: { product: Product }) {
               {product.name}
             </span>
           </div>
+          <p className="mb-4 text-xs text-slate-400">
+            Representación ilustrativa; no muestra datos reales de clientes.
+          </p>
           {/* Panel grid */}
           <div className="grid gap-4 md:grid-cols-3 [perspective:600px]">
-            {product.showcase.map((panel, i) => (
+            {product.showcase.map((panel) => (
               <div
                 key={panel.title}
                 className={`rounded-xl border border-white/10 bg-white/5 p-4 [transform-style:preserve-3d] transition-all duration-300 hover:[transform:translateZ(10px)_translateY(-2px)] hover:border-white/20`}

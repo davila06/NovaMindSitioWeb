@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/shared/ui/Button";
 import { Send } from "lucide-react";
 import { contactDetails } from "@/data/site";
+import { Turnstile, turnstileSiteKey } from "@/components/shared/ui/Turnstile";
 
 function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,8 @@ function NewsletterForm() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [verificationAttempt, setVerificationAttempt] = useState(0);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -19,6 +22,10 @@ function NewsletterForm() {
     setError("");
     if (!consentPrivacy) {
       setError("Acepta la política de privacidad para continuar.");
+      return;
+    }
+    if (turnstileSiteKey && !turnstileToken) {
+      setError("Completa la verificacion de seguridad para continuar.");
       return;
     }
     setLoading(true);
@@ -30,6 +37,7 @@ function NewsletterForm() {
           email: email.trim(),
           interest: "footer",
           consentPrivacy: true,
+          turnstileToken: turnstileToken || undefined,
         }),
       });
       const json = (await res.json()) as { ok: boolean; message?: string };
@@ -42,6 +50,8 @@ function NewsletterForm() {
       setError("Error de conexión. Intenta de nuevo.");
     } finally {
       setLoading(false);
+      setTurnstileToken("");
+      setVerificationAttempt(attempt => attempt + 1);
     }
   }
 
@@ -103,6 +113,7 @@ function NewsletterForm() {
             </Link>
           </span>
         </label>
+        <Turnstile key={verificationAttempt} action="newsletter" onToken={setTurnstileToken} />
       </form>
       {error && (
         <p

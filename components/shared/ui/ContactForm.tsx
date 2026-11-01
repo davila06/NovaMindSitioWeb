@@ -14,6 +14,7 @@ import { resolveContactIntent } from "@/lib/contact-intent";
 import { getStoredUTM } from "@/lib/useUTM";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
+import { Turnstile, turnstileSiteKey } from "@/components/shared/ui/Turnstile";
 
 const serviceInterestOptions = contactInterests;
 
@@ -118,6 +119,8 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
   const [submitted, setSubmitted] = useState(false);
   const [serverMessage, setServerMessage] = useState("");
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [verificationAttempt, setVerificationAttempt] = useState(0);
   const [isPending, startTransition] = useTransition();
   const focusedFieldsRef = useRef<Set<keyof FormState>>(new Set());
   const hasSubmittedRef = useRef(false);
@@ -278,6 +281,11 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
       return;
     }
 
+    if (turnstileSiteKey && !turnstileToken) {
+      setError("Completa la verificacion de seguridad para enviar.");
+      return;
+    }
+
     trackFormProgress({
       form: "contact_request",
       step: "submit_attempt",
@@ -294,6 +302,7 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
             ...form,
             plan: intent.plan || undefined,
             consentPrivacy: true,
+            turnstileToken: turnstileToken || undefined,
             utm: getStoredUTM() ?? undefined,
           }),
         });
@@ -369,6 +378,9 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
         setError(
           "No se pudo conectar con el servidor. Intenta nuevamente en unos minutos.",
         );
+      } finally {
+        setTurnstileToken("");
+        setVerificationAttempt(attempt => attempt + 1);
       }
     });
   }
@@ -693,6 +705,7 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
                 {errors.consentPrivacy}
               </span>
             )}
+            <Turnstile key={verificationAttempt} action="contact" onToken={setTurnstileToken} />
             {error && (
               <div
                 role="alert"

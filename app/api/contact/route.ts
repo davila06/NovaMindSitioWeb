@@ -5,6 +5,7 @@ import { captureServerError } from "@/lib/monitoring";
 import { enforceRateLimit, getClientIp } from "@/lib/security";
 import { ApiRequestError, readJsonRequest } from "@/lib/http";
 import { getServerEnv } from "@/lib/env";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const leadVolumeOptions = ["<100", "100-500", "500-2000", "2000+"] as const;
 const urgencyOptions = ["baja", "media", "alta", "critica"] as const;
@@ -43,6 +44,7 @@ const contactSchema = z.object({
   ),
   message: z.string().trim().min(10).max(4000),
   website: z.string().trim().max(200).optional(),
+  turnstileToken: z.string().max(2048).optional(),
   utm: utmSchema,
   // Consentimiento explícito — obligatorio Ley 8968 Costa Rica
   consentPrivacy: z.literal(true, {
@@ -206,6 +208,8 @@ export async function POST(request: Request) {
         requestId,
       );
     }
+
+    await verifyTurnstile(data.turnstileToken, request, "contact");
 
     try {
       const delivery = await sendMail({

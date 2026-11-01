@@ -126,13 +126,13 @@ export function buildContentSecurityPolicy() {
     "frame-ancestors 'none'",
     "object-src 'none'",
     // 'unsafe-eval' is required by webpack HMR in development only
-    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://static.cloudflareinsights.com`,
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://static.cloudflareinsights.com https://challenges.cloudflare.com`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https://www.google-analytics.com https://www.clarity.ms https://i.ytimg.com https://img.youtube.com",
-    "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.clarity.ms https://www.googletagmanager.com https://cloudflareinsights.com",
+    "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.clarity.ms https://www.googletagmanager.com https://cloudflareinsights.com https://challenges.cloudflare.com",
     // Allow YouTube/Loom iframes for product video demos
-    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.loom.com https://player.vimeo.com",
+    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.loom.com https://player.vimeo.com https://challenges.cloudflare.com",
     "media-src 'self' blob: https://www.youtube.com",
     "worker-src 'self' blob:",
     "manifest-src 'self'",

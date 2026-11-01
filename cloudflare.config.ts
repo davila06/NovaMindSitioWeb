@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
     ),
     compatibilityDate: runtimeCompatibilityDate,
     compatibilityFlags: ["nodejs_compat"],
-    domains: mode === "staging" ? [] : ["novamindglobalcr.com"],
+    domains: mode === "staging" ? ["staging.novamindglobalcr.com"] : ["novamindglobalcr.com"],
     assets: { notFoundHandling: "none" },
     observability: {
       enabled: true,
@@ -23,6 +23,8 @@ export default defineConfig(({ mode }) => ({
       ASSETS: bindings.assets(),
       NODE_ENV: bindings.text("production"),
       MAIL_PROVIDER: bindings.text("cloudflare"),
+      TURNSTILE_ENABLED: bindings.text("true"),
+      TURNSTILE_SECRET_KEY: bindings.secret(),
       CONTACT_FROM_EMAIL: bindings.text("info@novamindglobalcr.com"),
       CONTACT_TO_EMAIL: bindings.text("novamindglobalcr@gmail.com"),
       CONTACT_LIMITER: bindings.rateLimit({

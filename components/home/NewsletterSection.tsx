@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Container } from "@/components/layout/Container";
 import { Mail, ArrowRight, CheckCircle2 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics-client";
+import { Turnstile, turnstileSiteKey } from "@/components/shared/ui/Turnstile";
 
 const INTERESTS = [
   "VoiceBot / Contact Center",
@@ -21,6 +22,8 @@ export function NewsletterSection() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [verificationAttempt, setVerificationAttempt] = useState(0);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,6 +40,10 @@ export function NewsletterSection() {
       return;
     }
 
+    if (turnstileSiteKey && !turnstileToken) {
+      setError("Completa la verificacion de seguridad para continuar.");
+      return;
+    }
     setLoading(true);
     try {
       trackEvent("newsletter_subscribe_attempt", {
@@ -50,6 +57,7 @@ export function NewsletterSection() {
           email: email.trim(),
           interest,
           consentPrivacy: true,
+          turnstileToken: turnstileToken || undefined,
         }),
       });
       const json = (await res.json()) as { ok: boolean; message?: string };
@@ -71,6 +79,8 @@ export function NewsletterSection() {
       setError("No se pudo procesar. Intenta de nuevo.");
     } finally {
       setLoading(false);
+      setTurnstileToken("");
+      setVerificationAttempt(attempt => attempt + 1);
     }
   }
 
@@ -204,6 +214,7 @@ export function NewsletterSection() {
                     de Novamind Global. <span className="text-rose-300">*</span>
                   </span>
                 </label>
+                <Turnstile key={verificationAttempt} action="newsletter" onToken={setTurnstileToken} />
               </form>
             )}
           </div>

@@ -4,10 +4,12 @@ import { enforceRateLimit, getClientIp } from "@/lib/security";
 import { ApiRequestError, readJsonRequest } from "@/lib/http";
 import { captureServerError } from "@/lib/monitoring";
 import { escapeHtml, sendMail } from "@/lib/email";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const subscribeSchema = z.object({
   email: z.string().trim().email("Correo electrónico inválido.").max(254),
   interest: z.string().trim().max(120).optional(),
+  turnstileToken: z.string().max(2048).optional(),
   // Consentimiento explícito — obligatorio Ley 8968 Costa Rica
   consentPrivacy: z.literal(true, {
     message:
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
     }
 
     const { email, interest } = parsed.data;
+    await verifyTurnstile(parsed.data.turnstileToken, request, "newsletter");
 
     // Audit log del consentimiento (Ley 8968 CR)
     console.info(

@@ -23,11 +23,13 @@ function healthyResponse() {
 describe("Cloudflare availability monitor", () => {
   it("records healthy readiness without sending an email", async () => {
     const env = bindings();
-    vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => healthyResponse()));
+    const fetch = vi.fn().mockImplementation(async () => healthyResponse());
+    vi.stubGlobal("fetch", fetch);
     const result = await runAvailabilityCheck(env);
     expect(result.healthy).toBe(true);
     expect(env.EMAIL.send).not.toHaveBeenCalled();
     expect(env.MONITOR_STATE.put).toHaveBeenCalledWith("status", expect.any(String));
+    expect(fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ redirect: "manual" }));
   });
 
   it("alerts once for an outage and suppresses repeated notifications", async () => {

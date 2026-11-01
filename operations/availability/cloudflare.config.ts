@@ -6,7 +6,7 @@ export default defineConfig({
   worker: {
     name: "novamind-availability",
     entrypoint: fileURLToPath(new URL("./worker.ts", import.meta.url)),
-    compatibilityDate: "2026-11-01",
+    compatibilityDate: "2026-10-30",
     workersDev: false,
     previewUrls: false,
     triggers: [triggers.scheduled({ schedule: "*/15 * * * *" })],

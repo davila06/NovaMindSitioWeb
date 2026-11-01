@@ -19,7 +19,7 @@ async function checkEndpoint(path: string, checkReadiness: boolean) {
     try {
       response = await fetch(url, {
         signal: AbortSignal.timeout(10_000),
-        redirect: "error",
+        redirect: "manual",
         cache: "no-store",
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);

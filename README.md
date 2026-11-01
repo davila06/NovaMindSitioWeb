@@ -146,6 +146,8 @@ Los tres workflows estan publicados y habilitados en GitHub. Su ejecucion efecti
 
 Para actualizar el monitor dedicado, ejecutar `npm run build:availability` y `npm run deploy:availability` desde la raiz tras `npm ci`. Es un proyecto independiente con su propia configuracion de Vite/Cloudflare; resuelve las mismas dependencias instaladas y bloqueadas en la raiz. No se declara la raiz como workspace porque la deteccion de aplicaciones de `cf` no permite compilar alli un workspace root. Su KV guarda solo estado operativo, no leads; si se migra de cuenta, crear una nueva namespace y actualizar el binding antes del despliegue. No simular incidentes modificando el estado remoto de produccion.
 
+El monitor usa la misma fecha de compatibilidad validada que el sitio (`2026-10-30`): el runtime local instalado no admite todavia `2026-11-01`. Actualizar runtime y fecha juntos tras validar el handler programado.
+
 Compatible con despliegue estándar de Next.js en servicios gestionados o contenedores. Para despliegue productivo, asegurar:
 
 - Variables de entorno completas.

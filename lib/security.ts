@@ -1,90 +1,102 @@
-import { getPlatformBindings } from './platform'
+import { getPlatformBindings } from "#platform";
 
 type RateLimitEntry = {
-  count: number
-  resetAt: number
-}
+  count: number;
+  resetAt: number;
+};
 
-type SecurityHeaders = Array<{ key: string; value: string }>
+type SecurityHeaders = Array<{ key: string; value: string }>;
 
 type RateLimitOptions = {
-  key: string
-  limit: number
-  windowMs: number
-}
+  key: string;
+  limit: number;
+  windowMs: number;
+};
 
 declare global {
-  var __novamindRateLimitStore: Map<string, RateLimitEntry> | undefined
+  var __novamindRateLimitStore: Map<string, RateLimitEntry> | undefined;
 }
 
 function getRateLimitStore() {
   if (!globalThis.__novamindRateLimitStore) {
-    globalThis.__novamindRateLimitStore = new Map<string, RateLimitEntry>()
+    globalThis.__novamindRateLimitStore = new Map<string, RateLimitEntry>();
   }
 
-  return globalThis.__novamindRateLimitStore
+  return globalThis.__novamindRateLimitStore;
 }
 
 function pruneExpiredEntries(now: number) {
-  const store = getRateLimitStore()
+  const store = getRateLimitStore();
 
   for (const [key, entry] of store.entries()) {
     if (entry.resetAt <= now) {
-      store.delete(key)
+      store.delete(key);
     }
   }
 }
 
 export function getClientIp(request: Request) {
-  if (getPlatformBindings().runtime === 'cloudflare') return request.headers.get('cf-connecting-ip') || 'unknown'
-  if (process.env.NODE_ENV === 'production') return 'unknown'
-  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (getPlatformBindings().runtime === "cloudflare")
+    return request.headers.get("cf-connecting-ip") || "unknown";
+  if (process.env.NODE_ENV === "production") return "unknown";
+  const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
-    return forwardedFor.split(',')[0]?.trim() || 'unknown'
+    return forwardedFor.split(",")[0]?.trim() || "unknown";
   }
 
-  const realIp = request.headers.get('x-real-ip')
+  const realIp = request.headers.get("x-real-ip");
   if (realIp) {
-    return realIp.trim()
+    return realIp.trim();
   }
 
-  const cfIp = request.headers.get('cf-connecting-ip')
+  const cfIp = request.headers.get("cf-connecting-ip");
   if (cfIp) {
-    return cfIp.trim()
+    return cfIp.trim();
   }
 
-  return 'unknown'
+  return "unknown";
 }
 
 export async function enforceRateLimit(options: RateLimitOptions) {
-  const scope = options.key.split(':')[0] as 'contact' | 'newsletter' | 'monitor'
-  const binding = getPlatformBindings().rateLimiters?.[scope]
+  const scope = options.key.split(":")[0] as
+    | "contact"
+    | "newsletter"
+    | "monitor";
+  const binding = getPlatformBindings().rateLimiters?.[scope];
   if (binding) {
-    const result = await binding.limit({ key: options.key })
-    return { allowed: result.success, retryAfterSeconds: 60, remaining: result.success ? 1 : 0 }
+    const result = await binding.limit({ key: options.key });
+    return {
+      allowed: result.success,
+      retryAfterSeconds: 60,
+      remaining: result.success ? 1 : 0,
+    };
   }
-  if (process.env.NODE_ENV === 'production' || getPlatformBindings().runtime === 'cloudflare') throw new Error('Production rate limiter binding missing.')
-  return checkRateLimit(options)
+  if (
+    process.env.NODE_ENV === "production" ||
+    getPlatformBindings().runtime === "cloudflare"
+  )
+    throw new Error("Production rate limiter binding missing.");
+  return checkRateLimit(options);
 }
 
 export function checkRateLimit({ key, limit, windowMs }: RateLimitOptions) {
-  const now = Date.now()
-  pruneExpiredEntries(now)
+  const now = Date.now();
+  pruneExpiredEntries(now);
 
-  const store = getRateLimitStore()
-  const current = store.get(key)
+  const store = getRateLimitStore();
+  const current = store.get(key);
 
   if (!current || current.resetAt <= now) {
     store.set(key, {
       count: 1,
       resetAt: now + windowMs,
-    })
+    });
 
     return {
       allowed: true,
       remaining: Math.max(0, limit - 1),
       retryAfterSeconds: Math.ceil(windowMs / 1000),
-    }
+    };
   }
 
   if (current.count >= limit) {
@@ -92,21 +104,21 @@ export function checkRateLimit({ key, limit, windowMs }: RateLimitOptions) {
       allowed: false,
       remaining: 0,
       retryAfterSeconds: Math.max(1, Math.ceil((current.resetAt - now) / 1000)),
-    }
+    };
   }
 
-  current.count += 1
-  store.set(key, current)
+  current.count += 1;
+  store.set(key, current);
 
   return {
     allowed: true,
     remaining: Math.max(0, limit - current.count),
     retryAfterSeconds: Math.max(1, Math.ceil((current.resetAt - now) / 1000)),
-  }
+  };
 }
 
 export function buildContentSecurityPolicy() {
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = process.env.NODE_ENV === "development";
   return [
     "default-src 'self'",
     "base-uri 'self'",
@@ -114,7 +126,7 @@ export function buildContentSecurityPolicy() {
     "frame-ancestors 'none'",
     "object-src 'none'",
     // 'unsafe-eval' is required by webpack HMR in development only
-    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms`,
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https://www.google-analytics.com https://www.clarity.ms https://i.ytimg.com https://img.youtube.com",
@@ -124,21 +136,28 @@ export function buildContentSecurityPolicy() {
     "media-src 'self' blob: https://www.youtube.com",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
-    'upgrade-insecure-requests',
-  ].join('; ')
+    "upgrade-insecure-requests",
+  ].join("; ");
 }
 
 export function getSecurityHeaders(): SecurityHeaders {
   return [
-    { key: 'Content-Security-Policy', value: buildContentSecurityPolicy() },
-    { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-    { key: 'X-Content-Type-Options', value: 'nosniff' },
-    { key: 'X-Frame-Options', value: 'DENY' },
-    { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
-    { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
-    { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=()' },
-    { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+    { key: "Content-Security-Policy", value: buildContentSecurityPolicy() },
+    { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    { key: "X-Content-Type-Options", value: "nosniff" },
+    { key: "X-Frame-Options", value: "DENY" },
+    { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+    { key: "Cross-Origin-Resource-Policy", value: "same-site" },
+    {
+      key: "Permissions-Policy",
+      value:
+        "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=()",
+    },
+    {
+      key: "Strict-Transport-Security",
+      value: "max-age=63072000; includeSubDomains; preload",
+    },
     // Prevent MIME sniffing for SW
-    { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
-  ]
+    { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
+  ];
 }

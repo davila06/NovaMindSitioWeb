@@ -1,5 +1,5 @@
 import { getServerEnv } from "@/lib/env";
-import { getPlatformBindings } from "@/lib/platform";
+import { getPlatformBindings } from "#platform";
 
 export type MailMessage = {
   subject: string;

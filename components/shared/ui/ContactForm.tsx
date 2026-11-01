@@ -449,6 +449,7 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
                   onBlur={() => handleFieldBlur("name")}
                   placeholder="Tu nombre"
                   autoComplete="name"
+                  aria-label="Nombre"
                   aria-invalid={Boolean(errors.name)}
                   required
                   aria-describedby={
@@ -475,6 +476,7 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
                   onBlur={() => handleFieldBlur("email")}
                   placeholder="correo@ejemplo.com"
                   autoComplete="email"
+                  aria-label="Correo empresarial"
                   aria-invalid={Boolean(errors.email)}
                   required
                   aria-describedby={
@@ -514,6 +516,7 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
               <span>Interés principal</span>
               <select
                 value={form.interest}
+                aria-label="Interés principal"
                 aria-invalid={Boolean(errors.interest)}
                 onChange={(e) => updateField("interest", e.target.value)}
                 onFocus={() => handleFieldFocus("interest")}
@@ -599,6 +602,7 @@ export function ContactForm({ plan }: { plan?: string } = {}) {
               <span>Mensaje</span>
               <textarea
                 rows={5}
+                aria-label="Mensaje"
                 aria-invalid={Boolean(errors.message)}
                 value={form.message}
                 onChange={(e) => updateField("message", e.target.value)}

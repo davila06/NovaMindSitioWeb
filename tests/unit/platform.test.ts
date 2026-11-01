@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const bindings = vi.hoisted(() => ({ send: vi.fn(), limit: vi.fn() }));
-vi.mock("@/lib/platform", () => ({
+vi.mock("#platform", () => ({
   getPlatformBindings: () => ({
     runtime: "cloudflare",
     email: { send: bindings.send },

@@ -2,6 +2,12 @@
   "name": "sitio-web",
   "private": true,
   "type": "module",
+  "imports": {
+    "#platform": {
+      "workerd": "./lib/platform.cloudflare.ts",
+      "default": "./lib/platform.ts"
+    }
+  },
   "version": "0.0.0",
   "engines": {
     "node": "^24.22.0"

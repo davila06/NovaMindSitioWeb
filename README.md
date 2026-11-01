@@ -106,6 +106,20 @@ Configura al menos un proveedor de correo:
 
 ## Despliegue
 
+### Plataforma acordada
+
+- Dominio web: `novamindglobalcr.com`; registro, DNS, TLS, seguridad y despliegues en Cloudflare. No se usara Vercel.
+- Hosting previsto: Cloudflare Workers. La compatibilidad del runtime y la adaptacion de Next.js siguen pendientes; un build de Next.js no valida por si solo el despliegue en Workers.
+- Marca de producto: PawTrack CR / NALA, inspirado por NALA, dentro del portafolio de NovaMind Global.
+- Portal de producto: [PawTrack CR](https://pawtrackcr.com); acceso a la aplicacion: [Login](https://app.pawtrackcr.com/login).
+- Dominios controlados confirmados: `novamindglobalcr.com` y `pawtrackcr.com`. No se controla `novamindglobal.com`.
+- Contacto principal: `info@novamindglobalcr.com`. Aliases previstos: `contacto`, `ventas`, `soporte`, `alianzas`, `privacidad` y `legal`, todos en `novamindglobalcr.com`.
+- Destino confirmado de Email Routing: `novamindglobalcr@gmail.com`. Los aliases y la verificacion del destino siguen pendientes de configurar en Cloudflare. Email Routing no proporciona un buzon corporativo ni sustituye el envio de los formularios.
+- Configuracion de ejemplo para formularios: `CONTACT_TO_EMAIL=novamindglobalcr@gmail.com` y `CONTACT_FROM_EMAIL=info@novamindglobalcr.com`. Requiere proveedor de envio habilitado y dominio remitente verificado; no se han aplicado variables de produccion.
+- Repositorio seleccionado para despliegues: este repositorio; su conexion con Workers Builds sigue pendiente.
+- El backend conserva Resend/SMTP; Email Routing no se ha integrado como proveedor de envio. La migracion del correo transaccional a Cloudflare Email Service queda pendiente de validar disponibilidad y configuracion.
+- Evolucion de correo propuesta: Microsoft 365 Business; no esta configurado.
+
 Compatible con despliegue estándar de Next.js en servicios gestionados o contenedores. Para despliegue productivo, asegurar:
 
 - Variables de entorno completas.

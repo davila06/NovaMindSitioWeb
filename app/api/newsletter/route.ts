@@ -88,8 +88,14 @@ export async function POST(request: Request) {
     // If RESEND_API_KEY is configured, forward subscription notification.
     // Otherwise log to server console (works without external dependencies).
     const resendKey = process.env.RESEND_API_KEY;
-    const toEmail = process.env.CONTACT_EMAIL ?? "contacto@novamindglobal.com";
-    const fromEmail = process.env.FROM_EMAIL ?? "noreply@novamindglobal.com";
+    const toEmail =
+      process.env.CONTACT_TO_EMAIL ??
+      process.env.CONTACT_EMAIL ??
+      "novamindglobalcr@gmail.com";
+    const fromEmail =
+      process.env.CONTACT_FROM_EMAIL ??
+      process.env.FROM_EMAIL ??
+      "info@novamindglobalcr.com";
 
     if (resendKey) {
       await fetch("https://api.resend.com/emails", {

@@ -223,16 +223,15 @@ export function ProductGrid() {
                       section: "product_grid",
                       ctaLabel:
                         product.slug === "pawtrack"
-                          ? "descargar_gratis"
+                          ? "explorar_pawtrack"
                           : "ver_producto",
                       destination: `/productos/${product.slug}`,
                       product: product.slug,
-                      intent:
-                        product.slug === "pawtrack" ? "download" : "explore",
+                      intent: "explore",
                     }}
                   >
                     {product.slug === "pawtrack"
-                      ? "Descargar gratis"
+                      ? "Conocer PawTrack CR"
                       : "Ver cómo funciona"}
                   </Button>
                 </Card>

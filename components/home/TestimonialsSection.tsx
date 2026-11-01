@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useScrollReveal } from "@/lib/useScrollReveal";
 import { useEffect, useState } from "react";
 
-const SITE_URL = "https://novamindglobal.com";
+const SITE_URL = "https://novamindglobalcr.com";
 
 const aggregateRatingSchema = {
   "@context": "https://schema.org",

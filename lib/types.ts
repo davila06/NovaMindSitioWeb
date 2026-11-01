@@ -10,7 +10,7 @@ export type Product = {
   shortDescription: string;
   heroTitle: string;
   heroSubtitle: string;
-  heroStats?: Array<{ label: string; value: string }>;
+  heroStats: Array<{ label: string; value: string }>;
   /** URL opcional de screenshot del producto — se muestra en marco de browser */
   screenshotUrl?: string;
   /** ID de video de YouTube para demo embed en página de producto */

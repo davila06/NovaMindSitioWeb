@@ -8,11 +8,19 @@ import { trackEvent, trackFormProgress } from "@/lib/analytics-client";
 import { getStoredUTM } from "@/lib/useUTM";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
 
-const serviceInterestOptions = ['Consultoría', 'NovaClick — ClickFix (Residencial)', 'NovaClick — ITOn-Demand (Empresarial)', 'Suscripción SaaS']
+const serviceInterestOptions = [
+  "Consultoría",
+  "NovaClick — ClickFix (Residencial)",
+  "NovaClick — ITOn-Demand (Empresarial)",
+  "Suscripción SaaS",
+];
 
-const productInterestOptions = products.map((product) => product.name)
+const productInterestOptions = products.map((product) => product.name);
 
-const allInterestOptions = [...serviceInterestOptions, ...productInterestOptions]
+const allInterestOptions = [
+  ...serviceInterestOptions,
+  ...productInterestOptions,
+];
 
 type FormState = {
   name: string;
@@ -576,10 +584,10 @@ export function ContactForm() {
                 campos marcados con * son obligatorios. Puede ejercer sus
                 derechos de acceso, rectificación y supresión escribiendo a{" "}
                 <a
-                  href="mailto:privacidad@novamindglobal.com"
+                  href="mailto:privacidad@novamindglobalcr.com"
                   className="text-brand-lavender hover:underline"
                 >
-                  privacidad@novamindglobal.com
+                  privacidad@novamindglobalcr.com
                 </a>
                 . Consulte nuestra{" "}
                 <Link

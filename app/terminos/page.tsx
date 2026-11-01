@@ -17,7 +17,7 @@ const sections = [
   {
     title: "1. Aceptación",
     content:
-      "Al acceder a novamindglobal.com usted acepta estos Términos. Si no está de acuerdo, por favor no utilice este sitio.",
+      "Al acceder a novamindglobalcr.com usted acepta estos Términos. Si no está de acuerdo, por favor no utilice este sitio.",
   },
   {
     title: "2. Descripción del servicio",
@@ -69,7 +69,7 @@ export default function TerminosPage() {
           </h1>
           <p className="mt-4 text-text-muted">
             Última actualización: enero 2026 · Vigente para el sitio{" "}
-            <strong className="text-[#f0f8ff]">novamindglobal.com</strong>
+            <strong className="text-[#f0f8ff]">novamindglobalcr.com</strong>
           </p>
         </div>
 
@@ -92,10 +92,10 @@ export default function TerminosPage() {
         <p className="mt-10 text-xs text-text-subtle">
           Consultas legales:{" "}
           <a
-            href="mailto:legal@novamindglobal.com"
+            href="mailto:legal@novamindglobalcr.com"
             className="text-brand-lavender hover:underline"
           >
-            legal@novamindglobal.com
+            legal@novamindglobalcr.com
           </a>
         </p>
       </Container>

@@ -1,28 +1,30 @@
-import { NextResponse } from 'next/server'
-import { getBlogPostSummaries } from '@/lib/content'
+import { NextResponse } from "next/server";
+import { getBlogPostSummaries } from "@/lib/content";
+import { siteConfig } from "@/lib/seo";
 
-const SITE_URL = 'https://novamindglobal.com'
-const SITE_NAME = 'Novamind Global'
-const SITE_DESCRIPTION = 'Insights sobre IA aplicada, SaaS empresarial y transformación digital para organizaciones en LATAM.'
-const AUTHOR_EMAIL = 'contacto@novamindglobal.com'
+const SITE_URL = siteConfig.url;
+const SITE_NAME = "Novamind Global";
+const SITE_DESCRIPTION =
+  "Insights sobre IA aplicada, SaaS empresarial y transformación digital para organizaciones en LATAM.";
+const AUTHOR_EMAIL = "info@novamindglobalcr.com";
 
 function escapeXml(str: string) {
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 export async function GET() {
-  const posts = await getBlogPostSummaries()
+  const posts = await getBlogPostSummaries();
 
   const items = posts
     .slice(0, 20)
     .map((post) => {
-      const url = `${SITE_URL}/blog/${post.slug}`
-      const pubDate = new Date(post.date).toUTCString()
+      const url = `${SITE_URL}/blog/${post.slug}`;
+      const pubDate = new Date(post.date).toUTCString();
       return `
     <item>
       <title>${escapeXml(post.title)}</title>
@@ -32,13 +34,14 @@ export async function GET() {
       <pubDate>${pubDate}</pubDate>
       <category>${escapeXml(post.category)}</category>
       <dc:creator>${SITE_NAME}</dc:creator>
-    </item>`
+    </item>`;
     })
-    .join('\n')
+    .join("\n");
 
-  const lastBuildDate = posts.length > 0
-    ? new Date(posts[0]!.date).toUTCString()
-    : new Date().toUTCString()
+  const lastBuildDate =
+    posts.length > 0
+      ? new Date(posts[0]!.date).toUTCString()
+      : new Date().toUTCString();
 
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
@@ -62,12 +65,12 @@ export async function GET() {
     </image>
 ${items}
   </channel>
-</rss>`
+</rss>`;
 
   return new NextResponse(rss, {
     headers: {
-      'Content-Type': 'application/rss+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      "Content-Type": "application/rss+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
     },
-  })
+  });
 }

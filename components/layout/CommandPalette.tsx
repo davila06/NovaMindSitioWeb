@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ChevronRight } from "lucide-react";
 import { navLinks } from "@/data/site";
@@ -71,7 +71,7 @@ export function CommandPalette() {
     setOpen(false);
   }
 
-  function handleInputKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+  function handleInputKeyDown(e: ReactKeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setFocusedIndex((i) => Math.min(i + 1, filtered.length - 1));

@@ -23,7 +23,7 @@ function BrowserFrame({ src, alt }: { src: string; alt: string }) {
           aria-hidden="true"
         />
         <div className="ml-3 flex-1 rounded-md bg-brand-void/60 px-3 py-1 text-[11px] text-text-subtle">
-          app.novamindglobal.com
+          Vista del producto
         </div>
       </div>
       <div className="relative aspect-video">

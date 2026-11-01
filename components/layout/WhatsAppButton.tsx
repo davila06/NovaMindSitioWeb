@@ -1,8 +1,8 @@
 "use client";
 
-import { AtSign, Bot } from "lucide-react";
+import { AtSign } from "lucide-react";
 
-const WA_NUMBER = "50688888888"; // TODO: reemplazar con número real de WhatsApp
+const WA_NUMBER = "50687669318";
 const WA_MESSAGE =
   "Hola, me interesa conocer más sobre los productos de Novamind Global.";
 

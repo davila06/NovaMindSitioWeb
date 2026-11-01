@@ -239,7 +239,7 @@ export function Footer() {
                 label: "MindFlow AI Sales Engine",
               },
               { href: "/productos/iads", label: "IADS" },
-              { href: "/productos/pawtrack", label: "Mi Mascotica" },
+              { href: "/productos/pawtrack", label: "PawTrack CR / NALA" },
             ].map((link) => (
               <li key={link.href}>
                 <Link
@@ -257,8 +257,14 @@ export function Footer() {
         <div>
           <h5 className="text-sm font-semibold text-[#f0f8ff]">Contacto</h5>
           <div className="mt-4 space-y-1.5 text-sm text-text-muted">
-            <p>contacto@novamindglobal.com</p>
-            <p>+506 0000-0000</p>
+            <p>
+              <a href="mailto:info@novamindglobalcr.com">
+                info@novamindglobalcr.com
+              </a>
+            </p>
+            <p>
+              <a href="tel:+50687669318">+506 8766 9318</a>
+            </p>
             <p>Costa Rica</p>
           </div>
           <Button

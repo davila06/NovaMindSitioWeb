@@ -1,20 +1,20 @@
-import type { Metadata } from 'next'
+import type { Metadata } from "next";
 
 export const siteConfig = {
-  name: 'Novamind Global',
-  url: 'https://novamindglobal.com',
-  defaultOgImage: '/opengraph-image',
-  defaultTwitterImage: '/twitter-image',
-  locale: 'es_CR',
-}
+  name: "Novamind Global",
+  url: "https://novamindglobalcr.com",
+  defaultOgImage: "/opengraph-image",
+  defaultTwitterImage: "/twitter-image",
+  locale: "es_CR",
+};
 
 export const keywords = [
-  'IA para empresas Costa Rica',
-  'SaaS Costa Rica',
-  'ERP con IA',
-  'Software de planillas',
-  'Contact center IA',
-]
+  "IA para empresas Costa Rica",
+  "SaaS Costa Rica",
+  "ERP con IA",
+  "Software de planillas",
+  "Contact center IA",
+];
 
 export function createPageMetadata({
   title,
@@ -22,13 +22,15 @@ export function createPageMetadata({
   path,
   extraKeywords = [],
 }: {
-  title: string
-  description: string
-  path: string
-  extraKeywords?: string[]
+  title: string;
+  description: string;
+  path: string;
+  extraKeywords?: string[];
 }): Metadata {
-  const url = `${siteConfig.url}${path}`
-  const allKeywords = extraKeywords.length ? [...extraKeywords, ...keywords] : keywords
+  const url = `${siteConfig.url}${path}`;
+  const allKeywords = extraKeywords.length
+    ? [...extraKeywords, ...keywords]
+    : keywords;
   return {
     title,
     description,
@@ -36,7 +38,7 @@ export function createPageMetadata({
     openGraph: {
       title,
       description,
-      type: 'website',
+      type: "website",
       url,
       siteName: siteConfig.name,
       locale: siteConfig.locale,
@@ -50,7 +52,7 @@ export function createPageMetadata({
       ],
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title,
       description,
       images: [siteConfig.defaultTwitterImage],
@@ -64,12 +66,12 @@ export function createPageMetadata({
       googleBot: {
         index: true,
         follow: true,
-        'max-snippet': -1,
-        'max-image-preview': 'large',
-        'max-video-preview': -1,
+        "max-snippet": -1,
+        "max-image-preview": "large",
+        "max-video-preview": -1,
       },
     },
-  }
+  };
 }
 
 /** Product-specific metadata with tailored keywords for Google Search rich results */
@@ -79,10 +81,10 @@ export function createProductMetadata({
   slug,
   extraKeywords = [],
 }: {
-  name: string
-  description: string
-  slug: string
-  extraKeywords?: string[]
+  name: string;
+  description: string;
+  slug: string;
+  extraKeywords?: string[];
 }): Metadata {
   const productKeywords = [
     `${name} Costa Rica`,
@@ -90,11 +92,11 @@ export function createProductMetadata({
     `software ${name.toLowerCase()} empresarial`,
     `automatización ${name.toLowerCase()} IA`,
     ...extraKeywords,
-  ]
+  ];
   return createPageMetadata({
     title: `${name} | Novamind Global`,
     description,
     path: `/productos/${slug}`,
     extraKeywords: productKeywords,
-  })
+  });
 }

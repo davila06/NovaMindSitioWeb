@@ -20,7 +20,7 @@ export const blogFrontmatterSchema = z.object({
   readTime: z.number().int().positive().optional(),
 });
 
-const productSchema: z.ZodType<Product> = z.object({
+const productSchema = z.object({
   slug: z.string().min(2),
   name: z.string().min(2),
   shortDescription: z.string().min(10),
@@ -66,7 +66,11 @@ const marketPageSchema: z.ZodType<MarketPageShape> = z.object({
     .min(1),
 });
 
-export function validateProductsContent(products: Product[]) {
+export function validateProductsContent(
+  products: Array<
+    Omit<Product, "heroStats"> & { heroStats?: Product["heroStats"] }
+  >,
+) {
   return z.array(productSchema).parse(products);
 }
 

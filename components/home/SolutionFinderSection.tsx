@@ -168,7 +168,7 @@ export function SolutionFinderSection() {
               </p>
               <div className="mt-6 rounded-2xl border border-brand-lavender/15 bg-brand-void/60 p-4 text-sm text-text-muted">
                 {recommendedProduct.slug === "pawtrack"
-                  ? "Siguiente paso sugerido: revisar la página del producto y descargar gratis la aplicación para empezar de inmediato."
+                  ? "Siguiente paso sugerido: conocer PawTrack CR / NALA y consultar sus funciones, planes y condiciones antes de acceder a la aplicación."
                   : "Siguiente paso sugerido: revisar la página del producto y luego solicitar una demo con contexto ya definido."}
               </div>
               <div className="mt-6 flex flex-wrap gap-3">

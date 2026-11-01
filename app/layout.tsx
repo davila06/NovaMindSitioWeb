@@ -74,7 +74,7 @@ export default function RootLayout({
           width: 240,
           height: 60,
         },
-        email: "contacto@novamindglobal.com",
+        email: "info@novamindglobalcr.com",
         foundingDate: "2022",
         numberOfEmployees: { "@type": "QuantitativeValue", value: 20 },
         knowsAbout: [
@@ -92,7 +92,7 @@ export default function RootLayout({
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "sales",
-          email: "contacto@novamindglobal.com",
+          email: "info@novamindglobalcr.com",
           availableLanguage: ["Spanish", "English"],
           areaServed: ["CR", "LATAM"],
         },
@@ -102,7 +102,7 @@ export default function RootLayout({
         "@id": `${siteConfig.url}/#localbusiness`,
         name: siteConfig.name,
         url: siteConfig.url,
-        email: "contacto@novamindglobal.com",
+        email: "info@novamindglobalcr.com",
         address: {
           "@type": "PostalAddress",
           addressCountry: "CR",
@@ -177,18 +177,10 @@ export default function RootLayout({
         <link
           rel="alternate"
           hrefLang="x-default"
-          href="https://novamindglobal.com/"
+          href={`${siteConfig.url}/`}
         />
-        <link
-          rel="alternate"
-          hrefLang="es"
-          href="https://novamindglobal.com/"
-        />
-        <link
-          rel="alternate"
-          hrefLang="es-CR"
-          href="https://novamindglobal.com/"
-        />
+        <link rel="alternate" hrefLang="es" href={`${siteConfig.url}/`} />
+        <link rel="alternate" hrefLang="es-CR" href={`${siteConfig.url}/`} />
         {/* RSS autodiscovery */}
         <link
           rel="alternate"

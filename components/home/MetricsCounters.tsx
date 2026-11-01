@@ -10,7 +10,6 @@ function AnimatedMetric({
   value,
   suffix,
   label,
-  role,
   index,
 }: {
   value: string;

@@ -487,13 +487,12 @@ export const products: Product[] = validateProductsContent([
   },
   {
     slug: "pawtrack",
-    name: "Mi Mascotica",
+    name: "PawTrack CR / NALA",
     shortDescription:
-      "App gratuita para reportar, encontrar y reunificar mascotas con apoyo de comunidad e IA visual.",
-    heroTitle:
-      "Mi Mascotica: descarga gratuita para proteger y reunificar mascotas",
+      "Identidad digital y herramientas de recuperacion y cuidado para mascotas. Inspirado por NALA.",
+    heroTitle: "PawTrack CR / NALA: identidad, recuperacion y cuidado",
     heroSubtitle:
-      "Disponible como descarga gratuita, combina identificacion por QR y matching visual asistido por IA para conectar reportes y hallazgos en menos tiempo.",
+      "Inspirado por NALA. Una plataforma de NovaMind Global para identificar mascotas por QR y coordinar su recuperacion. Consulta las funciones, planes y limites en PawTrack CR.",
     heroStats: [],
     problem: [
       "Reportes dispersos en redes sociales",
@@ -556,14 +555,14 @@ export const products: Product[] = validateProductsContent([
     ],
     faq: [
       {
-        question: "Mi Mascotica tiene costo?",
+        question: "PawTrack CR / NALA tiene costo?",
         answer:
-          "No. Mi Mascotica es un sistema de descarga gratuita para usuarios y comunidades.",
+          "PawTrack CR ofrece un alcance gratuito con limites definidos. Consulta los planes y las condiciones vigentes en pawtrackcr.com.",
       },
       {
         question: "Se pueden registrar multiples mascotas?",
         answer:
-          "Si, cada usuario puede administrar varios perfiles con historial independiente.",
+          "La cantidad de mascotas y las funciones disponibles dependen del plan. Consulta los limites vigentes en pawtrackcr.com.",
       },
     ],
   },

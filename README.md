@@ -61,8 +61,10 @@ Contacto y ambos formularios de newsletter usan Turnstile. El servidor valida to
 
 ### Analytics
 
-- `NEXT_PUBLIC_GA_ID`
+- `NEXT_PUBLIC_GA_ID`: GA4 de NovaMind Global Web, `G-NYG6JCK4S2`, flujo de `https://novamindglobalcr.com`. Este ID es el valor predeterminado del sitio si la variable no existe; una cadena vacia desactiva GA4 para pruebas y staging. Se configura al compilar, no como secreto ni binding del Worker.
 - `NEXT_PUBLIC_CLARITY_ID`
+
+La cuenta NovaMind Global y su propiedad son independientes de PawTrack CR. La etiqueta se carga solo al aceptar cookies de analitica; los eventos personalizados se bloquean tras revocar el consentimiento. No instalar una segunda etiqueta manual ni usar el ID de PawTrack. Tras publicar, aceptar cookies en el sitio y comprobar la actividad en el informe En tiempo real de esta propiedad; los informes habituales pueden tardar hasta 48 horas.
 
 ### Monitoreo
 

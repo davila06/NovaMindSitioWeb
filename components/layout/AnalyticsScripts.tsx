@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { CONSENT_EVENT, isAnalyticsConsented } from "@/lib/analytics-client";
 
 export function AnalyticsScripts() {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const gaId = process.env.NEXT_PUBLIC_GA_ID ?? "G-NYG6JCK4S2";
   const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
   const [enabled, setEnabled] = useState(false);
   useEffect(() => {

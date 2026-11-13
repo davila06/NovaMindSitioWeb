@@ -1,0 +1,9 @@
+{
+  "http://127.0.0.1:3000/": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1794603423082-96894.report.html",
+  "http://127.0.0.1:3000/nova-assist": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1794603423639-98996.report.html",
+  "http://127.0.0.1:3000/nova-assist/visita-express": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1794603424086-11514.report.html",
+  "http://127.0.0.1:3000/nova-assist/plan-familia": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1794603424650-46353.report.html",
+  "http://127.0.0.1:3000/nova-assist/total-home": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1794603425153-70474.report.html",
+  "http://127.0.0.1:3000/nova-assist/comparar": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1794603425588-26900.report.html",
+  "http://127.0.0.1:3000/nova-assist/solicitar": "https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1794603426082-15943.report.html"
+}

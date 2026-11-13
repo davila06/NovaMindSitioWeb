@@ -299,9 +299,6 @@ export async function POST(request: Request) {
       stack: error instanceof Error ? error.stack : undefined,
       requestId,
       route: "/api/contact",
-      context: {
-        clientIp,
-      },
     });
 
     return buildErrorResponse(

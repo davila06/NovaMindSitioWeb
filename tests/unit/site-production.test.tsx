@@ -178,6 +178,33 @@ describe("production destinations", () => {
     expect(capturedLogs).not.toContain("192.0.2.44");
   });
 
+  it("does not include client IP or form values in unexpected-error logs", async () => {
+    vi.stubEnv("SMTP_PORT", "not-a-port");
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const response = await submitContact(
+        new Request("https://novamindglobalcr.com/api/contact", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Forwarded-For": "192.0.2.44",
+          },
+          body: JSON.stringify({
+            ...contact,
+            name: "private-customer-name",
+          }),
+        }),
+      );
+      expect(response.status).toBe(503);
+      const capturedLogs = JSON.stringify(errorLog.mock.calls);
+      expect(capturedLogs).not.toContain("private-customer-name");
+      expect(capturedLogs).not.toContain("audit@example.com");
+      expect(capturedLogs).not.toContain("192.0.2.44");
+    } finally {
+      errorLog.mockRestore();
+    }
+  });
+
   it("does not report a rejected contact email as delivered", async () => {
     configureMail();
     vi.stubGlobal(

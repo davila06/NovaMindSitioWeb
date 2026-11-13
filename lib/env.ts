@@ -11,6 +11,12 @@ const envSchema = z.object({
   SMTP_USER: optionalString,
   SMTP_PASS: optionalString,
   MAIL_PROVIDER: z.enum(['auto', 'resend', 'smtp', 'cloudflare']).default('auto'),
+  TURNSTILE_ENABLED: z.preprocess(
+    value => value === '' ? undefined : value,
+    z.enum(['true', 'false']).default('false'),
+  ),
+  TURNSTILE_SECRET_KEY: optionalString,
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: optionalString,
 
   // Contact routing
   CONTACT_TO_EMAIL: optionalEmail,

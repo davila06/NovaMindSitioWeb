@@ -6,6 +6,7 @@ import { enforceRateLimit, getClientIp } from "@/lib/security";
 import { ApiRequestError, readJsonRequest } from "@/lib/http";
 import { getServerEnv } from "@/lib/env";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { containsCredentialLikeText } from "@/lib/contact-input";
 
 const leadVolumeOptions = ["<100", "100-500", "500-2000", "2000+"] as const;
 const urgencyOptions = ["baja", "media", "alta", "critica"] as const;
@@ -30,6 +31,10 @@ const contactSchema = z.object({
   company: z.string().trim().max(160).optional(),
   plan: z.string().trim().max(80).optional(),
   interest: z.string().trim().min(2).max(120),
+  customerStatus: z.enum(["new", "existing"]).optional(),
+  deviceType: z.string().trim().max(80).optional(),
+  requestPreference: z.enum(["remote", "visit", "unsure"]).optional(),
+  serviceArea: z.string().trim().max(120).optional(),
   leadVolume: z.preprocess(
     (value) => (value === "" ? undefined : value),
     z.enum(leadVolumeOptions).optional(),
@@ -51,6 +56,28 @@ const contactSchema = z.object({
     message:
       "Se requiere consentimiento explícito para el tratamiento de datos.",
   }),
+}).superRefine((data, context) => {
+  const textFields = [
+    "name",
+    "email",
+    "company",
+    "plan",
+    "interest",
+    "deviceType",
+    "serviceArea",
+    "message",
+  ] as const;
+  for (const field of textFields) {
+    const value = data[field];
+    if (value && containsCredentialLikeText(value)) {
+      context.addIssue({
+        code: "custom",
+        path: [field],
+        message:
+          "Elimina contraseñas, PIN, códigos privados o datos de tarjeta antes de enviar.",
+      });
+    }
+  }
 });
 
 type ContactPayload = z.infer<typeof contactSchema>;
@@ -60,6 +87,24 @@ function buildEmailHtml(data: ContactPayload) {
   const safeEmail = escapeHtml(data.email);
   const safeCompany = escapeHtml(data.company || "No indicada");
   const safeInterest = escapeHtml(data.interest);
+  const safeCustomerStatus = escapeHtml(
+    data.customerStatus === "existing"
+      ? "Cliente actual"
+      : data.customerStatus === "new"
+        ? "Cliente nuevo"
+        : "No indicado",
+  );
+  const safeDeviceType = escapeHtml(data.deviceType || "No indicado");
+  const safeRequestPreference = escapeHtml(
+    data.requestPreference === "remote"
+      ? "Remoto"
+      : data.requestPreference === "visit"
+        ? "Visita"
+        : data.requestPreference === "unsure"
+          ? "Por definir"
+          : "No indicada",
+  );
+  const safeServiceArea = escapeHtml(data.serviceArea || "No indicada");
   const safeLeadVolume = escapeHtml(data.leadVolume || "No indicado");
   const safeUrgency = escapeHtml(data.urgency || "No indicada");
   const safeHorizon = escapeHtml(data.implementationHorizon || "No indicado");
@@ -85,6 +130,10 @@ function buildEmailHtml(data: ContactPayload) {
     <p><strong>Empresa:</strong> ${safeCompany}</p>
     <p><strong>Interes:</strong> ${safeInterest}</p>
     <p><strong>Plan:</strong> ${escapeHtml(data.plan || "No indicado")}</p>
+    ${data.customerStatus ? `<p><strong>Cliente:</strong> ${safeCustomerStatus}</p>` : ""}
+    ${data.deviceType ? `<p><strong>Dispositivo:</strong> ${safeDeviceType}</p>` : ""}
+    ${data.requestPreference ? `<p><strong>Preferencia de atención:</strong> ${safeRequestPreference}</p>` : ""}
+    ${data.serviceArea ? `<p><strong>Zona o localidad:</strong> ${safeServiceArea}</p>` : ""}
     <p><strong>Volumen operativo:</strong> ${safeLeadVolume}</p>
     <p><strong>Urgencia:</strong> ${safeUrgency}</p>
     <p><strong>Horizonte de implementacion:</strong> ${safeHorizon}</p>
@@ -178,8 +227,9 @@ export async function POST(request: Request) {
         requestId,
         route: "/api/contact",
         context: {
-          clientIp,
-          issues: parsed.error.issues,
+          invalidFields: [
+            ...new Set(parsed.error.issues.map((issue) => issue.path.join("."))),
+          ],
         },
       });
 
@@ -195,7 +245,6 @@ export async function POST(request: Request) {
       JSON.stringify({
         event: "consent_recorded",
         requestId,
-        clientIp,
         consentPrivacy: data.consentPrivacy,
         policyVersion: "2026-01",
         timestamp: new Date().toISOString(),
@@ -215,7 +264,7 @@ export async function POST(request: Request) {
       const delivery = await sendMail({
         subject: `[Novamind] Nuevo lead: ${data.interest}`,
         html: buildEmailHtml(data),
-        text: `Nombre: ${data.name}\nEmail: ${data.email}\nEmpresa: ${data.company || "No indicada"}\nInteres: ${data.interest}\nMensaje: ${data.message}`,
+        text: `Nombre: ${data.name}\nEmail: ${data.email}\nEmpresa: ${data.company || "No indicada"}\nInteres: ${data.interest}\nCliente: ${data.customerStatus || "No indicado"}\nDispositivo: ${data.deviceType || "No indicado"}\nPreferencia de atención: ${data.requestPreference || "No indicada"}\nZona o localidad: ${data.serviceArea || "No indicada"}\nMensaje: ${data.message}`,
         replyTo: data.email,
         requestId,
       });

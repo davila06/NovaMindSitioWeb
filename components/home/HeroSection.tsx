@@ -48,13 +48,13 @@ export function HeroSection() {
                 Explorar soluciones B2B
               </Button>
               <Button
-                href="/hogares"
+                href="/nova-assist"
                 variant="ghost"
                 trackingContext={{
                   page: "home",
                   section: "hero",
                   ctaLabel: "explorar_hogares",
-                  destination: "/hogares",
+                  destination: "/nova-assist",
                   intent: "explore",
                 }}
               >

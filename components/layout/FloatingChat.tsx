@@ -6,7 +6,7 @@ import {
   ArrowUpRight,
   Building2,
   Globe2,
-  House,
+  Headset,
   MessageSquareText,
   PawPrint,
   X,
@@ -14,10 +14,10 @@ import {
 
 const destinations = [
   {
-    href: "/hogares",
-    label: "Soporte para hogares",
-    description: "Asistencia para personas y familias",
-    icon: House,
+    href: "/nova-assist",
+    label: "Nova Assist",
+    description: "Soporte tecnológico para hogares",
+    icon: Headset,
     accent: "text-orange-200 bg-orange-300/10 border-orange-200/15",
   },
   {

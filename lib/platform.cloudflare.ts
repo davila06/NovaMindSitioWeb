@@ -4,6 +4,11 @@ import type { PlatformBindings } from "./platform";
 export function getPlatformBindings(): PlatformBindings {
   return {
     runtime: "cloudflare",
+    turnstile: {
+      enabled: env.TURNSTILE_ENABLED === "true",
+      secret: env.TURNSTILE_SECRET_KEY,
+      siteKey: env.TURNSTILE_SITE_KEY,
+    },
     email: {
       send: async (message) => {
         const result = await env.EMAIL.send({

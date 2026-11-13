@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, House, Building2, Mail } from 'lucide-react'
+import { Home, Headset, Building2, Mail } from 'lucide-react'
 
 const mobileNavItems = [
   { href: '/',         icon: Home,      label: 'Inicio' },
-  { href: '/hogares',  icon: House,     label: 'Hogares' },
+  { href: '/nova-assist', icon: Headset, label: 'Nova Assist' },
   { href: '/empresas', icon: Building2, label: 'Empresas' },
   { href: '/contacto', icon: Mail,      label: 'Contacto' },
 ]

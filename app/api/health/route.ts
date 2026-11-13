@@ -25,6 +25,13 @@ export async function GET(request: Request) {
           platform.rateLimiters?.newsletter &&
           platform.rateLimiters?.monitor,
         ),
+      turnstile:
+        config.NODE_ENV !== "production" ||
+        Boolean(
+          platform.turnstile.enabled &&
+          platform.turnstile.secret &&
+          platform.turnstile.siteKey,
+        ),
     };
     const ready = Object.values(checks).every(Boolean);
     return NextResponse.json(

@@ -1,0 +1,43 @@
+[
+  {
+    "name": "auditRan",
+    "expected": 1,
+    "actual": 0,
+    "values": [
+      0
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "uses-responsive-images",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/visita-express"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.9,
+    "actual": 0.5,
+    "values": [
+      0.5
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "unused-javascript",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/visita-express",
+    "auditTitle": "Reduce unused JavaScript",
+    "auditDocumentationLink": "https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/"
+  },
+  {
+    "name": "auditRan",
+    "expected": 1,
+    "actual": 0,
+    "values": [
+      0
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "uses-rel-preconnect",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/visita-express"
+  }
+]

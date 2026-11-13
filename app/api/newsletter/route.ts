@@ -80,7 +80,6 @@ export async function POST(request: Request) {
       JSON.stringify({
         event: "newsletter_consent_recorded",
         requestId,
-        ip,
         consentPrivacy: true,
         policyVersion: "2026-01",
         timestamp: new Date().toISOString(),

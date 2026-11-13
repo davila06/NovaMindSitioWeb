@@ -17,7 +17,7 @@ export const commercialEvidenceEnabled = false
 
 export const navLinks = [
   { href: '/', label: 'Inicio' },
-  { href: '/hogares', label: 'Para hogares' },
+  { href: '/nova-assist', label: 'Nova Assist' },
   { href: '/empresas', label: 'Para empresas' },
   { href: '/#productos', label: 'Productos' },
   { href: '/productos/pawtrack', label: 'PawTrack' },

@@ -4,6 +4,7 @@ import { getSecurityHeaders } from './lib/security'
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  htmlLimitedBots: /.*/,
   /** Keep heavy Node.js-only packages out of the server component bundle */
   serverExternalPackages: ['nodemailer', 'resend'],
   experimental: {

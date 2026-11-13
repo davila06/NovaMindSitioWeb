@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getBlogPostSummaries } from "@/lib/content";
 import { industries, roles } from "@/lib/market";
 import { products } from "@/data/products";
+import { novaAssistServices } from "@/data/nova-assist";
 import { siteConfig } from "@/lib/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -28,11 +29,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.8,
     },
-    {
-      url: `${base}/hogares`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
+    { url: `${base}/nova-assist`, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${base}/nova-assist/servicios`, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${base}/nova-assist/comparar`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/nova-assist/como-funciona`, changeFrequency: "monthly", priority: 0.75 },
+    { url: `${base}/nova-assist/preguntas-frecuentes`, changeFrequency: "monthly", priority: 0.8 },
     {
       url: `${base}/empresas`,
       changeFrequency: "monthly",
@@ -71,6 +72,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
+  const novaAssistPages: MetadataRoute.Sitemap = novaAssistServices.map((service) => ({
+    url: `${base}/nova-assist/${service.slug}`,
+    changeFrequency: "monthly",
+    priority: service.slug === "plan-familia" || service.slug === "total-home" ? 0.85 : 0.75,
+  }));
+
   const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${base}/blog/${post.slug}`,
     lastModified: new Date(post.date),
@@ -92,6 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries = [
     ...staticPages,
+    ...novaAssistPages,
     ...productPages,
     ...blogPages,
     ...industryPages,

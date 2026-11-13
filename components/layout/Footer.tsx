@@ -182,7 +182,10 @@ export function Footer() {
           <ul className="mt-4 space-y-2.5 text-sm">
             {[
               { href: "/", label: "Inicio" },
-              { href: "/hogares", label: "Para hogares" },
+              { href: "/nova-assist", label: "Nova Assist" },
+              { href: "/nova-assist/servicios", label: "Servicios de soporte" },
+              { href: "/nova-assist/comparar", label: "Comparar planes" },
+              { href: "/nova-assist/preguntas-frecuentes", label: "Preguntas frecuentes" },
               { href: "/empresas", label: "Para empresas" },
               { href: "/empresas#servicios", label: "Servicios Nova Assist" },
               { href: "/#productos", label: "Productos" },
@@ -286,6 +289,8 @@ export function Footer() {
       <div className="light-line" />
       <div className="py-5 text-center text-xs text-text-subtle">
         <div className="mb-3 flex justify-center gap-4">
+          <Link href="/nova-assist/privacidad">Privacidad de Nova Assist</Link>
+          <Link href="/nova-assist/terminos">Términos de Nova Assist</Link>
           <Link href="/privacidad">Privacidad</Link>
           <Link href="/terminos">Terminos</Link>
         </div>

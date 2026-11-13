@@ -51,7 +51,7 @@ export function Navbar() {
       className={`sticky top-4 z-40 transition-all duration-300 [perspective:800px] ${scrolled ? "opacity-100" : "opacity-95"}`}
     >
       <div
-        className={`mx-auto flex max-w-7xl items-center justify-between rounded-[28px] border px-5 py-3 shadow-soft backdrop-blur-2xl transition-all duration-300 [transform-style:preserve-3d] sm:px-7 ${scrolled ? "border-brand-lavender/25 bg-[#06091a]/95 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),0_2px_8px_-2px_rgba(139,92,246,0.15)] [transform:translateZ(8px)_rotateX(0.4deg)]" : "border-white/10 bg-[#06091a]/75 [transform:translateZ(0px)_rotateX(0deg)]"}`}
+        className={`mx-auto flex w-[calc(100%-2rem)] max-w-7xl items-center justify-between rounded-[28px] border px-5 py-3 shadow-soft backdrop-blur-2xl transition-all duration-300 [transform-style:preserve-3d] sm:px-7 ${scrolled ? "border-brand-lavender/25 bg-[#06091a]/95 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),0_2px_8px_-2px_rgba(139,92,246,0.15)] [transform:translateZ(8px)_rotateX(0.4deg)]" : "border-white/10 bg-[#06091a]/75 [transform:translateZ(0px)_rotateX(0deg)]"}`}
       >
         <Link
           href="/"

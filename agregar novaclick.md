@@ -44,35 +44,17 @@
 **Título:** “NovaClick — soporte técnico inmediato para hogares y empresas”  
 **Subtítulo:** “ClickFix y ITOn-Demand, dos líneas de servicio bajo una misma plataforma.”
 
-#### 🏠 ClickFix (Residencial)
+#### 🏠 Nova Assist (Residencial)
 
-Planes con precios ajustados (IVA incluido):
+La experiencia vigente está en `/nova-assist`. Incluye Visita Express, Visita Premium, Gamer, Senior, Smart Home, Plan Familia y Total Home. La fuente central de alcances y límites es `data/nova-assist.ts`; no publicar los precios de este borrador histórico.
 
-- Visita Express → ₡19,500
-- Premium → ₡32,000
-- Familiar → ₡52,000
-- Gamer → ₡45,000
-- Senior → ₡26,000
-- SmartHome → ₡39,000
-- Total → ₡65,000
-
-**Beneficios:** diagnóstico rápido, respaldo en nube, configuración IoT, seguridad digital.  
-**CTA:** “Agenda tu servicio ClickFix.”
+**CTA:** “Encontrar mi servicio” o “Solicitar ayuda”.
 
 #### 🏢 ITOn-Demand (Empresarial)
 
-Planes con precios ajustados (IVA incluido):
+El alcance, los tiempos y las condiciones de IT OnDemand se definen según las necesidades de cada organización y se confirman en una propuesta. No asumir precios, disponibilidad ni SLA de este borrador.
 
-- Básico → ₡130,000
-- Avanzado → ₡320,000
-- Total → ₡640,000
-- Startup → ₡190,000
-- Compliance → ₡380,000
-- CloudFirst → ₡255,000
-- Enterprise → ₡770,000
-
-**Beneficios:** respaldo automático, ciberseguridad avanzada, migración cloud, ERP/CRM integrados.  
-**CTA:** “Solicita tu plan ITOn-Demand.”
+**CTA:** “Consultar una necesidad empresarial”.
 
 ---
 

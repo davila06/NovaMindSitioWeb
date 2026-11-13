@@ -25,6 +25,9 @@ export default defineConfig(({ mode }) => ({
       MAIL_PROVIDER: bindings.text("cloudflare"),
       TURNSTILE_ENABLED: bindings.text("true"),
       TURNSTILE_SECRET_KEY: bindings.secret(),
+      TURNSTILE_SITE_KEY: bindings.text(
+        process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "",
+      ),
       CONTACT_FROM_EMAIL: bindings.text("info@novamindglobalcr.com"),
       CONTACT_TO_EMAIL: bindings.text("novamindglobalcr@gmail.com"),
       CONTACT_LIMITER: bindings.rateLimit({

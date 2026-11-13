@@ -103,6 +103,20 @@ test("formulario valida cada paso y conserva el plan sin enviar email real", asy
       },
     });
   });
+  await page.route(
+    "https://challenges.cloudflare.com/turnstile/**",
+    (route) =>
+      route.fulfill({
+        contentType: "application/javascript",
+        body: `window.turnstile = {
+          render: (_container, options) => {
+            queueMicrotask(() => options.callback("e2e-test-token"));
+            return "e2e-test-widget";
+          },
+          remove: () => {}
+        };`,
+      }),
+  );
   await page.goto(`/contacto?plan=${encodeURIComponent(planId)}`);
   await page
     .getByRole("button", { name: "Solo esenciales", exact: true })
@@ -138,6 +152,139 @@ test("formulario valida cada paso y conserva el plan sin enviar email real", asy
   expect(
     await page.evaluate(() => localStorage.getItem("nm-contact-draft")),
   ).toBeNull();
+});
+
+test("Nova Assist recomienda la modalidad correcta y conserva la selección", async ({
+  page,
+}) => {
+  await page.goto("/nova-assist");
+  await page
+    .getByRole("button", { name: "Solo esenciales", exact: true })
+    .click();
+
+  const selector = page.locator("#selector");
+  await expect(selector.locator("[data-interactive='true']")).toBeVisible();
+  const recommendation = selector.locator("[aria-live='polite']");
+  const problemButton = selector.getByRole("button", {
+    name: "Resolver un problema",
+  });
+  await problemButton.click();
+  await expect(problemButton).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    recommendation.getByRole("heading", { name: "Visita Express" }),
+  ).toBeVisible();
+  await expect(recommendation).toContainText(
+    "1 incidente principal · hasta 60 minutos",
+  );
+
+  await selector
+    .getByRole("button", { name: "Sí, necesito más tareas" })
+    .click();
+  await expect(
+    recommendation.getByRole("heading", { name: "Visita Premium" }),
+  ).toBeVisible();
+  await recommendation.getByRole("link", { name: "Solicitar ayuda" }).click();
+  await expect(page).toHaveURL(
+    /\/nova-assist\/solicitar\?service=visita-premium$/,
+  );
+  await expect(page.getByText("Servicio seleccionado")).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test("Nova Assist publica alcance y exclusiones en servicios residenciales y empresariales", async ({
+  page,
+}) => {
+  const servicePages = [
+    { slug: "visita-express", name: "Visita Express", detail: "1 incidente principal" },
+    { slug: "visita-premium", name: "Visita Premium", detail: "Respaldo básico" },
+    { slug: "plan-familia", name: "Plan Familia", detail: "Hasta 5 dispositivos" },
+    { slug: "total-home", name: "Total Home", detail: "Hasta 8 dispositivos" },
+    { slug: "it-ondemand", name: "IT OnDemand", detail: "Servicio empresarial" },
+  ];
+
+  for (const service of servicePages) {
+    await page.goto(`/nova-assist/${service.slug}`);
+    await expect(page.getByRole("heading", { level: 1, name: service.name })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Qué incluye" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Qué no incluye" })).toBeVisible();
+    await expect(page.locator("main")).toContainText(service.detail);
+    await expect(page.locator('head meta[name="description"]')).toHaveAttribute(
+      "content",
+      /.+/,
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      new RegExp(`/nova-assist/${service.slug}$`),
+    );
+    await expect(
+      page.getByRole("link", { name: new RegExp(`Solicitar ${service.name}`) }),
+    ).toHaveAttribute("href", `/nova-assist/solicitar?service=${service.slug}`);
+  }
+});
+
+test("Nova Assist permite enviar una solicitud confirmada sin duplicar el envío", async ({
+  page,
+}) => {
+  let submitCount = 0;
+  let payload: Record<string, unknown> = {};
+  await page.route("**/api/contact", async (route) => {
+    submitCount += 1;
+    payload = route.request().postDataJSON();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await route.fulfill({
+      status: 200,
+      json: {
+        ok: true,
+        channel: "cloudflare",
+        requestId: "nova-assist-e2e",
+        deliveryId: "nova-assist-e2e",
+      },
+    });
+  });
+  await page.route(
+    "https://challenges.cloudflare.com/turnstile/**",
+    (route) =>
+      route.fulfill({
+        contentType: "application/javascript",
+        body: `window.turnstile = {
+          render: (_container, options) => {
+            queueMicrotask(() => options.callback("e2e-test-token"));
+            return "e2e-test-widget";
+          },
+          remove: () => {}
+        };`,
+      }),
+  );
+  await page.goto("/nova-assist/solicitar?service=visita-express");
+  await page.getByRole("button", { name: "Solo esenciales", exact: true }).click();
+  const form = page.getByRole("form", { name: "Solicitud de ayuda de Nova Assist" });
+  await form.getByRole("button", { name: "Sí, ya soy cliente" }).click();
+  await form.getByRole("button", { name: /siguiente/i }).click();
+  await form.getByLabel("Tipo de dispositivo").selectOption("Computadora Windows");
+  await form.getByRole("button", { name: /siguiente/i }).click();
+  await form.getByLabel("Descripción del problema").fill(
+    "La computadora no inicia desde esta mañana.",
+  );
+  await form.getByLabel("Urgencia de la solicitud").selectOption("alta");
+  await form.getByLabel("Preferencia de atención").selectOption("visit");
+  await form.getByRole("button", { name: /siguiente/i }).click();
+  await form.getByLabel("Nombre").fill("Audit User");
+  await form.getByLabel("Correo electrónico").fill("audit@example.com");
+  await form.getByRole("checkbox").check();
+  const submit = form.getByRole("button", { name: "Enviar solicitud" });
+  await submit.dblclick();
+
+  await expect(page.getByRole("heading", { name: "Recibimos tu solicitud." })).toBeVisible();
+  expect(submitCount).toBe(1);
+  expect(payload).toMatchObject({
+    interest: "Visita Express",
+    plan: "nova-assist-visita-express",
+    consentPrivacy: true,
+  });
 });
 
 test("PawTrack dirige al producto externo y no a una demo comercial", async ({

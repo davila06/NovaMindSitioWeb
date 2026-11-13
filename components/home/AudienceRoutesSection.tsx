@@ -5,7 +5,7 @@ import { SectionWrapper } from "@/components/layout/SectionWrapper";
 
 const audiences = [
   {
-    href: "/hogares",
+    href: "/nova-assist",
     eyebrow: "B2C · Personas y hogares",
     title: "Tecnología que funciona en casa.",
     description:

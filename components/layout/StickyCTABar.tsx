@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function StickyCTABar() {
   const [visible, setVisible] = useState(false);
+  const pathname = usePathname();
+  const isNovaAssist = pathname.startsWith("/nova-assist");
 
   useEffect(() => {
     const onScroll = () => {
@@ -25,10 +28,10 @@ export function StickyCTABar() {
       className={`fixed inset-x-0 bottom-14 z-40 flex justify-center px-4 transition-[transform,opacity] duration-300 md:hidden ${visible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}
     >
       <Link
-        href="/contacto"
+        href={isNovaAssist ? "/nova-assist/solicitar" : "/contacto"}
         className="w-full max-w-sm rounded-2xl bg-brand-violet py-3.5 text-center text-sm font-bold text-white shadow-[0_4px_24px_rgba(249,115,22,0.38)] transition hover:bg-brand-iris active:scale-95"
       >
-        Consultar una demostración →
+        {isNovaAssist ? "Solicitar ayuda →" : "Consultar una demostración →"}
       </Link>
     </div>
   );

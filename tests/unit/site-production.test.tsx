@@ -91,6 +91,18 @@ describe("production destinations", () => {
     ).toBe(503);
   });
 
+  it("reports missing production Turnstile configuration as not ready", async () => {
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("TURNSTILE_ENABLED", "false");
+      const response = await health(
+        new Request("https://novamindglobalcr.com/api/health?check=ready"),
+      );
+      expect(response.status).toBe(503);
+      expect(await response.json()).toMatchObject({
+        checks: { turnstile: false },
+      });
+  });
+
   function configureMail() {
     globalThis.__novamindRateLimitStore = undefined;
     vi.stubEnv("RESEND_API_KEY", "test-only");
@@ -127,6 +139,43 @@ describe("production destinations", () => {
       }),
     );
     expect(response.status).toBe(200);
+  });
+
+  it("rejects credentials in contact text before attempting email delivery", async () => {
+    configureMail();
+    const sendMail = vi.fn();
+    vi.stubGlobal("fetch", sendMail);
+    const response = await submitContact(
+      requestFor("/api/contact", {
+        ...contact,
+        message: "Mi contraseña: ejemplo-secreto",
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect(sendMail).not.toHaveBeenCalled();
+  });
+
+  it("does not include invalid form values or client IPs in validation logs", async () => {
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    const response = await submitContact(
+      new Request("https://novamindglobalcr.com/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Forwarded-For": "192.0.2.44",
+        },
+        body: JSON.stringify({
+          ...contact,
+          name: "private-customer-name",
+          email: "not-an-email",
+        }),
+      }),
+    );
+    expect(response.status).toBe(400);
+    const capturedLogs = JSON.stringify(errorLog.mock.calls);
+    expect(capturedLogs).not.toContain("private-customer-name");
+    expect(capturedLogs).not.toContain("not-an-email");
+    expect(capturedLogs).not.toContain("192.0.2.44");
   });
 
   it("does not report a rejected contact email as delivered", async () => {

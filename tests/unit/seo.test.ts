@@ -7,7 +7,15 @@ describe("canonical sitemap", () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     for (const path of [
-      "/hogares",
+      "/nova-assist",
+      "/nova-assist/servicios",
+      "/nova-assist/visita-express",
+      "/nova-assist/visita-premium",
+      "/nova-assist/plan-familia",
+      "/nova-assist/total-home",
+      "/nova-assist/comparar",
+      "/nova-assist/como-funciona",
+      "/nova-assist/preguntas-frecuentes",
       "/empresas",
       "/servicios",
       "/casos",

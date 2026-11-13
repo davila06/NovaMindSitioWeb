@@ -27,6 +27,7 @@ jobs:
     env:
       CLOUDFLARE_ACCOUNT_ID: "107c02d258c4e14855594fdfbdc7d903"
       DEPLOY_MODE: ${{ inputs.environment }}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,6 +41,9 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm audit
+      - name: Validate Turnstile site key
+        run: |
+          test -n "$NEXT_PUBLIC_TURNSTILE_SITE_KEY" || { echo "Missing environment variable NEXT_PUBLIC_TURNSTILE_SITE_KEY"; exit 1; }
       - run: npm run content:index && npx cf build --mode "$DEPLOY_MODE"
       - name: Deploy validated build
         env:
@@ -60,5 +64,9 @@ jobs:
           else
             url="https://staging.novamindglobalcr.com"
           fi
-          curl --fail --retry 5 --retry-delay 5 --max-time 30 "$url/api/health" | \
-            node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{if(JSON.parse(s).status!=="ok")process.exit(1)})'
+          curl --fail --retry 5 --retry-delay 5 --max-time 30 "$url/nova-assist" >/dev/null
+          curl --fail --retry 5 --retry-delay 5 --max-time 30 "$url/nova-assist/solicitar?service=visita-express" >/dev/null
+          curl --fail --retry 5 --retry-delay 5 --max-time 30 "$url/api/health?check=ready" | \
+            node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);if(r.status!=="ready"||Object.values(r.checks||{}).some(v=>v!==true))process.exit(1)})'
+          redirect_url="$(curl --silent --show-error --output /dev/null --write-out '%{redirect_url}' "$url/hogares")"
+          case "$redirect_url" in */nova-assist) ;; *) echo "Legacy /hogares redirect failed: $redirect_url"; exit 1 ;; esac

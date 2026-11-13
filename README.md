@@ -16,11 +16,20 @@ Sitio corporativo construido con Next.js App Router, TypeScript estricto y Tailw
 - `app/`: rutas, layout global, metadata, API routes.
 - `components/`: UI y secciones reutilizables.
 - `data/`: catálogos de productos y contenido comercial estructurado.
+- `data/nova-assist.ts`: fuente central de servicios, límites residenciales, exclusiones, preguntas frecuentes, políticas y zonas configuradas de Nova Assist.
 - `content/blog/`: contenido editorial en MDX.
 - `lib/`: utilidades de SEO, seguridad, contenido, analytics y monitoreo.
 - `styles/`: estilos globales y sistema visual.
 - `tests/unit/`: pruebas unitarias y de componentes con Vitest.
 - `tests/e2e/`: flujos críticos E2E con Playwright.
+
+## Nova Assist
+
+La sección comercial vive en `/nova-assist`, con catálogo, páginas de servicio, selector interactivo, comparador de planes, guía del proceso, preguntas frecuentes, términos, privacidad y solicitud de ayuda. `/hogares` redirige permanentemente a la nueva experiencia para conservar enlaces existentes sin mantener dos catálogos.
+
+Las páginas residenciales consumen `data/nova-assist.ts`. `data/service-plans.ts` conserva únicamente alias de contacto antiguos y cobertura todavía no confirmada; no debe usarse como fuente de alcance residencial ni comercial. La solicitud de Nova Assist reutiliza `/api/contact`, validación Zod, rate limiting, Turnstile, consentimiento de privacidad y la configuración de entrega existente. No solicita contraseñas, PIN, códigos MFA ni datos de tarjeta.
+
+No hay zonas de servicio publicadas en la configuración central (`serviceAreas` está vacío); la interfaz indica que se consulta disponibilidad en la zona. Completa ese modelo solo cuando las áreas estén confirmadas. Precios, métodos de pago, disponibilidad, duración de suscripción, renovación y cancelación siguen pendientes de confirmación comercial.
 
 ## Scripts
 
@@ -53,11 +62,12 @@ Usa `.env.example` como base.
 
 - `CONTACT_RATE_LIMIT_MAX_REQUESTS`
 - `CONTACT_RATE_LIMIT_WINDOW_MS`
-- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: clave publica del widget. En Workers se utiliza la clave publica del sitio; una cadena vacia desactiva la UI para E2E locales.
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: clave publica del widget. En Workers se utiliza la clave publica del sitio; el despliegue falla si no esta configurada. Una cadena vacia solo desactiva la UI en pruebas locales.
 - `TURNSTILE_ENABLED`: `true` en los bindings de Workers; `false` para desarrollo local sin verificacion externa.
 - `TURNSTILE_SECRET_KEY`: secreto de servidor, nunca en el repositorio ni en variables `NEXT_PUBLIC_*`. Se carga mediante `cf deploy --secrets-file` o GitHub Secrets.
+- `TURNSTILE_TEST_BYPASS`: activa el bypass exclusivamente cuando `NODE_ENV=test`; no permite omitir la verificacion en produccion.
 
-Contacto y ambos formularios de newsletter usan Turnstile. El servidor valida token, hostname y accion; rechaza solicitudes sin verificacion y no envia correo si el proveedor de verificacion falla. Las pruebas automatizadas locales sin widget no sustituyen una prueba real en staging.
+Contacto y ambos formularios de newsletter usan Turnstile. En produccion, la verificacion esta habilitada y falla de forma cerrada si falta configuracion; el servidor valida token, hostname y accion. Una falla temporal de Siteverify devuelve un error seguro y no envia correo. CI utiliza exclusivamente claves ficticias publicadas por Cloudflare; las pruebas automatizadas no sustituyen una prueba real en staging.
 
 ### Analytics
 

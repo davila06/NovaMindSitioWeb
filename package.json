@@ -33,9 +33,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "perf:assets": "node scripts/generate-image-variants.mjs",
-    "perf:lhci:collect": "lhci collect --config=lighthouserc.json",
+    "perf:lhci:collect": "node scripts/lhci-retry.mjs collect --config=lighthouserc.json",
     "perf:lhci:assert": "lhci assert --config=lighthouserc.json",
-    "perf:lhci": "lhci autorun --config=lighthouserc.json",
+    "perf:lhci": "npm run perf:lhci:collect && npm run perf:lhci:assert && lhci upload --config=lighthouserc.json",
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {

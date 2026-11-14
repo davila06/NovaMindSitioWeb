@@ -3,6 +3,8 @@ export interface LhciResult {
   output: string;
 }
 
+export function warmLhciServer(url: string): Promise<void>;
+
 export function runLhciWithRetry(
   runAttempt: () => Promise<LhciResult>,
   onRetry?: (attempt: number) => void,

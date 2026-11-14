@@ -2,9 +2,8 @@
   "ci": {
     "collect": {
       "numberOfRuns": 2,
-      "startServerCommand": "npm run preview:cloudflare",
-      "startServerReadyPattern": "Local",
-      "startServerReadyUrl": "http://127.0.0.1:3000/api/health?check=ready",
+      "startServerCommand": "node scripts/lhci-retry.mjs serve",
+      "startServerReadyPattern": "Lighthouse preview HTTP ready",
       "startServerReadyTimeout": 120000,
       "settings": {
         "preset": "desktop",

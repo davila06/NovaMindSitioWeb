@@ -42,7 +42,8 @@ No hay zonas de servicio publicadas en la configuración central (`serviceAreas`
 - `npm run test:unit:watch`: modo watch para unit tests.
 - `npm run test:e2e`: ejecuta pruebas E2E con Playwright.
 - `npm run perf:assets`: genera variantes optimizadas de imágenes.
-- `npm run perf:lhci`: auditoría Lighthouse CI.
+- `npm run perf:lhci:collect` y `npm run perf:lhci:assert`: recopilan y verifican Lighthouse CI localmente, sin subir informes.
+- `npm run perf:lhci`: recopila, verifica y sube los informes al almacenamiento temporal público de LHCI.
 
 ## Variables de entorno
 
@@ -113,6 +114,21 @@ La cuenta NovaMind Global y su propiedad son independientes de PawTrack CR. La e
 ### Error `EPERM: .next\trace` en Windows
 
 Si hay un `next dev` ejecutándose, detén ese proceso antes de correr `npm run build`.
+
+### Lighthouse `NO_NAVSTART` al iniciar el preview
+
+El recolector inicia Vite con `node scripts/lhci-retry.mjs serve` y espera
+`Lighthouse preview HTTP ready`: esta señal se emite solo después de recibir
+HTTP 200 y consumir la respuesta completa de la portada. El mensaje `Local`
+de Vite indica que escucha el puerto, no que la primera página ya se haya
+renderizado. En Windows se reprodujo la pérdida de `navigationStart` con el
+arranque anterior; la carga HTTP previa permitió completar las 14 mediciones.
+
+Esta comprobación prepara el renderizado local; no sustituye
+`/api/health?check=ready` en staging o producción ni verifica entrega de correo.
+Los reintentos de `NO_NAVSTART` siguen acotados y las aserciones conservan sus
+umbrales. Si vuelve a ocurrir, usa `npm run perf:lhci:collect -- --settings.saveAssets=true`
+para guardar trazas y logs de navegación. No cambies umbrales para ocultarlo.
 
 ### Error de frontmatter MDX en build
 

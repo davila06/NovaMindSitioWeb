@@ -1,8 +1,59 @@
+// @vitest-environment node
+
+import { createServer } from "node:http";
+import { once } from "node:events";
 import { describe, expect, it } from "vitest";
 import {
   collectLhciUrlsWithRetry,
   runLhciWithRetry,
+  warmLhciServer,
 } from "../../scripts/lhci-retry.mjs";
+
+describe("Lighthouse preview readiness", () => {
+  it("waits for the initial page response to finish before collection", async () => {
+    let responseFinished = false;
+    const server = createServer((_request, response) => {
+      response.writeHead(200, { "Content-Type": "text/html" });
+      response.write("<html>");
+      setTimeout(() => {
+        responseFinished = true;
+        response.end("</html>");
+      }, 20);
+    });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("No test port");
+
+    try {
+      await warmLhciServer(`http://127.0.0.1:${address.port}/`);
+      expect(responseFinished).toBe(true);
+    } finally {
+      server.closeAllConnections();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it("fails explicitly when the preview returns an unsuccessful response", async () => {
+    const server = createServer((_request, response) => {
+      response.writeHead(503);
+      response.end("Unavailable");
+    });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("No test port");
+
+    try {
+      await expect(
+        warmLhciServer(`http://127.0.0.1:${address.port}/`),
+      ).rejects.toThrow("HTTP 503");
+    } finally {
+      server.closeAllConnections();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+});
 
 describe("Lighthouse CI trace retry", () => {
   it("retries a NO_NAVSTART collection and returns the successful result", async () => {

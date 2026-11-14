@@ -8,6 +8,17 @@ const require = createRequire(import.meta.url);
 const lhciCli = require.resolve("@lhci/cli/src/cli.js");
 const maxAttempts = 3;
 
+export async function warmLhciServer(url) {
+  const response = await fetch(url, {
+    redirect: "error",
+    signal: AbortSignal.timeout(90000),
+  });
+  await response.arrayBuffer();
+  if (response.status !== 200) {
+    throw new Error(`Lighthouse preview warmup failed: HTTP ${response.status}`);
+  }
+}
+
 export async function runLhciWithRetry(runAttempt, onRetry = () => {}) {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const result = await runAttempt();
@@ -74,8 +85,23 @@ function runLhci(args) {
 
 async function main() {
   const args = process.argv.slice(2);
+  if (args[0] === "serve") {
+    const { preview } = await import("vite");
+    const server = await preview();
+    try {
+      const url = server.resolvedUrls?.local[0];
+      if (!url) throw new Error("No local Lighthouse preview URL is available.");
+      await warmLhciServer(url);
+      console.log("Lighthouse preview HTTP ready");
+    } catch (error) {
+      await server.close();
+      throw error;
+    }
+    return;
+  }
+
   if (args[0] !== "collect") {
-    throw new Error("This runner supports the LHCI collect command only.");
+    throw new Error("This runner supports the collect and serve commands only.");
   }
 
   const configArg = args.find((arg) => arg.startsWith("--config="));

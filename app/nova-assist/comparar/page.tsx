@@ -47,7 +47,7 @@ const comparisonSchema = {
 export default function ComparePlansPage() {
   return (
     <>
-      <AnalyticsEvent event="plan_compare" />
+      <AnalyticsEvent event="plan_comparison_viewed" segment="home" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(comparisonSchema) }} />
       <SectionWrapper className="pt-12 sm:pt-16">
         <Container>

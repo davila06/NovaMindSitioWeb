@@ -33,6 +33,7 @@ describe("analytics consent", () => {
   it("loads the NovaMind tag only after consent and removes it on revocation", () => {
     vi.stubEnv("NEXT_PUBLIC_GA_ID", undefined);
     vi.stubEnv("NEXT_PUBLIC_CLARITY_ID", undefined);
+    vi.stubEnv("NEXT_PUBLIC_GA_ENABLED", "true");
     const { container } = render(<AnalyticsScripts />);
     expect(container.querySelector("script")).toBeNull();
     fireEvent(window, new Event("nm:consent-change"));
@@ -47,8 +48,10 @@ describe("analytics consent", () => {
       "https://www.googletagmanager.com/gtag/js?id=G-NYG6JCK4S2",
     );
     expect(container.querySelector("#ga4-init")).toHaveTextContent(
-      "gtag('config', 'G-NYG6JCK4S2')",
+      "gtag('config', 'G-NYG6JCK4S2', {",
     );
+    expect(container.querySelector("#ga4-init")).toHaveTextContent("send_page_view: false");
+    expect(container.querySelector("#ga4-init")).toHaveTextContent("allow_google_signals: false");
     localStorage.setItem(
       "nm-cookie-consent",
       JSON.stringify({ version: "2026-11", analytics: false }),
@@ -58,6 +61,7 @@ describe("analytics consent", () => {
   });
 
   it("allows an explicit Analytics measurement ID override", () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_ENABLED", "true");
     vi.stubEnv("NEXT_PUBLIC_GA_ID", "G-TEST123456");
     updateAnalyticsConsent(true);
     const { container } = render(<AnalyticsScripts />);
@@ -65,6 +69,23 @@ describe("analytics consent", () => {
       "src",
       "https://www.googletagmanager.com/gtag/js?id=G-TEST123456",
     );
+  });
+
+  it("does not load providers without explicit privacy approval gates", () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_ENABLED", undefined);
+    vi.stubEnv("NEXT_PUBLIC_CLARITY_ENABLED", undefined);
+    vi.stubEnv("NEXT_PUBLIC_CLARITY_ID", "clarity-test");
+    updateAnalyticsConsent(true);
+    const { container } = render(<AnalyticsScripts />);
+    expect(container.querySelector("script")).toBeNull();
+  });
+
+  it("loads Clarity only when explicitly enabled after privacy review", () => {
+    vi.stubEnv("NEXT_PUBLIC_CLARITY_ENABLED", "true");
+    vi.stubEnv("NEXT_PUBLIC_CLARITY_ID", "clarity-test");
+    updateAnalyticsConsent(true);
+    const { container } = render(<AnalyticsScripts />);
+    expect(container.querySelector("#clarity-init")).toBeInTheDocument();
   });
 
   it("stores a versioned decision understood by analytics", () => {

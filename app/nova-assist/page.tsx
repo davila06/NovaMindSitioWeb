@@ -5,6 +5,8 @@ import { Container } from "@/components/layout/Container";
 import { SectionWrapper } from "@/components/layout/SectionWrapper";
 import { ServiceCard } from "@/components/nova-assist/ServiceCard";
 import { ServiceSelector } from "@/components/nova-assist/ServiceSelector";
+import { AnalyticsEvent } from "@/components/nova-assist/AnalyticsEvent";
+import { TrackedLink } from "@/components/nova-assist/TrackedLink";
 import { novaAssistServices } from "@/data/nova-assist";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -24,6 +26,7 @@ export const metadata: Metadata = createPageMetadata({
 export default function NovaAssistPage() {
   return (
     <>
+      <AnalyticsEvent event="nova_assist_landing_view" />
       <SectionWrapper className="pb-8 pt-12 sm:pt-16">
         <Container>
           <div className="relative overflow-hidden rounded-[2rem] border border-orange-200/15 bg-[radial-gradient(ellipse_at_82%_15%,rgba(56,189,248,0.16),transparent_30%),radial-gradient(ellipse_at_12%_0%,rgba(249,115,22,0.22),transparent_38%),linear-gradient(130deg,#08101f_5%,#0b1730_58%,#07101d)] px-6 py-10 sm:px-10 sm:py-14 lg:px-16 lg:py-20">
@@ -57,6 +60,13 @@ export default function NovaAssistPage() {
                 <ShieldCheck className="h-4 w-4 shrink-0 text-sky-200" aria-hidden="true" />
                 Sin sorpresas: te explicamos el alcance antes de cualquier trabajo adicional.
               </p>
+              <div className="mt-7 border-t border-white/15 pt-5">
+                <p className="text-sm font-semibold text-white">¿Cómo podemos ayudarte?</p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <TrackedLink event="nova_assist_segment_selected" segment="home" href="#selector" className="inline-flex min-h-11 items-center rounded-xl border border-orange-200/30 px-4 py-2 text-sm font-semibold text-orange-100">Para mi hogar</TrackedLink>
+                  <TrackedLink event="nova_assist_segment_selected" segment="business" href="/nova-assist/empresas" className="inline-flex min-h-11 items-center rounded-xl border border-sky-200/30 px-4 py-2 text-sm font-semibold text-sky-100">Para mi empresa</TrackedLink>
+                </div>
+              </div>
             </div>
           </div>
         </Container>

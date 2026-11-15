@@ -42,6 +42,7 @@ export async function verifyTurnstile(token: string | undefined, request: Reques
     if (!parsed.success) throw new Error("Siteverify returned an invalid response.");
     result = parsed.data;
   } catch {
+    console.error("[turnstile:siteverify_unavailable]", { action });
     throw new ApiRequestError(
       503,
       "No se pudo verificar la seguridad. Intenta nuevamente.",

@@ -29,7 +29,37 @@ La sección comercial vive en `/nova-assist`, con catálogo, páginas de servici
 
 Las páginas residenciales consumen `data/nova-assist.ts`. `data/service-plans.ts` conserva únicamente alias de contacto antiguos y cobertura todavía no confirmada; no debe usarse como fuente de alcance residencial ni comercial. La solicitud de Nova Assist reutiliza `/api/contact`, validación Zod, rate limiting, Turnstile, consentimiento de privacidad y la configuración de entrega existente. No solicita contraseñas, PIN, códigos MFA ni datos de tarjeta.
 
+La validación operativa previa a un release está en [el runbook de staging](Docs/staging-release.md).
+
+Nova Assist Business está en `/nova-assist/empresas`. Su catálogo, selector, comparador y páginas consumen `data/nova-assist-business.ts`; el enlace anterior `/nova-assist/it-ondemand` redirige a la ficha empresarial. Las solicitudes y el IT Health Check reutilizan el formulario protegido y `/api/contact`: el contexto opcional del Health Check se presenta para revisión antes del envío y no se envía a analytics. Precios, licencias, horarios, límites y condiciones empresariales se acuerdan en cada propuesta y no se presumen incluidos.
+
+#### Clasificación interna de solicitudes
+
+`lib/nova-assist-intent.ts` define `NovaAssistIntent` con `schemaVersion: "1.0.0"`. El endpoint existente `/api/contact` deriva la clasificación en el servidor a partir de planes y catálogos conocidos, y la incluye en la notificación de correo interna; no acepta una clasificación confiada al navegador ni agrega persistencia.
+
+- Solicitudes del catálogo residencial → `home` / `residential_service`.
+- `IT OnDemand`, `Business` y `Business Pro` → `business` / `business_support`.
+- `IT Health Check` → `assessment`; `Technology Projects` → `consulting_project`; otros servicios empresariales y productos conocidos → `business_opportunity`.
+- Intereses generales sin servicio conocido → `general_inquiry` con un `serviceId` de fallback estable.
+- `source` solo toma categorías internas (`nova_assist_home`, `nova_assist_business`, `product_inquiry`, `contact_form`); no conserva UTM ni texto arbitrario.
+
+La urgencia existente se normaliza sin score ni SLA: baja → `standard`, media → `soon`, alta/crítica → `urgent`. La preferencia `visit` se normaliza a `onsite`; remoto e indefinida se conservan como `remote` y `unsure`. `technologyAreas` usa etiquetas controladas por servicio. El formulario no recopila tamaño de empresa ni estado de IT interno como campos estructurados: `companySizeRange` y `hasInternalIT` quedan omitidos. `leadVolume` es volumen operativo, no cantidad de empleados. No se infieren estos campos ni áreas desde mensajes libres o respuestas del Health Check. La versión de consentimiento proviene de la versión de política ya usada por el endpoint (`2026-01`).
+
 No hay zonas de servicio publicadas en la configuración central (`serviceAreas` está vacío); la interfaz indica que se consulta disponibilidad en la zona. Completa ese modelo solo cuando las áreas estén confirmadas. Precios, métodos de pago, disponibilidad, duración de suscripción, renovación y cancelación siguen pendientes de confirmación comercial.
+
+#### Base de integración CRM
+
+El endpoint valida consentimiento, Turnstile y rate limit, deriva `NovaAssistIntent` y crea el comando versionado `SubmitLeadCommand` (`1.0.0`). `LeadSubmissionService` depende de `LeadDestination`; la implementación registrada actualmente es `EmailLeadDestination`, que conserva la entrega existente. Los formularios no llaman directamente a correo, Dataverse ni a otra tecnología.
+
+El comando solo contiene campos validados de contacto, clasificación, atribución limitada a los campos que ya se usan en el correo y auditoría del consentimiento. No contiene el objeto `Request`, IP, honeypot ni token de Turnstile. Los errores del destino se propagan al endpoint y mantienen la respuesta de entrega fallida; no se añadieron reintentos, cola ni almacenamiento.
+
+**Dataverse no está conectado ni activado.** No se añadieron credenciales, URL de entorno, tenant/client IDs, tablas ni llamadas de red a Microsoft. Para implementar su adaptador hacen falta configuración aprobada, definición del mapeo contra el esquema real del entorno y una política acordada de idempotencia y fallos entre correo y CRM. Hasta entonces, el correo sigue siendo el único destino operativo.
+
+#### Operaciones digitales de servicio
+
+`lib/service-operations.ts` define contratos preliminares para solicitud, orden, cliente, ubicación, dispositivo, modalidad, plantilla y ejecución de checklist, hallazgos, acciones, recomendaciones, resultado, reporte, consentimiento, adjunto y técnico. La modalidad utiliza el mismo segmento e identificador de servicio de `NovaAssistIntent`; las ejecuciones referencian una versión de plantilla. Son tipos, no registros persistidos, validación de entrada ni una API operativa.
+
+El envío de contacto sigue siendo solo una solicitud por correo: no crea una orden ni un reporte automáticamente. No existen checklists operativos aprobados por modalidad; no se deben convertir los alcances comerciales en tareas obligatorias sin validación operativa. Antes de usar estos contratos con datos reales se deben definir y aprobar autenticación y autorización por cliente/técnico y orden, almacenamiento cifrado, retención y eliminación, auditoría de acceso, control de concurrencia, gestión segura de adjuntos y distribución privada de reportes. Los identificadores no autorizan acceso y no se proporcionan enlaces públicos. No registrar credenciales ni datos sensibles innecesarios en notas, reportes o adjuntos.
 
 ## Scripts
 
@@ -73,9 +103,28 @@ Contacto y ambos formularios de newsletter usan Turnstile. En produccion, la ver
 ### Analytics
 
 - `NEXT_PUBLIC_GA_ID`: GA4 de NovaMind Global Web, `G-NYG6JCK4S2`, flujo de `https://novamindglobalcr.com`. Este ID es el valor predeterminado del sitio si la variable no existe; una cadena vacia desactiva GA4 para pruebas y staging. Se configura al compilar, no como secreto ni binding del Worker.
+- `NEXT_PUBLIC_GA_ENABLED`: debe ser `true` para cargar GA4 después del consentimiento. Por defecto está desactivado; habilitar solo después de comprobar en GA4 que la medición mejorada y los page views de navegación no reenvían URLs completas, y verificar las solicitudes de red.
 - `NEXT_PUBLIC_CLARITY_ID`
+- `NEXT_PUBLIC_CLARITY_ENABLED`: debe ser `true` para cargar Clarity después del consentimiento. Por defecto está desactivado; habilitar solo tras verificar configuración de masking y grabación de sesión con datos ficticios.
 
-La cuenta NovaMind Global y su propiedad son independientes de PawTrack CR. La etiqueta se carga solo al aceptar cookies de analitica; los eventos personalizados se bloquean tras revocar el consentimiento. No instalar una segunda etiqueta manual ni usar el ID de PawTrack. Tras publicar, aceptar cookies en el sitio y comprobar la actividad en el informe En tiempo real de esta propiedad; los informes habituales pueden tardar hasta 48 horas.
+La cuenta NovaMind Global y su propiedad son independientes de PawTrack CR. Las etiquetas se cargan solo al aceptar cookies de analitica y si su bandera de privacidad está habilitada; los eventos personalizados se bloquean tras revocar el consentimiento. La configuración GA4 del sitio desactiva page views automáticos, Google Signals y personalización publicitaria, y usa una ubicación de página sin query/referrer por defecto. Los eventos Nova Assist actualizan la ubicación GA a una ruta cerrada y sin query. No instalar una segunda etiqueta manual ni usar el ID de PawTrack. Tras publicar y aprobar la configuración externa, aceptar cookies en el sitio y comprobar la actividad en el informe En tiempo real de esta propiedad; los informes habituales pueden tardar hasta 48 horas.
+
+#### Funnel de Nova Assist
+
+Los eventos propios de Nova Assist son analítica opcional y pasan por una allowlist de nombres, propiedades y valores; no se registran sin consentimiento. La solicitud y su consentimiento de privacidad son funciones necesarias independientes de las cookies analíticas. No se envían eventos de marketing de este funnel. Las acciones anteriores al consentimiento no se almacenan ni reproducen. La vista actual se registra después del consentimiento cuando el proveedor está disponible; otras acciones ocurridas antes de que cargue pueden perderse.
+
+- Navegación: `nova_assist_landing_view`, `nova_assist_segment_selected`, `service_detail_viewed`, `plan_comparison_viewed`, `service_cta_clicked`.
+- Selector: `service_selector_started`, `service_selector_answered`, `service_recommended`.
+- Solicitud: `service_request_started`, `service_request_validation_failed`, `service_request_submitted`, `service_request_succeeded`, `service_request_failed`. El inicio es la primera edición; envío es un intento real; éxito requiere respuesta positiva no protegida. Una respuesta protegida no confirma entrega.
+- Health Check: `health_check_started`, `health_check_step_completed`, `health_check_reviewed`, `health_check_submitted`, `health_check_succeeded`, `health_check_failed`. Los pasos son acciones de selección, no respuestas ni un avance obligatorio; las preguntas son opcionales.
+
+Propiedades permitidas, cuando aplican: `segment`, `service_id` del catálogo, `selector_version`, `route` de una lista cerrada sin parámetros, `cta_position`, `step_number`, `step_name`, `outcome`, `error_category`, `viewport_category` y `referrer_category`. Los valores también están restringidos; no se usan identificadores de correlación. Se descartan nombres, correos, empresa, direcciones, mensajes, respuestas, tokens, credenciales y cualquier propiedad no autorizada. El formulario puede transmitir datos necesarios a la API de contacto, pero no a estos eventos.
+
+Para analizar Home y Business, filtrar por `segment` y comparar: selección de segmento / vistas de landing; inicios de selector / vistas; recomendaciones / inicios; vistas de detalle / recomendaciones; inicios de solicitud / vistas de detalle; éxitos / intentos de envío. Health Check: revisiones / inicios y éxitos / envíos. Error rate: fallos / envíos; interés: recomendaciones agrupadas por `service_id`; distribución Home/Business: selecciones agrupadas por `segment`. Estos cocientes de eventos no representan conversiones individuales ni embudos deduplicados por usuario: un visitante puede interactuar varias veces, saltarse pasos o llegar por enlaces directos. Sin identificador de sesión aprobado, no se puede reconstruir un funnel individual; no hay metas aprobadas ni datos reales hasta recoger tráfico válido.
+
+Ejemplos de informes agregados: recomendaciones por segmento y servicio durante un período; intentos, éxitos y fallos por segmento y categoría de error; inicios, revisiones y envíos de Health Check. Interpretar siempre los conteos con las limitaciones anteriores y sin incluir textos de formularios.
+
+**Bloqueo de privacidad previo a activar medición en producción:** las banderas están desactivadas por defecto porque la configuración externa no se puede certificar desde el repositorio. Antes de activarlas, revisar GA4 para deshabilitar page views por historial y eventos de medición mejorada que puedan capturar URLs o contenido, y confirmar que las rutas/query parameters no aparecen en solicitudes. Revisar masking, captura de página y grabaciones de Clarity. Verificar solicitudes de red y revocación de consentimiento en staging con datos ficticios. Si no puede garantizarse la exclusión de datos personales, mantener desactivadas las banderas del proveedor afectado.
 
 ### Monitoreo
 
@@ -121,14 +170,17 @@ El recolector inicia Vite con `node scripts/lhci-retry.mjs serve` y espera
 `Lighthouse preview HTTP ready`: esta señal se emite solo después de recibir
 HTTP 200 y consumir la respuesta completa de la portada. El mensaje `Local`
 de Vite indica que escucha el puerto, no que la primera página ya se haya
-renderizado. En Windows se reprodujo la pérdida de `navigationStart` con el
-arranque anterior; la carga HTTP previa permitió completar las 14 mediciones.
+renderizado. La carga HTTP previa no elimina por completo `NO_NAVSTART`:
+volvió a reproducirse en Windows aun con el servidor y las rutas preparados.
+No se ha demostrado una causa raíz ni una solución determinista entre navegadores.
 
 Esta comprobación prepara el renderizado local; no sustituye
 `/api/health?check=ready` en staging o producción ni verifica entrega de correo.
 Los reintentos de `NO_NAVSTART` siguen acotados y las aserciones conservan sus
 umbrales. Si vuelve a ocurrir, usa `npm run perf:lhci:collect -- --settings.saveAssets=true`
 para guardar trazas y logs de navegación. No cambies umbrales para ocultarlo.
+La colección puede conservar una medición exitosa de un intento parcial al
+reintentar la misma URL; identifica las corridas al interpretar el informe.
 
 ### Error de frontmatter MDX en build
 

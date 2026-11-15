@@ -16,6 +16,10 @@ describe("canonical sitemap", () => {
       "/nova-assist/comparar",
       "/nova-assist/como-funciona",
       "/nova-assist/preguntas-frecuentes",
+      "/nova-assist/empresas",
+      "/nova-assist/empresas/comparar",
+      "/nova-assist/empresas/azure-cloud",
+      "/nova-assist/empresas/it-health-check",
       "/empresas",
       "/servicios",
       "/casos",
@@ -31,7 +35,7 @@ describe("canonical sitemap", () => {
 
   it("excludes noindex pages and fabricated modification dates", async () => {
     const entries = await sitemap();
-    for (const path of ["/privacidad", "/terminos", "/gracias", "/offline"])
+    for (const path of ["/privacidad", "/terminos", "/gracias", "/offline", "/nova-assist/empresas/solicitar", "/nova-assist/empresas/health-check", "/nova-assist/it-ondemand"])
       expect(entries.map((entry) => entry.url)).not.toContain(
         `${siteConfig.url}${path}`,
       );

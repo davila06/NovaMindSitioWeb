@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, Check, ChevronRight } from "lucide-react";
-import { trackEvent } from "@/lib/analytics-client";
+import { trackNovaEvent } from "@/lib/nova-analytics";
 import { novaAssistServiceBySlug } from "@/data/nova-assist";
 
 const needs = [
@@ -40,15 +40,18 @@ export function ServiceSelector() {
   }, []);
 
   function choose(id: string) {
-    if (!selected) trackEvent("service_selector_start", { source: "nova_assist" });
+    const properties = { segment: "home", selector_version: "home_v1" };
+    if (!selected) trackNovaEvent("service_selector_started", properties);
+    trackNovaEvent("service_selector_answered", { ...properties, step_name: "need", step_number: 1 });
+    const selectedNeed = needs.find(need => need.id === id);
+    if (selectedNeed && id !== "recurring") trackNovaEvent("service_recommended", { ...properties, service_id: selectedNeed.slug });
     setSelected(id);
     setMoreWork(false);
     setDevices("");
-    trackEvent("service_selector_choice", { need: id });
   }
 
   function complete() {
-    if (slug) trackEvent("service_selector_complete", { service: slug });
+    if (slug) trackNovaEvent("service_cta_clicked", { segment: "home", service_id: slug, cta_position: "selector" });
   }
 
   return (
@@ -69,9 +72,10 @@ export function ServiceSelector() {
                 <button
                   type="button"
                   key={need.id}
+                  disabled={!interactive}
                   aria-pressed={active}
                   onClick={() => choose(need.id)}
-                  className={`flex min-h-14 items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-200 ${
+                  className={`flex min-h-14 items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-medium transition disabled:cursor-wait disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-200 ${
                     active ? "border-orange-200/60 bg-orange-300/10 text-white" : "border-white/10 bg-[#0b1730]/75 text-text-muted hover:border-white/25 hover:text-white"
                   }`}
                 >
@@ -87,8 +91,8 @@ export function ServiceSelector() {
           <fieldset className="mt-5 rounded-2xl border border-white/10 bg-[#0b1730]/55 p-4">
             <legend className="px-1 text-sm font-semibold text-white">¿También necesitas respaldo, limpieza o mantenimiento?</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              <button type="button" aria-pressed={!moreWork} onClick={() => setMoreWork(false)} className={`rounded-xl px-4 py-2.5 text-sm ${!moreWork ? "bg-orange-300 text-[#17100a]" : "border border-white/15 text-text-muted"}`}>No, es un problema puntual</button>
-              <button type="button" aria-pressed={moreWork} onClick={() => setMoreWork(true)} className={`rounded-xl px-4 py-2.5 text-sm ${moreWork ? "bg-orange-300 text-[#17100a]" : "border border-white/15 text-text-muted"}`}>Sí, necesito más tareas</button>
+              <button type="button" aria-pressed={!moreWork} onClick={() => { setMoreWork(false); trackNovaEvent("service_selector_answered", { segment: "home", selector_version: "home_v1", step_name: "scope", step_number: 2 }); trackNovaEvent("service_recommended", { segment: "home", service_id: "visita-express", selector_version: "home_v1" }); }} className={`rounded-xl px-4 py-2.5 text-sm ${!moreWork ? "bg-orange-300 text-[#17100a]" : "border border-white/15 text-text-muted"}`}>No, es un problema puntual</button>
+              <button type="button" aria-pressed={moreWork} onClick={() => { setMoreWork(true); trackNovaEvent("service_selector_answered", { segment: "home", selector_version: "home_v1", step_name: "scope", step_number: 2 }); trackNovaEvent("service_recommended", { segment: "home", service_id: "visita-premium", selector_version: "home_v1" }); }} className={`rounded-xl px-4 py-2.5 text-sm ${moreWork ? "bg-orange-300 text-[#17100a]" : "border border-white/15 text-text-muted"}`}>Sí, necesito más tareas</button>
             </div>
           </fieldset>
         )}
@@ -98,7 +102,7 @@ export function ServiceSelector() {
             <legend className="px-1 text-sm font-semibold text-white">¿Cuántos dispositivos quieres cubrir?</legend>
             <div className="mt-2 flex flex-wrap gap-2">
               {[["5", "Hasta 5 dispositivos"], ["8", "Hasta 8 dispositivos"]].map(([value, label]) => (
-                <button type="button" key={value} aria-pressed={devices === value} onClick={() => setDevices(value)} className={`rounded-xl px-4 py-2.5 text-sm ${devices === value ? "bg-orange-300 text-[#17100a]" : "border border-white/15 text-text-muted"}`}>{label}</button>
+                <button type="button" key={value} aria-pressed={devices === value} onClick={() => { setDevices(value); trackNovaEvent("service_selector_answered", { segment: "home", selector_version: "home_v1", step_name: "devices", step_number: 2 }); trackNovaEvent("service_recommended", { segment: "home", service_id: value === "8" ? "total-home" : "plan-familia", selector_version: "home_v1" }); }} className={`rounded-xl px-4 py-2.5 text-sm ${devices === value ? "bg-orange-300 text-[#17100a]" : "border border-white/15 text-text-muted"}`}>{label}</button>
               ))}
             </div>
           </fieldset>

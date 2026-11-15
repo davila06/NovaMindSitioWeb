@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { escapeHtml, sendMail } from "@/lib/email";
 import { z } from "zod";
 import { captureServerError } from "@/lib/monitoring";
 import { enforceRateLimit, getClientIp } from "@/lib/security";
@@ -7,6 +6,15 @@ import { ApiRequestError, readJsonRequest } from "@/lib/http";
 import { getServerEnv } from "@/lib/env";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { containsCredentialLikeText } from "@/lib/contact-input";
+import {
+  createNovaAssistIntent,
+  NOVA_ASSIST_PRIVACY_POLICY_VERSION,
+} from "@/lib/nova-assist-intent";
+import { leadSubmissionService } from "@/lib/leads/default-service";
+import {
+  LEAD_SUBMISSION_SCHEMA_VERSION,
+  type SubmitLeadCommand,
+} from "@/lib/leads/contract";
 
 const leadVolumeOptions = ["<100", "100-500", "500-2000", "2000+"] as const;
 const urgencyOptions = ["baja", "media", "alta", "critica"] as const;
@@ -79,73 +87,6 @@ const contactSchema = z.object({
     }
   }
 });
-
-type ContactPayload = z.infer<typeof contactSchema>;
-
-function buildEmailHtml(data: ContactPayload) {
-  const safeName = escapeHtml(data.name);
-  const safeEmail = escapeHtml(data.email);
-  const safeCompany = escapeHtml(data.company || "No indicada");
-  const safeInterest = escapeHtml(data.interest);
-  const safeCustomerStatus = escapeHtml(
-    data.customerStatus === "existing"
-      ? "Cliente actual"
-      : data.customerStatus === "new"
-        ? "Cliente nuevo"
-        : "No indicado",
-  );
-  const safeDeviceType = escapeHtml(data.deviceType || "No indicado");
-  const safeRequestPreference = escapeHtml(
-    data.requestPreference === "remote"
-      ? "Remoto"
-      : data.requestPreference === "visit"
-        ? "Visita"
-        : data.requestPreference === "unsure"
-          ? "Por definir"
-          : "No indicada",
-  );
-  const safeServiceArea = escapeHtml(data.serviceArea || "No indicada");
-  const safeLeadVolume = escapeHtml(data.leadVolume || "No indicado");
-  const safeUrgency = escapeHtml(data.urgency || "No indicada");
-  const safeHorizon = escapeHtml(data.implementationHorizon || "No indicado");
-  const safeMessage = escapeHtml(data.message).replace(/\n/g, "<br />");
-
-  const utmBlock =
-    data.utm && (data.utm.source || data.utm.medium || data.utm.campaign)
-      ? `
-    <hr/>
-    <h3>Atribuci\u00f3n de Marketing</h3>
-    <p><strong>Fuente:</strong> ${escapeHtml(data.utm.source || "\u2014")}</p>
-    <p><strong>Medio:</strong> ${escapeHtml(data.utm.medium || "\u2014")}</p>
-    <p><strong>Campa\u00f1a:</strong> ${escapeHtml(data.utm.campaign || "\u2014")}</p>
-    ${data.utm.referrer ? `<p><strong>Referrer:</strong> ${escapeHtml(data.utm.referrer)}</p>` : ""}
-    ${data.utm.landingPage ? `<p><strong>Landing page:</strong> ${escapeHtml(data.utm.landingPage)}</p>` : ""}
-    `
-      : "";
-
-  return `
-    <h2>Nueva solicitud desde Novamind Global</h2>
-    <p><strong>Nombre:</strong> ${safeName}</p>
-    <p><strong>Email:</strong> ${safeEmail}</p>
-    <p><strong>Empresa:</strong> ${safeCompany}</p>
-    <p><strong>Interes:</strong> ${safeInterest}</p>
-    <p><strong>Plan:</strong> ${escapeHtml(data.plan || "No indicado")}</p>
-    ${data.customerStatus ? `<p><strong>Cliente:</strong> ${safeCustomerStatus}</p>` : ""}
-    ${data.deviceType ? `<p><strong>Dispositivo:</strong> ${safeDeviceType}</p>` : ""}
-    ${data.requestPreference ? `<p><strong>Preferencia de atención:</strong> ${safeRequestPreference}</p>` : ""}
-    ${data.serviceArea ? `<p><strong>Zona o localidad:</strong> ${safeServiceArea}</p>` : ""}
-    <p><strong>Volumen operativo:</strong> ${safeLeadVolume}</p>
-    <p><strong>Urgencia:</strong> ${safeUrgency}</p>
-    <p><strong>Horizonte de implementacion:</strong> ${safeHorizon}</p>
-    <p><strong>Mensaje:</strong></p>
-    <p>${safeMessage}</p>
-    <hr/>
-    <h3>Consentimiento (Ley 8968 CR)</h3>
-    <p><strong>Consentimiento explícito:</strong> Sí — versión política 2026-01</p>
-    <p><strong>Timestamp ISO:</strong> ${new Date().toISOString()}</p>
-    ${utmBlock}
-  `;
-}
 
 function withRequestId(response: NextResponse, requestId: string) {
   response.headers.set("X-Request-Id", requestId);
@@ -239,6 +180,7 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
+    const consentRecordedAt = new Date().toISOString();
 
     // Audit log del consentimiento (Ley 8968 CR)
     console.info(
@@ -246,8 +188,8 @@ export async function POST(request: Request) {
         event: "consent_recorded",
         requestId,
         consentPrivacy: data.consentPrivacy,
-        policyVersion: "2026-01",
-        timestamp: new Date().toISOString(),
+        policyVersion: NOVA_ASSIST_PRIVACY_POLICY_VERSION,
+        timestamp: consentRecordedAt,
       }),
     );
 
@@ -259,15 +201,49 @@ export async function POST(request: Request) {
     }
 
     await verifyTurnstile(data.turnstileToken, request, "contact");
+    const intent = createNovaAssistIntent({
+      plan: data.plan,
+      interest: data.interest,
+      urgency: data.urgency,
+      requestPreference: data.requestPreference,
+    });
+    const command: SubmitLeadCommand = {
+      schemaVersion: LEAD_SUBMISSION_SCHEMA_VERSION,
+      requestId,
+      intent,
+      contact: {
+        name: data.name,
+        email: data.email,
+        company: data.company,
+        plan: data.plan,
+        interest: data.interest,
+        customerStatus: data.customerStatus,
+        deviceType: data.deviceType,
+        requestPreference: data.requestPreference,
+        serviceArea: data.serviceArea,
+        leadVolume: data.leadVolume,
+        urgency: data.urgency,
+        implementationHorizon: data.implementationHorizon,
+        message: data.message,
+        attribution: data.utm
+          ? {
+              source: data.utm.source,
+              medium: data.utm.medium,
+              campaign: data.utm.campaign,
+              referrer: data.utm.referrer,
+              landingPage: data.utm.landingPage,
+            }
+          : undefined,
+      },
+      consent: {
+        privacyAccepted: data.consentPrivacy,
+        policyVersion: NOVA_ASSIST_PRIVACY_POLICY_VERSION,
+        recordedAt: consentRecordedAt,
+      },
+    };
 
     try {
-      const delivery = await sendMail({
-        subject: `[Novamind] Nuevo lead: ${data.interest}`,
-        html: buildEmailHtml(data),
-        text: `Nombre: ${data.name}\nEmail: ${data.email}\nEmpresa: ${data.company || "No indicada"}\nInteres: ${data.interest}\nCliente: ${data.customerStatus || "No indicado"}\nDispositivo: ${data.deviceType || "No indicado"}\nPreferencia de atención: ${data.requestPreference || "No indicada"}\nZona o localidad: ${data.serviceArea || "No indicada"}\nMensaje: ${data.message}`,
-        replyTo: data.email,
-        requestId,
-      });
+      const delivery = await leadSubmissionService.submit(command);
       return withRequestId(
         NextResponse.json({ ok: true, ...delivery, requestId }),
         requestId,

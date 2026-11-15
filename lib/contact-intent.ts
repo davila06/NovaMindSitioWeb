@@ -2,8 +2,16 @@ import { homeSupportPlans, itManagedPlans } from "@/data/service-plans";
 import { businessProducts } from "@/data/products";
 import { contactInterests } from "@/data/site";
 import { novaAssistServiceBySlug } from "@/data/nova-assist";
+import { businessServiceBySlug } from "@/data/nova-assist-business";
 
 export function resolveContactIntent(plan?: string) {
+  const businessSlug = plan?.startsWith("nova-assist-business-")
+    ? plan.slice("nova-assist-business-".length)
+    : undefined;
+  const businessService = businessSlug ? businessServiceBySlug[businessSlug] : undefined;
+  if (businessService) {
+    return { plan: `nova-assist-business-${businessService.slug}`, interest: businessService.name };
+  }
   const novaAssistSlug = plan?.replace(/^nova-assist-/, "");
   const novaAssistService = novaAssistSlug
     ? novaAssistServiceBySlug[novaAssistSlug]

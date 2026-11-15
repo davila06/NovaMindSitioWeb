@@ -30,6 +30,8 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:unit
+        env:
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
       - run: npm run build
       - run: npm run build:cloudflare
       - run: npm run build:availability

@@ -3,6 +3,7 @@ import { getBlogPostSummaries } from "@/lib/content";
 import { industries, roles } from "@/lib/market";
 import { products } from "@/data/products";
 import { novaAssistServices } from "@/data/nova-assist";
+import { businessServices } from "@/data/nova-assist-business";
 import { siteConfig } from "@/lib/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -34,6 +35,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/nova-assist/comparar`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/nova-assist/como-funciona`, changeFrequency: "monthly", priority: 0.75 },
     { url: `${base}/nova-assist/preguntas-frecuentes`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/nova-assist/empresas`, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${base}/nova-assist/empresas/comparar`, changeFrequency: "monthly", priority: 0.8 },
     {
       url: `${base}/empresas`,
       changeFrequency: "monthly",
@@ -72,10 +75,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  const novaAssistPages: MetadataRoute.Sitemap = novaAssistServices.map((service) => ({
+  const novaAssistPages: MetadataRoute.Sitemap = novaAssistServices.filter((service) => service.slug !== "it-ondemand").map((service) => ({
     url: `${base}/nova-assist/${service.slug}`,
     changeFrequency: "monthly",
     priority: service.slug === "plan-familia" || service.slug === "total-home" ? 0.85 : 0.75,
+  }));
+  const businessPages: MetadataRoute.Sitemap = businessServices.map((service) => ({
+    url: `${base}/nova-assist/empresas/${service.slug}`,
+    changeFrequency: "monthly",
+    priority: 0.75,
   }));
 
   const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
@@ -100,6 +108,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries = [
     ...staticPages,
     ...novaAssistPages,
+    ...businessPages,
     ...productPages,
     ...blogPages,
     ...industryPages,

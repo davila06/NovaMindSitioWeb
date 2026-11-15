@@ -22,6 +22,16 @@ afterEach(() => {
 });
 
 describe("production destinations", () => {
+  it("submits contact through the application service and a server-side destination", () => {
+    const contactRoute = readFileSync(
+      resolve("app/api/contact/route.ts"),
+      "utf8",
+    );
+    expect(contactRoute).toContain("leadSubmissionService.submit(command)");
+    expect(contactRoute).not.toContain("EmailLeadDestination");
+    expect(contactRoute).not.toContain("sendMail(");
+  });
+
   it("publishes only organization facts that are configured as public", () => {
     for (const file of ["app/layout.tsx", "app/sobre-nosotros/page.tsx"]) {
       const source = readFileSync(resolve(file), "utf8");
@@ -49,19 +59,26 @@ describe("production destinations", () => {
     expect(footer).not.toContain('href="https://github.com"');
   });
 
-  it("keeps the home page focused on audience, offerings, process, and contact", () => {
+  it("keeps the home page focused on the enterprise journey and real product routes", () => {
     const home = readFileSync(resolve("app/page.tsx"), "utf8");
     for (const section of [
-      "AudienceRoutesSection",
-      "ProductGrid",
-      "PawTrackCommunitySection",
+      "HeroSection",
+      "TrustBar",
+      "ProblemsSection",
+      "SolutionAreasSection",
+      "NovaAssistServicesSection",
       "ImplementationSection",
-      "FAQSection",
+      "ProductHighlights",
+      "SecurityTrustSection",
+      "HomeInsightsSection",
+      "PawTrackCommunitySection",
       "FinalCTA",
     ]) {
       expect(home).toContain(section);
     }
     for (const removedSection of [
+      "AudienceRoutesSection",
+      "ProductGrid",
       "PricingTeaser",
       "TrustCenterSection",
       "NewsletterSection",
@@ -222,6 +239,50 @@ describe("production destinations", () => {
     const response = await submitContact(requestFor("/api/contact", contact));
     expect(response.status).toBe(503);
     expect(await response.json()).toMatchObject({ ok: false });
+  });
+
+  it("includes server-derived normalized lead routing in the existing contact email", async () => {
+    configureMail();
+    const sendMail = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: "email-test" }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", sendMail);
+    const response = await submitContact(
+      new Request("https://novamindglobalcr.com/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Forwarded-For": "192.0.2.44",
+        },
+        body: JSON.stringify({
+          ...contact,
+          plan: "nova-assist-business-it-health-check",
+          interest: "IT Health Check",
+          urgency: "media",
+          requestPreference: "remote",
+          turnstileToken: "server-only-test-token",
+          message: "No registrar respuestas libres en la clasificación.",
+        }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    const mailRequest = JSON.parse(sendMail.mock.calls[0][1].body);
+    const deliveredContent = `${mailRequest.text}\n${mailRequest.html}`;
+    expect(deliveredContent).not.toContain("server-only-test-token");
+    expect(deliveredContent).not.toContain("192.0.2.44");
+    const intentLine = mailRequest.text
+      .split("\n")
+      .find((line: string) => line.startsWith("Clasificación interna (1.0.0): "));
+    expect(intentLine).toBeDefined();
+    const intent = JSON.parse(intentLine.replace("Clasificación interna (1.0.0): ", ""));
+    expect(intent).toMatchObject({
+      segment: "business",
+      requestKind: "assessment",
+      serviceId: "it-health-check",
+      preferredDelivery: "remote",
+    });
+    expect(intent).not.toHaveProperty("companySizeRange");
+    expect(intent).not.toHaveProperty("message");
   });
 
   it("does not accept newsletter without a delivery provider", async () => {

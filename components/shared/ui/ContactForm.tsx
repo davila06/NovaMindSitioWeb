@@ -14,12 +14,14 @@ import {
   novaAssistServiceBySlug,
   novaAssistServices,
 } from "@/data/nova-assist";
+import { businessServices } from "@/data/nova-assist-business";
 import { resolveContactIntent } from "@/lib/contact-intent";
 import { getStoredUTM } from "@/lib/useUTM";
 import { containsCredentialLikeText } from "@/lib/contact-input";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
 import { Turnstile, turnstileSiteKey } from "@/components/shared/ui/Turnstile";
+import { trackNovaEvent, type NovaEvent } from "@/lib/nova-analytics";
 
 const serviceInterestOptions = contactInterests;
 
@@ -167,13 +169,18 @@ function validateField(
 export function ContactForm({
   plan,
   service,
+  initialMessage = "",
   variant = "contact",
+  healthCheck = false,
 }: {
   plan?: string;
   service?: string;
-  variant?: "contact" | "service-request";
+  initialMessage?: string;
+  variant?: "contact" | "service-request" | "business";
+  healthCheck?: boolean;
 } = {}) {
   const serviceRequest = variant === "service-request";
+  const businessRequest = variant === "business";
   const intent = resolveContactIntent(
     service ? `nova-assist-${service}` : plan,
   );
@@ -195,9 +202,10 @@ export function ContactForm({
     : STEP_REQUIRED;
   const [form, setForm] = useState<FormState>(() => ({
     ...initialState,
+    message: initialMessage,
     interest: serviceRequest
       ? selectedService?.name || "No estoy seguro, necesito orientación"
-      : intent.interest,
+      : businessRequest && !plan ? businessServices[0].name : intent.interest,
   }));
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
@@ -208,6 +216,7 @@ export function ContactForm({
   const [error, setError] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
   const [verificationAttempt, setVerificationAttempt] = useState(0);
+  const [interactive, setInteractive] = useState(false);
   const [isPending, startTransition] = useTransition();
   const focusedFieldsRef = useRef<Set<keyof FormState>>(new Set());
   const hasSubmittedRef = useRef(false);
@@ -215,9 +224,17 @@ export function ContactForm({
   const formRef = useRef<HTMLFormElement>(null);
   const progressRef = useRef({ started: false, completionRate: 0 });
   const requestStartedRef = useRef(false);
+  const submittingRef = useRef(false);
   const requestedServiceSlug =
     novaAssistServices.find((item) => item.name === form.interest)?.slug ??
     (service && form.interest === selectedService?.name ? service : undefined);
+  const businessServiceSlug = businessServices.find(
+    (item) => item.name === form.interest,
+  )?.slug;
+
+  useEffect(() => {
+    setInteractive(true);
+  }, []);
 
   useEffect(() => {
     try {
@@ -234,20 +251,21 @@ export function ContactForm({
       }));
   }, [intent.plan, intent.interest, serviceRequest, selectedService]);
 
-  useEffect(() => {
-    if (serviceRequest && !requestStartedRef.current) {
-      requestStartedRef.current = true;
-      trackEvent("service_request_start", {
-        service: selectedService?.slug || "unspecified",
-      });
-    }
-  }, [selectedService, serviceRequest]);
+  function novaEvent(event: NovaEvent, extra: Record<string, string | number> = {}) {
+    if (!serviceRequest && !businessRequest) return;
+    trackNovaEvent(event, {
+      segment: businessRequest ? "business" : "home",
+      service_id: (businessRequest ? businessServiceSlug : requestedServiceSlug) ?? "",
+      ...extra,
+    });
+  }
 
   useEffect(() => {
+    if (!interactive) return;
     formRef.current
       ?.querySelector<HTMLElement>("input:not([tabindex='-1']),select,textarea")
       ?.focus();
-  }, [currentStep]);
+  }, [currentStep, interactive]);
 
   useEffect(() => {
     formRef.current
@@ -261,7 +279,7 @@ export function ContactForm({
       if (reported || hasSubmittedRef.current || !progressRef.current.started)
         return;
       reported = true;
-      trackFormProgress({
+      if (!serviceRequest && !businessRequest) trackFormProgress({
         form: serviceRequest ? "nova_assist_request" : "contact_request",
         step: "abandon",
         completionRate: progressRef.current.completionRate,
@@ -272,7 +290,7 @@ export function ContactForm({
       window.removeEventListener("pagehide", report);
       report();
     };
-  }, [serviceRequest]);
+  }, [serviceRequest, businessRequest]);
 
   const completionRate = useMemo(() => {
     const total = requiredFields.length;
@@ -302,6 +320,10 @@ export function ContactForm({
     field: K,
     value: FormState[K],
   ) {
+    if ((serviceRequest || businessRequest) && !requestStartedRef.current) {
+      requestStartedRef.current = true;
+      novaEvent("service_request_started");
+    }
     progressRef.current.started = true;
     hasSubmittedRef.current = false;
     setForm((current) => ({ ...current, [field]: value }));
@@ -317,7 +339,7 @@ export function ContactForm({
   function handleFieldFocus(field: keyof FormState) {
     if (!focusedFieldsRef.current.has(field)) {
       focusedFieldsRef.current.add(field);
-      trackFormProgress({
+      if (!serviceRequest && !businessRequest) trackFormProgress({
         form: serviceRequest ? "nova_assist_request" : "contact_request",
         step: "field_focus",
         field,
@@ -333,7 +355,7 @@ export function ContactForm({
       serviceRequest,
     );
     setErrors((current) => ({ ...current, [field]: fieldError || undefined }));
-    trackFormProgress({
+    if (!serviceRequest && !businessRequest) trackFormProgress({
       form: serviceRequest ? "nova_assist_request" : "contact_request",
       step: "field_blur",
       field,
@@ -354,11 +376,12 @@ export function ContactForm({
       if (fieldError) nextErrors[field] = fieldError;
     }
     if (Object.keys(nextErrors).length > 0) {
+      novaEvent("service_request_validation_failed", { error_category: "validation", step_number: currentStep });
       setErrors((prev) => ({ ...prev, ...nextErrors }));
       return;
     }
     setCurrentStep((s) => Math.min(s + 1, steps.length));
-    trackFormProgress({
+    if (!serviceRequest && !businessRequest) trackFormProgress({
       form: serviceRequest ? "nova_assist_request" : "contact_request",
       step: "step_" + String(currentStep) + "_complete",
       completionRate,
@@ -367,6 +390,7 @@ export function ContactForm({
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submittingRef.current) return;
     setSubmitted(false);
     setError("");
     setServerMessage("");
@@ -384,8 +408,9 @@ export function ContactForm({
     }
 
     if (Object.keys(nextErrors).length > 0) {
+      novaEvent("service_request_validation_failed", { error_category: "validation", step_number: currentStep });
       setErrors(nextErrors);
-      trackFormProgress({
+      if (!serviceRequest && !businessRequest) trackFormProgress({
         form: serviceRequest ? "nova_assist_request" : "contact_request",
         step: "submit_blocked_validation",
         completionRate,
@@ -396,17 +421,21 @@ export function ContactForm({
     }
 
     if (turnstileSiteKey && !turnstileToken) {
+      novaEvent("service_request_validation_failed", { error_category: "verification", step_number: currentStep });
       setError("Completa la verificacion de seguridad para enviar.");
       return;
     }
 
-    trackFormProgress({
+    if (!serviceRequest && !businessRequest) trackFormProgress({
       form: serviceRequest ? "nova_assist_request" : "contact_request",
       step: "submit_attempt",
       completionRate,
       valid: true,
     });
 
+    submittingRef.current = true;
+    novaEvent("service_request_submitted");
+    if (healthCheck) novaEvent("health_check_submitted");
     startTransition(async () => {
       try {
         const response = await fetch("/api/contact", {
@@ -414,7 +443,11 @@ export function ContactForm({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...form,
-            plan: serviceRequest
+            plan: businessRequest
+              ? businessServiceSlug
+                ? `nova-assist-business-${businessServiceSlug}`
+                : undefined
+              : serviceRequest
               ? requestedServiceSlug
                 ? `nova-assist-${requestedServiceSlug}`
                 : undefined
@@ -429,8 +462,10 @@ export function ContactForm({
           await response.json(),
         );
         if (!parsedResult.success) {
-          trackEvent("contact_submit_error", { reason: "invalid_response" });
-          trackFormProgress({
+          novaEvent("service_request_failed", { error_category: "invalid_response" });
+          if (healthCheck) novaEvent("health_check_failed", { error_category: "invalid_response" });
+          if (!serviceRequest && !businessRequest) trackEvent("contact_submit_error", { reason: "invalid_response" });
+          if (!serviceRequest && !businessRequest) trackFormProgress({
             form: "contact_request",
             step: "submit_error",
             completionRate,
@@ -442,10 +477,11 @@ export function ContactForm({
         const result = parsedResult.data;
 
         if (!response.ok || !result.ok) {
-          trackEvent("contact_submit_error", {
-            reason: result.message || "api_error",
-          });
-          trackFormProgress({
+          if (serviceRequest || businessRequest) {
+            novaEvent("service_request_failed", { error_category: "server" });
+            if (healthCheck) novaEvent("health_check_failed", { error_category: "server" });
+          } else trackEvent("contact_submit_error", { reason: "api_error" });
+          if (!serviceRequest && !businessRequest) trackFormProgress({
             form: "contact_request",
             step: "submit_error",
             completionRate,
@@ -466,13 +502,19 @@ export function ContactForm({
           setSubmittedDeviceType(form.deviceType);
         }
         setServerMessage(buildSuccessMessage(result.channel));
-        if (result.channel !== "protected" && result.requestId)
+        if (!serviceRequest && !businessRequest && result.channel !== "protected" && result.requestId)
           trackLeadConversion(result.requestId, {
             source: serviceRequest ? "nova_assist_request" : "contact_form",
             product: serviceRequest ? service ?? "nova_assist" : form.interest,
-            plan: intent.plan,
+            plan: businessRequest && businessServiceSlug
+              ? `nova-assist-business-${businessServiceSlug}`
+              : intent.plan,
           });
-        trackEvent(serviceRequest ? "service_request_submit" : "contact_submit_success", {
+        if (result.channel !== "protected") {
+          novaEvent("service_request_succeeded", { outcome: "success" });
+          if (healthCheck) novaEvent("health_check_succeeded", { outcome: "success" });
+        }
+        if (!serviceRequest && !businessRequest) trackEvent("contact_submit_success", {
           channel: result.channel || "unknown",
             ...(serviceRequest
               ? {
@@ -482,7 +524,7 @@ export function ContactForm({
                 }
               : { interest: form.interest }),
         });
-        trackFormProgress({
+        if (!serviceRequest && !businessRequest) trackFormProgress({
           form: "contact_request",
           step: "submit_success",
           completionRate: 100,
@@ -492,7 +534,7 @@ export function ContactForm({
           ...initialState,
           interest: serviceRequest
             ? "No estoy seguro, necesito orientación"
-            : intent.interest,
+            : businessRequest && !plan ? businessServices[0].name : intent.interest,
         });
         setErrors({});
         setCurrentStep(1);
@@ -502,8 +544,11 @@ export function ContactForm({
           /* ignore */
         }
       } catch {
-        trackEvent("contact_submit_error", { reason: "network_error" });
-        trackFormProgress({
+        if (serviceRequest || businessRequest) {
+          novaEvent("service_request_failed", { error_category: "network" });
+          if (healthCheck) novaEvent("health_check_failed", { error_category: "network" });
+        } else trackEvent("contact_submit_error", { reason: "network_error" });
+        if (!serviceRequest && !businessRequest) trackFormProgress({
           form: "contact_request",
           step: "submit_network_error",
           completionRate,
@@ -513,6 +558,7 @@ export function ContactForm({
           "No se pudo conectar con el servidor. Intenta nuevamente en unos minutos.",
         );
       } finally {
+        submittingRef.current = false;
         setTurnstileToken("");
         setVerificationAttempt(attempt => attempt + 1);
       }
@@ -609,6 +655,7 @@ export function ContactForm({
         onSubmit={handleSubmit}
         noValidate
       >
+        <fieldset disabled={!interactive} className="min-w-0 disabled:opacity-70">
         {/* Honeypot */}
         <div className="hidden" aria-hidden="true">
           <label htmlFor="contact-website">Website</label>
@@ -872,7 +919,7 @@ export function ContactForm({
                 }
                 className={inputCls}
               >
-                {allInterestOptions.map((option) => (
+                {(businessRequest ? businessServices.map((item) => item.name) : allInterestOptions).map((option) => (
                   <option key={option}>{option}</option>
                 ))}
               </select>
@@ -1090,6 +1137,7 @@ export function ContactForm({
             </button>
           )}
         </div>
+        </fieldset>
       </form>
     </div>
   );

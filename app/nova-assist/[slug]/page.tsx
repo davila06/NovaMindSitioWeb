@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ArrowRight, Check, CircleHelp, ShieldCheck, X } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { SectionWrapper } from "@/components/layout/SectionWrapper";
 import { ServiceViewEvent } from "@/components/nova-assist/ServiceViewEvent";
+import { TrackedLink } from "@/components/nova-assist/TrackedLink";
 import {
   additionalPlanExclusions,
   novaAssistFaq,
@@ -34,6 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NovaAssistServicePage({ params }: Props) {
   const { slug } = await params;
+  if (slug === "it-ondemand") permanentRedirect("/nova-assist/empresas/it-ondemand");
   const service = novaAssistServiceBySlug[slug];
   if (!service) notFound();
 
@@ -80,9 +82,9 @@ export default async function NovaAssistServicePage({ params }: Props) {
               <p className="mt-5 max-w-2xl text-lg leading-8 text-text-muted">{service.problem}</p>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-text-subtle">{service.audience}</p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Link href={`/nova-assist/solicitar?service=${service.slug}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-300 px-5 py-3 text-sm font-bold text-[#17100a] hover:bg-orange-200">
+                <TrackedLink event="service_cta_clicked" segment="home" position="detail" serviceId={service.slug} href={`/nova-assist/solicitar?service=${service.slug}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-300 px-5 py-3 text-sm font-bold text-[#17100a] hover:bg-orange-200">
                   Solicitar {service.name} <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
+                </TrackedLink>
                 <Link href="/nova-assist/como-funciona" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-white hover:bg-white/5">Cómo funciona</Link>
               </div>
             </div>

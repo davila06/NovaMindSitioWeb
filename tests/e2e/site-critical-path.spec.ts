@@ -1,6 +1,117 @@
 import { expect, test } from "@playwright/test";
 import { homeSupportPlans } from "../../data/service-plans";
 import { contactInterests } from "../../data/site";
+import { products } from "../../data/products";
+
+test("home presenta la arquitectura empresarial y conserva las rutas existentes", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Solo esenciales", exact: true }).click();
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Tecnología e IA para resolver problemas reales de operación.",
+  );
+  const navigation = page.getByRole("navigation", {
+    name: "Navegación principal",
+  });
+  for (const [label, href] of [
+    ["Soluciones", "/soluciones"],
+    ["Servicios", "/servicios"],
+    ["Productos", "/productos"],
+    ["Casos", "/casos"],
+    ["Recursos", "/recursos"],
+    ["Empresa", "/empresa"],
+  ]) {
+    await expect(navigation.getByRole("link", { name: label, exact: true })).toHaveAttribute(
+      "href",
+      href,
+    );
+  }
+  await expect(
+    navigation.getByRole("link", {
+      name: "Hablar con un especialista",
+      exact: true,
+    }),
+  ).toHaveAttribute("href", "/contacto");
+
+  const headings = await page.locator("main h2").allTextContents();
+  const orderedSections = [
+    "Problemas que podemos ayudarte a resolver",
+    "Áreas de solución",
+    "Servicios de Nova Assist",
+    "Cómo trabajamos",
+    "Productos destacados",
+    "Seguridad y confianza",
+    "Insights",
+  ];
+  const positions = orderedSections.map((heading) =>
+    headings.findIndex((value) => value.includes(heading)),
+  );
+  expect(positions.every((position) => position >= 0)).toBe(true);
+  expect(positions).toEqual([...positions].sort((a, b) => a - b));
+
+  const featuredProducts = page.locator("#productos-destacados a[href^='/productos/']");
+  await expect(featuredProducts).toHaveCount(3);
+  const featuredHrefs = await featuredProducts.evaluateAll((links) =>
+    links.map((link) => (link as HTMLAnchorElement).getAttribute("href")),
+  );
+  expect(featuredHrefs).toEqual([
+    "/productos/voicebot",
+    "/productos/planillascr",
+    "/productos/ccerp",
+  ]);
+  await expect(
+    page.getByRole("link", { name: "Soporte para hogares" }),
+  ).toHaveAttribute("href", "/nova-assist");
+  await expect(
+    page.getByRole("link", { name: "PawTrack CR", exact: true }),
+  ).toHaveAttribute("href", "/productos/pawtrack");
+});
+
+test("los hubs nuevos reutilizan contenido y slugs de productos existentes", async ({
+  page,
+}) => {
+  await page.goto("/soluciones");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Explorar servicios" }),
+  ).toHaveAttribute("href", "/servicios");
+
+  await page.goto("/productos");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  for (const product of products) {
+    await expect(
+      page.getByRole("link", { name: new RegExp(product.name) }),
+    ).toHaveAttribute("href", `/productos/${product.slug}`);
+  }
+  await expect(
+    page.getByRole("link", { name: /NovaClick/ }),
+  ).toHaveAttribute("href", "/productos/novaclick");
+});
+
+test("Nova Assist analytics respeta consentimiento y registra el selector sin datos personales", async ({ page }) => {
+  await page.route("https://www.googletagmanager.com/**", route => route.fulfill({ contentType: "application/javascript", body: "" }));
+  await page.goto("/nova-assist");
+  await page.getByRole("button", { name: "Solo esenciales", exact: true }).click();
+  await page.evaluate(() => {
+    const calls: unknown[][] = [];
+    Object.assign(window, { __novaEvents: calls, gtag: (...args: unknown[]) => calls.push(args) });
+  });
+  const choice = page.getByRole("button", { name: "Resolver un problema" });
+  await choice.click();
+  expect(await page.evaluate(() => (window as unknown as { __novaEvents: unknown[][] }).__novaEvents.length)).toBe(0);
+  await page.getByRole("button", { name: "Preferencias de cookies" }).click();
+  await page.getByRole("button", { name: "Aceptar todas", exact: true }).click();
+  await page.evaluate(() => {
+    const calls: unknown[][] = [];
+    Object.assign(window, { __novaEvents: calls, gtag: (...args: unknown[]) => calls.push(args) });
+  });
+  await page.getByRole("button", { name: "Sí, necesito más tareas" }).click();
+  const calls = await page.evaluate(() => (window as unknown as { __novaEvents: unknown[][] }).__novaEvents);
+  expect(calls.filter(call => call[1] === "service_recommended")).toHaveLength(1);
+  expect(JSON.stringify(calls)).not.toContain("@");
+});
 
 test("home, navegación y viewport estable", async ({ page }, testInfo) => {
   await page.goto("/");
@@ -195,6 +306,31 @@ test("Nova Assist recomienda la modalidad correcta y conserva la selección", as
   ).toBe(true);
 });
 
+for (const [path, name] of [
+  ["/nova-assist", "Resolver un problema"],
+  ["/nova-assist/solicitar", "Sí, ya soy cliente"],
+]) {
+  test(`control en ${path} espera hidratación y responde a la primera interacción`, async ({ page }) => {
+    let releaseScripts!: () => void;
+    const scriptsReady = new Promise<void>((resolve) => { releaseScripts = resolve; });
+    await page.route("**/*", async (route) => {
+      if (route.request().resourceType() === "script") await scriptsReady;
+      await route.continue();
+    });
+    try {
+      await page.goto(path, { waitUntil: "commit" });
+      const choice = page.getByRole("button", { name });
+      await expect(choice).toBeDisabled();
+      releaseScripts();
+      await choice.click();
+      await expect(choice).toHaveAttribute("aria-pressed", "true");
+    } finally {
+      releaseScripts();
+      await page.unrouteAll({ behavior: "wait" });
+    }
+  });
+}
+
 test("Nova Assist publica alcance y exclusiones en servicios residenciales y empresariales", async ({
   page,
 }) => {
@@ -203,7 +339,6 @@ test("Nova Assist publica alcance y exclusiones en servicios residenciales y emp
     { slug: "visita-premium", name: "Visita Premium", detail: "Respaldo básico" },
     { slug: "plan-familia", name: "Plan Familia", detail: "Hasta 5 dispositivos" },
     { slug: "total-home", name: "Total Home", detail: "Hasta 8 dispositivos" },
-    { slug: "it-ondemand", name: "IT OnDemand", detail: "Servicio empresarial" },
   ];
 
   for (const service of servicePages) {
@@ -224,6 +359,58 @@ test("Nova Assist publica alcance y exclusiones en servicios residenciales y emp
       page.getByRole("link", { name: new RegExp(`Solicitar ${service.name}`) }),
     ).toHaveAttribute("href", `/nova-assist/solicitar?service=${service.slug}`);
   }
+});
+
+test("IT OnDemand conserva su enlace y dirige a la experiencia empresarial", async ({ page }) => {
+  await page.goto("/nova-assist/it-ondemand");
+  await expect(page).toHaveURL(/\/nova-assist\/empresas\/it-ondemand$/);
+  await expect(page.getByRole("heading", { name: "IT OnDemand", level: 1 })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Solicitar soporte IT" })).toHaveAttribute("href", "/nova-assist/empresas/solicitar?service=it-ondemand");
+});
+
+test("Business permite encontrar y comparar servicios sin desbordamiento", async ({ page }) => {
+  await page.goto("/nova-assist");
+  await page.getByRole("link", { name: "Para mi empresa" }).click();
+  await expect(page.getByRole("heading", { name: /tecnología que acompaña/i })).toBeVisible();
+  await page.getByRole("button", { name: "Necesitamos gestionar la tecnología preventivamente" }).click();
+  await expect(page.getByRole("heading", { name: "Business Pro", level: 3 }).first()).toBeVisible();
+  await page.getByRole("link", { name: "Comparar Business y Business Pro" }).click();
+  await expect(page.getByRole("heading", { name: "Business o Business Pro" })).toBeVisible();
+  for (const slug of ["it-ondemand", "business", "business-pro", "microsoft-365", "azure-cloud", "cybersecurity", "backup-continuity", "business-networks", "power-platform", "ai-copilot", "technology-projects", "it-health-check"]) {
+    await page.goto(`/nova-assist/empresas/${slug}`);
+    await expect(page.getByRole("heading", { name: "Qué incluye" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Qué no incluye" })).toBeVisible();
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`/nova-assist/empresas/${slug}$`));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  }
+});
+
+test("Health Check entrega contexto a contacto protegido sin enviarlo antes de confirmar", async ({ page }) => {
+  let payload: Record<string, unknown> | undefined;
+  await page.route("**/api/contact", async (route) => {
+    payload = route.request().postDataJSON();
+    await route.fulfill({ status: 200, json: { ok: true, channel: "protected" } });
+  });
+  await page.route("https://challenges.cloudflare.com/turnstile/**", (route) => route.fulfill({
+    contentType: "application/javascript",
+    body: `window.turnstile = {render: (_container, options) => { queueMicrotask(() => options.callback("e2e-test-token")); return "widget"; }, remove: () => {}};`,
+  }));
+  await page.goto("/nova-assist/empresas/health-check");
+  await page.getByLabel("Industria").selectOption({ label: "Comercio" });
+  await page.getByRole("button", { name: "Continuar a contacto" }).click();
+  expect(payload).toBeUndefined();
+  const form = page.getByRole("form", { name: "Solicitud comercial" });
+  await form.getByLabel("Nombre").fill("Audit User");
+  await form.getByLabel("Correo empresarial").fill("audit@example.com");
+  await form.getByRole("button", { name: /siguiente/i }).click();
+  await expect(form.getByLabel("Interés principal")).toHaveValue("IT Health Check");
+  await form.getByRole("button", { name: /siguiente/i }).click();
+  await expect(form.getByLabel("Mensaje")).toHaveValue(/Industria: Comercio/);
+  await form.getByRole("checkbox").check();
+  await form.getByRole("button", { name: "Enviar solicitud" }).click();
+  await expect.poll(() => payload?.plan).toBe("nova-assist-business-it-health-check");
+  expect(payload?.message).toContain("Industria: Comercio");
+  expect(payload?.consentPrivacy).toBe(true);
 });
 
 test("Nova Assist permite enviar una solicitud confirmada sin duplicar el envío", async ({

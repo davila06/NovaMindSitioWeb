@@ -40,10 +40,16 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:unit
+        env:
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
       - run: npm audit
       - name: Validate Turnstile site key
         run: |
           test -n "$NEXT_PUBLIC_TURNSTILE_SITE_KEY" || { echo "Missing environment variable NEXT_PUBLIC_TURNSTILE_SITE_KEY"; exit 1; }
+          case "$NEXT_PUBLIC_TURNSTILE_SITE_KEY" in
+            1x00000000000000000000AA|2x00000000000000000000AB|1x00000000000000000000BB|2x00000000000000000000BB|3x00000000000000000000FF)
+              echo "Turnstile test site keys are not permitted in deployed environments"; exit 1 ;;
+          esac
       - run: npm run content:index && npx cf build --mode "$DEPLOY_MODE"
       - name: Deploy validated build
         env:
@@ -52,6 +58,10 @@ jobs:
         run: |
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN"; exit 1; }
           test -n "$TURNSTILE_SECRET_KEY" || { echo "Missing TURNSTILE_SECRET_KEY"; exit 1; }
+          case "$TURNSTILE_SECRET_KEY" in
+            1x0000000000000000000000000000000AA|2x0000000000000000000000000000000AA|3x0000000000000000000000000000000AA)
+              echo "Turnstile test secrets are not permitted in deployed environments"; exit 1 ;;
+          esac
           secrets_file="$(mktemp)"
           trap 'rm -f "$secrets_file"' EXIT
           node -e 'require("fs").writeFileSync(process.argv[1], JSON.stringify({TURNSTILE_SECRET_KEY:process.env.TURNSTILE_SECRET_KEY}))' "$secrets_file"
@@ -67,6 +77,6 @@ jobs:
           curl --fail --retry 5 --retry-delay 5 --max-time 30 "$url/nova-assist" >/dev/null
           curl --fail --retry 5 --retry-delay 5 --max-time 30 "$url/nova-assist/solicitar?service=visita-express" >/dev/null
           curl --fail --retry 5 --retry-delay 5 --max-time 30 "$url/api/health?check=ready" | \
-            node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);if(r.status!=="ready"||Object.values(r.checks||{}).some(v=>v!==true))process.exit(1)})'
+            node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);if(r.status!=="ready"||["email_delivery","contact_routing","rate_limiting","turnstile"].some(k=>r.checks?.[k]!==true)||Object.values(r.checks||{}).some(v=>v!==true))process.exit(1)})'
           redirect_url="$(curl --silent --show-error --output /dev/null --write-out '%{redirect_url}' "$url/hogares")"
           case "$redirect_url" in */nova-assist) ;; *) echo "Legacy /hogares redirect failed: $redirect_url"; exit 1 ;; esac

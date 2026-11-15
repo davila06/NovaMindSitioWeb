@@ -306,5 +306,137 @@
     "auditId": "uses-rel-preconnect",
     "level": "warn",
     "url": "http://127.0.0.1:3000/nova-assist/solicitar"
+  },
+  {
+    "name": "auditRan",
+    "expected": 1,
+    "actual": 0,
+    "values": [
+      0,
+      0
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "uses-responsive-images",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.9,
+    "actual": 0.5,
+    "values": [
+      0.5,
+      0.5
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "unused-javascript",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas",
+    "auditTitle": "Reduce unused JavaScript",
+    "auditDocumentationLink": "https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/"
+  },
+  {
+    "name": "auditRan",
+    "expected": 1,
+    "actual": 0,
+    "values": [
+      0,
+      0
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "uses-rel-preconnect",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas"
+  },
+  {
+    "name": "auditRan",
+    "expected": 1,
+    "actual": 0,
+    "values": [
+      0,
+      0
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "uses-responsive-images",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas/business-pro"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.9,
+    "actual": 0.5,
+    "values": [
+      0.5,
+      0.5
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "unused-javascript",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas/business-pro",
+    "auditTitle": "Reduce unused JavaScript",
+    "auditDocumentationLink": "https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/"
+  },
+  {
+    "name": "auditRan",
+    "expected": 1,
+    "actual": 0,
+    "values": [
+      0,
+      0
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "uses-rel-preconnect",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas/business-pro"
+  },
+  {
+    "name": "auditRan",
+    "expected": 1,
+    "actual": 0,
+    "values": [
+      0,
+      0
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "uses-responsive-images",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas/comparar"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.9,
+    "actual": 0.5,
+    "values": [
+      0.5,
+      0.5
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "unused-javascript",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas/comparar",
+    "auditTitle": "Reduce unused JavaScript",
+    "auditDocumentationLink": "https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/"
+  },
+  {
+    "name": "auditRan",
+    "expected": 1,
+    "actual": 0,
+    "values": [
+      0,
+      0
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditId": "uses-rel-preconnect",
+    "level": "warn",
+    "url": "http://127.0.0.1:3000/nova-assist/empresas/comparar"
   }
 ]

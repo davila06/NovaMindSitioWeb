@@ -1,3 +1,5 @@
+import { businessServiceBySlug } from "@/data/nova-assist-business";
+
 export type NovaAssistService = {
   slug: string;
   name: string;
@@ -215,21 +217,14 @@ export const novaAssistServices: NovaAssistService[] = [
   },
   {
     slug: "it-ondemand",
-    name: "IT OnDemand",
-    tagline: "Soporte para empresas y necesidades corporativas.",
-    problem: "¿Necesitas soporte para una empresa, servidores o infraestructura?",
-    audience: "Organizaciones con múltiples usuarios, servidores o infraestructura empresarial.",
+    name: businessServiceBySlug["it-ondemand"].name,
+    tagline: businessServiceBySlug["it-ondemand"].tagline,
+    problem: businessServiceBySlug["it-ondemand"].description,
+    audience: businessServiceBySlug["it-ondemand"].audience,
     duration: "Alcance, tiempos y condiciones se definen en una propuesta.",
     limits: ["Servicio empresarial; no está cubierto por Plan Familia ni Total Home"],
-    includes: [
-      "Evaluación del contexto empresarial y de la necesidad técnica.",
-      "Definición de alcance, responsabilidades y condiciones antes de iniciar.",
-      "Propuesta acorde a usuarios, sistemas e infraestructura involucrados.",
-    ],
-    excludes: [
-      "Condiciones, precios, horarios o SLA no confirmados en una propuesta.",
-      "Uso residencial del Plan Familia o Total Home para cubrir una empresa.",
-    ],
+    includes: businessServiceBySlug["it-ondemand"].included,
+    excludes: businessServiceBySlug["it-ondemand"].excluded,
     whenToChooseAnother:
       "Para necesidades tecnológicas residenciales, revisa Plan Familia o Total Home.",
     cardFeatures: ["Para empresas", "Usuarios y servidores", "Alcance acordado", "Consultar necesidad"],

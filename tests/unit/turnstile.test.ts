@@ -4,6 +4,7 @@ import { verifyTurnstile } from "@/lib/turnstile";
 const request = new Request("https://novamindglobalcr.com/api/contact");
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
@@ -84,6 +85,7 @@ describe("Turnstile verification", () => {
 
   it("returns a safe unavailable error when Siteverify times out or has an invalid response", async () => {
     enable();
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const fetch = vi
       .fn()
       .mockRejectedValueOnce(new DOMException("Timed out", "TimeoutError"))
@@ -102,5 +104,7 @@ describe("Turnstile verification", () => {
       status: 503,
       message: "No se pudo verificar la seguridad. Intenta nuevamente.",
     });
+    expect(log).toHaveBeenCalledWith("[turnstile:siteverify_unavailable]", { action: "contact" });
+    expect(JSON.stringify(log.mock.calls)).not.toContain("token");
   });
 });

@@ -6,6 +6,7 @@ import {
 } from "@/lib/leads/contract";
 import { NOVA_ASSIST_INTENT_SCHEMA_VERSION } from "@/lib/nova-assist-intent";
 import type { MailMessage } from "@/lib/email";
+import { getServerEnv } from "@/lib/env";
 
 type MailSender = (message: MailMessage) => Promise<LeadSubmissionResult>;
 
@@ -13,8 +14,16 @@ function buildEmailHtml(command: SubmitLeadCommand) {
   const { contact, consent, intent } = command;
   const safeName = escapeHtml(contact.name);
   const safeEmail = escapeHtml(contact.email);
+  const safePhone = escapeHtml(contact.phone || "No indicado");
   const safeCompany = escapeHtml(contact.company || "No indicada");
   const safeInterest = escapeHtml(contact.interest);
+  const safeMarketSegment = contact.marketSegment === "b2b" ? "B2B · Empresa" : "B2C · Persona/hogar";
+  const safeContactMethod =
+    contact.preferredContactMethod === "phone"
+      ? "Llamada"
+      : contact.preferredContactMethod === "whatsapp"
+        ? "WhatsApp"
+        : "Correo electrónico";
   const safeCustomerStatus = escapeHtml(
     contact.customerStatus === "existing"
       ? "Cliente actual"
@@ -59,8 +68,11 @@ function buildEmailHtml(command: SubmitLeadCommand) {
   return `
     <h2>Nueva solicitud desde Novamind Global</h2>
     <p><strong>Nombre:</strong> ${safeName}</p>
+    <p><strong>Segmento:</strong> ${safeMarketSegment}</p>
     <p><strong>Email:</strong> ${safeEmail}</p>
-    <p><strong>Empresa:</strong> ${safeCompany}</p>
+    <p><strong>Teléfono:</strong> ${safePhone}</p>
+    ${contact.marketSegment === "b2b" ? `<p><strong>Empresa:</strong> ${safeCompany}</p>` : ""}
+    <p><strong>Canal de contacto preferido:</strong> ${safeContactMethod}</p>
     <p><strong>Interes:</strong> ${safeInterest}</p>
     <p><strong>Plan:</strong> ${escapeHtml(contact.plan || "No indicado")}</p>
     ${contact.customerStatus ? `<p><strong>Cliente:</strong> ${safeCustomerStatus}</p>` : ""}
@@ -85,15 +97,22 @@ function buildEmailHtml(command: SubmitLeadCommand) {
 
 function buildEmailText(command: SubmitLeadCommand) {
   const { contact, intent } = command;
-  return `Nombre: ${contact.name}\nEmail: ${contact.email}\nEmpresa: ${contact.company || "No indicada"}\nInteres: ${contact.interest}\nCliente: ${contact.customerStatus || "No indicado"}\nDispositivo: ${contact.deviceType || "No indicado"}\nPreferencia de atención: ${contact.requestPreference || "No indicada"}\nZona o localidad: ${contact.serviceArea || "No indicada"}\nMensaje: ${contact.message}\n\nClasificación interna (${NOVA_ASSIST_INTENT_SCHEMA_VERSION}): ${JSON.stringify(intent)}`;
+  return `Segmento: ${contact.marketSegment}\nNombre: ${contact.name}\nEmail: ${contact.email}\nTeléfono: ${contact.phone || "No indicado"}\nEmpresa: ${contact.marketSegment === "b2b" ? contact.company || "No indicada" : "No aplica"}\nCanal de contacto preferido: ${contact.preferredContactMethod}\nInterés: ${contact.interest}\nCliente: ${contact.customerStatus || "No indicado"}\nDispositivo: ${contact.deviceType || "No indicado"}\nPreferencia de atención: ${contact.requestPreference || "No indicada"}\nZona o localidad: ${contact.serviceArea || "No indicada"}\nMensaje: ${contact.message}\n\nClasificación interna (${NOVA_ASSIST_INTENT_SCHEMA_VERSION}): ${JSON.stringify(intent)}`;
 }
 
 export class EmailLeadDestination implements LeadDestination {
   constructor(private readonly mailSender: MailSender = sendMail) {}
 
   submit(command: SubmitLeadCommand): Promise<LeadSubmissionResult> {
+    const config = getServerEnv();
+    const segmentRecipient =
+      command.contact.marketSegment === "b2c"
+        ? config.CONTACT_B2C_TO_EMAIL
+        : config.CONTACT_B2B_TO_EMAIL;
+    const segmentLabel = command.contact.marketSegment.toUpperCase();
     return this.mailSender({
-      subject: `[Novamind] Nuevo lead: ${command.contact.interest}`,
+      to: segmentRecipient ?? config.CONTACT_TO_EMAIL,
+      subject: `[Novamind][${segmentLabel}] Nuevo lead: ${command.contact.interest}`,
       html: buildEmailHtml(command),
       text: buildEmailText(command),
       replyTo: command.contact.email,

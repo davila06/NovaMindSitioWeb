@@ -210,16 +210,16 @@ export default function ServiciosPage() {
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Button
-                href="/contacto"
-                trackingContext={{ page: 'servicios', section: 'hero', ctaLabel: 'solicitar_consultoria', destination: '/contacto', intent: 'demo' }}
+                href="/contacto?segment=b2b"
+                trackingContext={{ page: 'servicios', section: 'hero', ctaLabel: 'solicitar_consultoria', destination: '/contacto?segment=b2b', intent: 'demo' }}
                 className="btn-cta-pulse"
               >
                 Solicita tu consultoría
               </Button>
               <Button
-                href="/contacto"
+                href="/contacto?segment=b2b"
                 variant="ghost"
-                trackingContext={{ page: 'servicios', section: 'hero', ctaLabel: 'agenda_diagnostico', destination: '/contacto', intent: 'contact' }}
+                trackingContext={{ page: 'servicios', section: 'hero', ctaLabel: 'agenda_diagnostico', destination: '/contacto?segment=b2b', intent: 'contact' }}
               >
                 Consultar servicios
               </Button>
@@ -332,8 +332,8 @@ export default function ServiciosPage() {
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Button
-                href="/contacto"
-                trackingContext={{ page: 'servicios', section: 'mid-cta', ctaLabel: 'solicitar_consultoria_mid', destination: '/contacto', intent: 'demo' }}
+                href="/contacto?segment=b2b"
+                trackingContext={{ page: 'servicios', section: 'mid-cta', ctaLabel: 'solicitar_consultoria_mid', destination: '/contacto?segment=b2b', intent: 'demo' }}
               >
                 Solicitar consultoría
               </Button>

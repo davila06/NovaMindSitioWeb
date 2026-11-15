@@ -18,8 +18,11 @@ const command: SubmitLeadCommand = {
     consentVersion: "2026-01",
   },
   contact: {
+    marketSegment: "b2b",
+    preferredContactMethod: "email",
     name: "<Customer>",
     email: "customer@example.com",
+    company: "Example Corp",
     interest: "IT Health Check",
     message: "<script>alert(1)</script>",
   },
@@ -67,10 +70,40 @@ describe("lead submission destinations", () => {
     const email = send.mock.calls[0][0];
     expect(email.requestId).toBe(command.requestId);
     expect(email.replyTo).toBe(command.contact.email);
+    expect(email.subject).toContain("[B2B]");
+    expect(email.html).toContain("Canal de contacto preferido:</strong> Correo electrónico");
+    expect(email.html).toContain("Example Corp");
     expect(email.html).toContain("&lt;Customer&gt;");
     expect(email.html).not.toContain("<script>");
     expect(email.text).toContain("Clasificación interna (1.0.0)");
     expect(email).not.toHaveProperty("turnstileToken");
     expect(email).not.toHaveProperty("clientIp");
+  });
+
+  it("routes each market segment to its configured advisor with a shared fallback", async () => {
+    vi.stubEnv("CONTACT_TO_EMAIL", "shared@example.com");
+    vi.stubEnv("CONTACT_B2C_TO_EMAIL", "consumer@example.com");
+    vi.stubEnv("CONTACT_B2B_TO_EMAIL", "");
+    try {
+      const send = vi.fn().mockResolvedValue({
+        channel: "resend",
+        deliveryId: "email-456",
+      });
+      const destination = new EmailLeadDestination(send);
+
+      await destination.submit({
+        ...command,
+        contact: {
+          ...command.contact,
+          marketSegment: "b2c",
+        },
+      });
+      await destination.submit(command);
+
+      expect(send.mock.calls[0][0].to).toBe("consumer@example.com");
+      expect(send.mock.calls[1][0].to).toBe("shared@example.com");
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

@@ -84,6 +84,8 @@ Usa `.env.example` como base.
 - `RESEND_API_KEY`
 - `CONTACT_FROM_EMAIL`
 - `CONTACT_TO_EMAIL`
+- `CONTACT_B2C_TO_EMAIL` (opcional; si no se define, usa `CONTACT_TO_EMAIL`)
+- `CONTACT_B2B_TO_EMAIL` (opcional; si no se define, usa `CONTACT_TO_EMAIL`)
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USER`
@@ -193,6 +195,8 @@ Configura al menos un proveedor de correo:
 - Cloudflare Workers: binding `EMAIL`, remitente habilitado y destino Gmail verificado; `MAIL_PROVIDER=cloudflare`.
 - Opción A: Resend (`RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`)
 - Opción B: SMTP (`SMTP_*`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`)
+
+Para dirigir solicitudes B2C y B2B a asesores diferentes, configura `CONTACT_B2C_TO_EMAIL` y/o `CONTACT_B2B_TO_EMAIL`. Si no se definen, ambas conservan el destino compartido `CONTACT_TO_EMAIL`.
 
 Los errores de entrega devuelven `503`; no se usa stdout como suscripcion recibida. La aceptación del proveedor no demuestra llegada a la bandeja de entrada.
 

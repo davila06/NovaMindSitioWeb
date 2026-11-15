@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { businessProducts, products } from "@/data/products";
 import { homeSupportPlans, itManagedPlans } from "@/data/service-plans";
-import { resolveContactIntent } from "@/lib/contact-intent";
+import {
+  resolveContactIntent,
+  resolveContactMarketSegment,
+} from "@/lib/contact-intent";
 
 describe("business catalog and contact intent", () => {
   it("keeps PawTrack out of the commercial SaaS catalog", () => {
@@ -18,6 +21,7 @@ describe("business catalog and contact intent", () => {
       plan: planId,
       interest: "Soporte tecnológico para hogares",
     });
+    expect(resolveContactMarketSegment(planId ?? undefined)).toBe("b2c");
   });
 
   it("routes managed IT plans to the business interest", () => {
@@ -27,6 +31,7 @@ describe("business catalog and contact intent", () => {
       plan: planId,
       interest: "Soporte TI para empresas",
     });
+    expect(resolveContactMarketSegment(planId ?? undefined)).toBe("b2b");
   });
 
   it("routes business product inquiries to the selected product", () => {
@@ -35,5 +40,6 @@ describe("business catalog and contact intent", () => {
       plan: `saas-${product.slug}`,
       interest: product.name,
     });
+    expect(resolveContactMarketSegment(`saas-${product.slug}`)).toBe("b2b");
   });
 });

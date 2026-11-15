@@ -5,6 +5,7 @@ import { SectionWrapper } from "@/components/layout/SectionWrapper";
 import { ContactForm } from "@/components/shared/ui/ContactForm";
 import { createPageMetadata, siteConfig } from "@/lib/seo";
 import { CheckCircle2, Clock, Users, Zap } from "lucide-react";
+import { resolveContactMarketSegment } from "@/lib/contact-intent";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Contacto | Novamind Global",
@@ -20,8 +21,16 @@ const benefits = [
   { icon: CheckCircle2, text: "Las condiciones se documentan en la propuesta" },
 ];
 
-export default async function ContactPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
-  const { plan } = await searchParams;
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string; segment?: string }>;
+}) {
+  const { plan, segment } = await searchParams;
+  const initialSegment =
+    segment === "b2c" || segment === "b2b"
+      ? segment
+      : resolveContactMarketSegment(plan);
   const contactSchema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -153,7 +162,10 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 className="pointer-events-none absolute inset-x-4 -bottom-3 h-full rounded-2xl border border-brand-lavender/8 bg-brand-card/40 [transform:translateZ(-12px)]"
                 aria-hidden="true"
               />
-              <ContactForm plan={typeof plan === "string" ? plan : undefined} />
+              <ContactForm
+                plan={typeof plan === "string" ? plan : undefined}
+                initialSegment={initialSegment}
+              />
             </div>
           </div>
         </div>

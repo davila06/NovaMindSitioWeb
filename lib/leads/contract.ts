@@ -1,10 +1,16 @@
 import type { NovaAssistIntent } from "@/lib/nova-assist-intent";
 
-export const LEAD_SUBMISSION_SCHEMA_VERSION = "1.0.0" as const;
+export const LEAD_SUBMISSION_SCHEMA_VERSION = "1.1.0" as const;
+
+export type LeadMarketSegment = "b2c" | "b2b";
+export type PreferredContactMethod = "email" | "phone" | "whatsapp";
 
 export type LeadContactDetails = {
+  marketSegment: LeadMarketSegment;
+  preferredContactMethod: PreferredContactMethod;
   name: string;
   email: string;
+  phone?: string;
   company?: string;
   plan?: string;
   interest: string;

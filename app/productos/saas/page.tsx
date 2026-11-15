@@ -59,7 +59,7 @@ export default function SaasPage() {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${siteConfig.url}/` },
-          { '@type': 'ListItem', position: 2, name: 'Productos', item: `${siteConfig.url}/#productos` },
+          { '@type': 'ListItem', position: 2, name: 'Productos', item: `${siteConfig.url}/productos` },
           { '@type': 'ListItem', position: 3, name: 'SaaS', item: `${siteConfig.url}/productos/saas` },
         ],
       },
@@ -84,16 +84,16 @@ export default function SaasPage() {
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Button
-                href="/contacto"
-                trackingContext={{ page: 'saas', section: 'hero', ctaLabel: 'consultar_producto', destination: '/contacto', intent: 'demo' }}
+                href="/contacto?segment=b2b"
+                trackingContext={{ page: 'saas', section: 'hero', ctaLabel: 'consultar_producto', destination: '/contacto?segment=b2b', intent: 'demo' }}
                 className="btn-cta-pulse"
               >
                 Consultar un producto
               </Button>
               <Button
-                href="/contacto"
+                href="/contacto?segment=b2b"
                 variant="ghost"
-                trackingContext={{ page: 'saas', section: 'hero', ctaLabel: 'consultar_disponibilidad_demo_saas', destination: '/contacto', intent: 'contact' }}
+                trackingContext={{ page: 'saas', section: 'hero', ctaLabel: 'consultar_disponibilidad_demo_saas', destination: '/contacto?segment=b2b', intent: 'contact' }}
               >
                 Consultar disponibilidad de demo
               </Button>

@@ -13,6 +13,7 @@ import { POST as submitContact } from "@/app/api/contact/route";
 import { GET as health } from "@/app/api/health/route";
 import { Footer } from "@/components/layout/Footer";
 import { contactDetails } from "@/data/site";
+import { NOVA_ASSIST_INTENT_SCHEMA_VERSION } from "@/lib/nova-assist-intent";
 
 afterEach(() => {
   cleanup();
@@ -138,6 +139,8 @@ describe("production destinations", () => {
   }
 
   const contact = {
+    marketSegment: "b2c",
+    preferredContactMethod: "email",
     name: "Audit User",
     email: "audit@example.com",
     interest: "Consultoria",
@@ -272,9 +275,19 @@ describe("production destinations", () => {
     expect(deliveredContent).not.toContain("192.0.2.44");
     const intentLine = mailRequest.text
       .split("\n")
-      .find((line: string) => line.startsWith("Clasificación interna (1.0.0): "));
+      .find((line: string) =>
+        line.startsWith(
+          `Clasificación interna (${NOVA_ASSIST_INTENT_SCHEMA_VERSION}): `,
+        ),
+      );
     expect(intentLine).toBeDefined();
-    const intent = JSON.parse(intentLine.replace("Clasificación interna (1.0.0): ", ""));
+    if (!intentLine) throw new Error("Expected a normalized intent in the lead email");
+    const intent = JSON.parse(
+      intentLine.replace(
+        `Clasificación interna (${NOVA_ASSIST_INTENT_SCHEMA_VERSION}): `,
+        "",
+      ),
+    );
     expect(intent).toMatchObject({
       segment: "business",
       requestKind: "assessment",

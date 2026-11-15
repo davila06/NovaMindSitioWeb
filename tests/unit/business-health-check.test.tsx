@@ -39,6 +39,7 @@ describe("IT Health Check", () => {
     expect(screen.getByText(/orientar una conversación inicial/i)).toBeInTheDocument();
     fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana Perez" } });
     fireEvent.change(screen.getByPlaceholderText(/correo@ejemplo.com/i), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Empresa"), { target: { value: "Empresa Ejemplo" } });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     expect(screen.getByLabelText("Mensaje")).toHaveValue(

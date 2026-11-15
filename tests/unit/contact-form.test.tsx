@@ -28,6 +28,7 @@ describe("ContactForm", () => {
 
   it("preserva el plan del enlace sin persistir datos personales", () => {
     render(<ContactForm plan="clickfix-express" />);
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana Perez" } });
     fireEvent.change(screen.getByPlaceholderText(/correo@ejemplo.com/i), { target: { value: "ana@example.com" } });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
@@ -43,10 +44,12 @@ describe("ContactForm", () => {
     render(<ContactForm variant="business" plan="nova-assist-business-azure-cloud" />);
     fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana Perez" } });
     fireEvent.change(screen.getByPlaceholderText(/correo@ejemplo.com/i), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Empresa"), { target: { value: "Empresa Ejemplo" } });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     expect(screen.getByLabelText(/interés principal/i)).toHaveValue("Azure & Cloud");
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.change(screen.getByLabelText("Mensaje"), { target: { value: "Necesitamos revisar nuestra arquitectura cloud." } });
+    fireEvent.click(screen.getByRole("button", { name: /^Correo electrónico$/ }));
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
     await waitFor(() => {
@@ -54,6 +57,49 @@ describe("ContactForm", () => {
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
       expect(body.plan).toBe("nova-assist-business-azure-cloud");
       expect(body.interest).toBe("Azure & Cloud");
+      expect(body.marketSegment).toBe("b2b");
+      expect(body.preferredContactMethod).toBe("email");
+      expect(body.company).toBe("Empresa Ejemplo");
+    });
+  });
+
+  it("solicita teléfono para WhatsApp y envía el segmento y canal elegidos", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true, channel: "resend", requestId: "b2c-request" }),
+    });
+    render(<ContactForm initialSegment="b2c" />);
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    fireEvent.change(screen.getByLabelText("Nombre"), {
+      target: { value: "Ana Perez" },
+    });
+    fireEvent.change(screen.getByLabelText("Correo electrónico"), {
+      target: { value: "ana@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    fireEvent.change(screen.getByLabelText("Mensaje"), {
+      target: { value: "Necesito ayuda con mi computadora personal." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^WhatsApp$/ }));
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
+
+    expect(await screen.findByText(/teléfono válido/i)).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText("Teléfono de contacto"), {
+      target: { value: "+506 8888 8888" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalled();
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.marketSegment).toBe("b2c");
+      expect(body.preferredContactMethod).toBe("whatsapp");
+      expect(body.phone).toBe("+506 8888 8888");
+      expect(body.company).toBeUndefined();
     });
   });
 
@@ -67,11 +113,12 @@ describe("ContactForm", () => {
     });
     render(<ContactForm variant="business" plan="nova-assist-business-azure-cloud" />);
     fireEvent.change(screen.getByLabelText("Nombre"), { target: { value: "Ana Perez" } });
-    fireEvent.change(screen.getByLabelText("Correo empresarial"), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Correo de trabajo"), { target: { value: "ana@example.com" } });
     fireEvent.change(screen.getByLabelText("Empresa"), { target: { value: "Empresa Ejemplo" } });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.change(screen.getByLabelText("Mensaje"), { target: { value: "Necesitamos revisar la nube." } });
+    fireEvent.click(screen.getByRole("button", { name: /^Correo electrónico$/ }));
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
     await waitFor(() => expect(gtag.mock.calls.some(call => call[1] === "service_request_succeeded")).toBe(true));
@@ -89,10 +136,12 @@ describe("ContactForm", () => {
     fetchMock.mockResolvedValueOnce({ ok: false, status: 503, json: async () => ({ ok: false, message: "private@example.com" }) });
     render(<ContactForm variant="business" />);
     fireEvent.change(screen.getByLabelText("Nombre"), { target: { value: "Ana Perez" } });
-    fireEvent.change(screen.getByLabelText("Correo empresarial"), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Correo de trabajo"), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Empresa"), { target: { value: "Empresa Ejemplo" } });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.change(screen.getByLabelText("Mensaje"), { target: { value: "Necesitamos revisar la nube." } });
+    fireEvent.click(screen.getByRole("button", { name: /^Correo electrónico$/ }));
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
     await waitFor(() => expect(gtag.mock.calls.some(call => call[1] === "service_request_failed")).toBe(true));
@@ -113,10 +162,12 @@ describe("ContactForm", () => {
     });
     render(<ContactForm variant="business" plan="nova-assist-business-it-health-check" healthCheck />);
     fireEvent.change(screen.getByLabelText("Nombre"), { target: { value: "Ana Perez" } });
-    fireEvent.change(screen.getByLabelText("Correo empresarial"), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Correo de trabajo"), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Empresa"), { target: { value: "Empresa Ejemplo" } });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.change(screen.getByLabelText("Mensaje"), { target: { value: "Necesitamos revisar la nube." } });
+    fireEvent.click(screen.getByRole("button", { name: /^Correo electrónico$/ }));
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
     await waitFor(() => expect(gtag.mock.calls.filter(call => call[1] === expected)).toHaveLength(1));
@@ -126,8 +177,11 @@ describe("ContactForm", () => {
 
   it("mantiene PawTrack fuera de los intereses comerciales", () => {
     render(<ContactForm />);
+    fireEvent.click(screen.getByRole("button", { name: /empresa u organización/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana Perez" } });
     fireEvent.change(screen.getByPlaceholderText(/correo@ejemplo.com/i), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Empresa"), { target: { value: "Empresa Ejemplo" } });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
 
     expect(screen.queryByRole("option", { name: /PawTrack/i })).not.toBeInTheDocument();
@@ -138,6 +192,8 @@ describe("ContactForm", () => {
     vi.stubGlobal("gtag", gtag);
     updateAnalyticsConsent(true);
     render(<ContactForm />);
+    fireEvent.click(screen.getByRole("button", { name: /persona u hogar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
     fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana" } });
     fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), { target: { value: "Ana Perez" } });
     expect(gtag.mock.calls.some(call => call[1] === "form_progress" && call[2]?.step === "abandon")).toBe(false);
@@ -148,10 +204,25 @@ describe("ContactForm", () => {
 
     // El formulario es multi-paso; en el paso 1 se muestra "Siguiente"
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    fireEvent.click(screen.getByRole("button", { name: /persona u hogar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/ingresa un nombre valido/i)).toBeInTheDocument();
     });
+
+  });
+
+  it("solo muestra el campo de empresa para solicitudes B2B", () => {
+    render(<ContactForm />);
+    fireEvent.click(screen.getByRole("button", { name: /empresa u organización/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    expect(screen.getByLabelText("Empresa")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /anterior/i }));
+    fireEvent.click(screen.getByRole("button", { name: /persona u hogar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    expect(screen.queryByLabelText("Empresa")).not.toBeInTheDocument();
   });
 
   it("envia el formulario y muestra confirmacion en caso exitoso", async () => {
@@ -162,7 +233,11 @@ describe("ContactForm", () => {
 
     render(<ContactForm />);
 
-    // Paso 1: llenar nombre y correo, avanzar
+    // Paso 1: identificar el segmento
+    fireEvent.click(screen.getByRole("button", { name: /persona u hogar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+
+    // Paso 2: llenar nombre y correo
     fireEvent.change(screen.getByPlaceholderText(/tu nombre/i), {
       target: { value: "Juan Perez" },
     });
@@ -179,22 +254,23 @@ describe("ContactForm", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
 
-    // Paso 3: llenar mensaje y enviar
+    // Paso 4: llenar mensaje, elegir canal y enviar
     await waitFor(() => {
       expect(
-        screen.getByPlaceholderText(/cuéntanos sobre tu operación/i),
+        screen.getByPlaceholderText(/cuéntanos qué necesitas resolver/i),
       ).toBeInTheDocument();
     });
     fireEvent.change(
-      screen.getByPlaceholderText(/cuéntanos sobre tu operación/i),
+      screen.getByPlaceholderText(/cuéntanos qué necesitas resolver/i),
       {
         target: {
           value:
-            "Necesitamos automatizar procesos de seguimiento comercial este trimestre.",
+            "Necesito soporte para mi equipo de uso personal.",
         },
       },
     );
 
+    fireEvent.click(screen.getByRole("button", { name: /^Correo electrónico$/ }));
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: /enviar solicitud/i }));
 

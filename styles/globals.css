@@ -4,27 +4,59 @@
 
 :root {
   color-scheme: dark;
-  /* ── Bases Midnight Signal ────────────────────────── */
-  --bg-void: #060b16;
-  --bg-surface: #0b1730;
-  --bg-card: #102242;
-  --bg-elevated: #173058;
-  /* ── Naranja (marca principal) ───────────────────── */
-  --brand-violet: #ea580c;
-  --brand-iris: #fb923c;
-  --brand-lavender: #7dd3fc;
-  /* ── Azul señal (marca secundaria) ───────────────── */
-  --brand-cobalt: #38bdf8;
-  --brand-azure: #0ea5e9;
-  /* ── Naranja cálido complementario ──────────────── */
-  --gold-warm: #f97316;
-  --gold-light: #fdba74;
-  /* ── Texto ───────────────────────────────────────── */
+  --color-navy-950: #07111f;
+  --color-navy-900: #0b172a;
+  --color-navy-800: #10233d;
+  --color-blue-700: #084ec1;
+  --color-blue-600: #0b63f6;
+  --color-blue-100: #e8f1ff;
+  --color-cyan-400: #19c3ff;
+  --color-cyan-100: #dff7ff;
+  --color-slate-900: #102033;
+  --color-slate-700: #334155;
+  --color-slate-500: #64748b;
+  --color-slate-300: #cbd5e1;
+  --color-slate-200: #d7e0ea;
+  --color-slate-100: #eef2f6;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f8fafc;
+  --color-surface-dark: #07111f;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-28: 112px;
+  --space-32: 128px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --content-width: 1280px;
+  --page-width: 1440px;
+  --editorial-width: 760px;
+  --bg-void: var(--color-navy-950);
+  --bg-surface: var(--color-navy-900);
+  --bg-card: var(--color-navy-800);
+  --bg-elevated: #152b49;
+  --brand-violet: var(--color-blue-600);
+  --brand-iris: var(--color-blue-700);
+  --brand-lavender: var(--color-cyan-400);
+  --brand-cobalt: var(--color-blue-700);
+  --brand-azure: var(--color-blue-600);
+  --gold-warm: var(--color-cyan-400);
+  --gold-light: var(--color-cyan-100);
   --text-primary: #eff6ff;
   --text-muted: #9cb3d9;
   --text-subtle: #93a7c4;
-  /* ── CTAs ─────────────────────────────────────────── */
-  --cta-ring: rgba(249, 115, 22, 0.35);
+  --cta-ring: rgba(11, 99, 246, 0.35);
 }
 
 html {
@@ -62,22 +94,22 @@ body {
   background-image:
     radial-gradient(
       ellipse 80% 50% at 10% 0%,
-      rgba(249, 115, 22, 0.24),
+      rgba(11, 99, 246, 0.16),
       transparent 60%
     ),
     radial-gradient(
       ellipse 60% 40% at 90% 5%,
-      rgba(14, 165, 233, 0.18),
+      rgba(25, 195, 255, 0.12),
       transparent 50%
     ),
     radial-gradient(
       ellipse 50% 30% at 85% 92%,
-      rgba(125, 211, 252, 0.14),
+      rgba(8, 78, 193, 0.12),
       transparent 45%
     ),
     radial-gradient(
       ellipse 40% 35% at 50% 50%,
-      rgba(249, 115, 22, 0.05),
+      rgba(11, 99, 246, 0.04),
       transparent 55%
     );
   color: var(--text-primary);
@@ -755,6 +787,48 @@ html {
   animation: stack-fan 0.4s ease-out both;
 }
 
+.enterprise-section-light {
+  color: var(--color-slate-900);
+  background: var(--color-surface);
+}
+
+.enterprise-section-subtle {
+  color: var(--color-slate-900);
+  background: var(--color-surface-subtle);
+}
+
+.enterprise-section-ink {
+  color: var(--text-primary);
+  background:
+    radial-gradient(ellipse 75% 90% at 100% 0%, rgba(11, 99, 246, 0.18), transparent 58%),
+    var(--color-navy-950);
+}
+
+.enterprise-kicker {
+  color: var(--color-blue-700);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.enterprise-card {
+  border: 1px solid var(--color-slate-200);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.enterprise-card:hover {
+  border-color: var(--color-blue-600);
+  box-shadow: 0 16px 36px rgba(7, 17, 31, 0.1);
+  transform: translateY(-2px);
+}
+
 /* ── Reduced-motion: disable all animations ───────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -772,6 +846,10 @@ html {
   .cta-pulse,
   .gradient-animated {
     animation: none !important;
+  }
+
+  .enterprise-card {
+    transition: none;
   }
 }
 

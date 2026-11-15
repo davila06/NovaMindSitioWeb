@@ -1,78 +1,50 @@
+import { ArrowUpRight, Boxes, ClipboardCheck, Workflow } from "lucide-react";
+import Link from "next/link";
 import { Container } from "@/components/layout/Container";
-import { trustBadges } from "@/data/site";
-import { ShieldCheck, Layers, Cloud, BarChart3, Lock, Cpu } from "lucide-react";
+import { differentiationPillars } from "@/data/site";
 
-const icons = [ShieldCheck, Layers, Cloud, BarChart3, Lock, Cpu];
-
-const techBadges = [
-  "Next.js 15",
-  "TypeScript",
-  "Empresa Costarricense",
-];
-
-const allBadges = [...trustBadges, ...techBadges];
+const icons = [Workflow, Boxes, ClipboardCheck, ArrowUpRight];
 
 export function TrustBar() {
   return (
-    <div className="py-4 overflow-hidden">
+    <section
+      aria-label="Capacidades y forma de trabajo"
+      className="border-y border-white/10 bg-[#0b172a]"
+    >
       <Container>
-        {/* Línea de luz superior */}
-        <div className="light-line mb-6" />
-      </Container>
-
-      {/* Conveyor belt — perspective tilt gives 3D belt feel */}
-      <div
-        className="relative flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] [perspective:900px]"
-        role="region"
-        aria-label="Tecnologías y principios de servicio de Novamind Global"
-      >
-        {/* The belt strip itself is tilted in 3D */}
-        <div className="flex w-full [transform:rotateX(-6deg)] [transform-style:preserve-3d]">
-          <ul className="animate-marquee flex shrink-0 gap-4 pr-4" role="list">
-            {allBadges.map((badge, i) => {
-              const Icon = icons[i % icons.length];
-              return (
-                <li
-                  key={`a-${badge}`}
-                  className="flex shrink-0 items-center gap-2 rounded-full border border-brand-lavender/18 bg-brand-card/70 px-5 py-2.5 text-sm font-medium text-text-muted backdrop-blur whitespace-nowrap transition-transform duration-300 hover:[transform:translateZ(8px)_scale(1.04)]"
-                >
-                  <Icon
-                    className="h-4 w-4 text-brand-lavender"
-                    aria-hidden="true"
-                  />
-                  {badge}
-                </li>
-              );
-            })}
-          </ul>
-          {/* Duplicate for seamless loop */}
-          <ul
-            className="animate-marquee flex shrink-0 gap-4 pr-4"
-            aria-hidden="true"
-            role="presentation"
+        <ul className="grid gap-0 sm:grid-cols-2 lg:grid-cols-4">
+          {differentiationPillars.map((pillar, index) => {
+            const Icon = icons[index];
+            return (
+              <li
+                key={pillar.title}
+                className="flex min-h-[112px] items-start gap-3 border-b border-white/10 px-2 py-5 last:border-0 sm:px-5 sm:odd:border-r lg:border-b-0 lg:border-r lg:px-5 lg:last:border-r-0"
+              >
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/20 bg-cyan-400/10 text-cyan-400">
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <div>
+                  <h2 className="text-sm font-semibold text-white">
+                    {pillar.title}
+                  </h2>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">
+                    {pillar.description}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="flex justify-end border-t border-white/10 py-3">
+          <Link
+            href="/servicios"
+            className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-cyan-400 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
           >
-            {allBadges.map((badge, i) => {
-              const Icon = icons[i % icons.length];
-              return (
-                <li
-                  key={`b-${badge}`}
-                  className="flex shrink-0 items-center gap-2 rounded-full border border-brand-lavender/18 bg-brand-card/70 px-5 py-2.5 text-sm font-medium text-text-muted backdrop-blur whitespace-nowrap"
-                >
-                  <Icon
-                    className="h-4 w-4 text-brand-lavender"
-                    aria-hidden="true"
-                  />
-                  {badge}
-                </li>
-              );
-            })}
-          </ul>
+            Conocer nuestros servicios
+            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
         </div>
-      </div>
-
-      <Container>
-        <div className="light-line mt-6" />
       </Container>
-    </div>
+    </section>
   );
 }

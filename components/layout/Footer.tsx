@@ -176,21 +176,17 @@ export function Footer() {
 
         {/* Links rápidos */}
         <div>
-          <h5 className="text-sm font-semibold text-[#f0f8ff]">
-            Links rápidos
-          </h5>
+          <h5 className="text-sm font-semibold text-[#f0f8ff]">Explorar</h5>
           <ul className="mt-4 space-y-2.5 text-sm">
             {[
-              { href: "/", label: "Inicio" },
-              { href: "/nova-assist", label: "Nova Assist" },
-              { href: "/nova-assist/servicios", label: "Servicios de soporte" },
-              { href: "/nova-assist/comparar", label: "Comparar planes" },
-              { href: "/nova-assist/preguntas-frecuentes", label: "Preguntas frecuentes" },
+              { href: "/soluciones", label: "Soluciones" },
+              { href: "/servicios", label: "Servicios" },
+              { href: "/productos", label: "Productos" },
+              { href: "/casos", label: "Casos" },
+              { href: "/blog", label: "Recursos e insights" },
+              { href: "/sobre-nosotros", label: "Empresa" },
+              { href: "/nova-assist", label: "Soporte para hogares" },
               { href: "/empresas", label: "Para empresas" },
-              { href: "/empresas#servicios", label: "Servicios Nova Assist" },
-              { href: "/#productos", label: "Productos" },
-              { href: "/sobre-nosotros", label: "Nosotros" },
-              { href: "/blog", label: "Blog" },
               { href: "/contacto", label: "Contacto" },
             ].map((link) => (
               <li key={link.href}>
@@ -208,7 +204,7 @@ export function Footer() {
         {/* Productos y comunidad */}
         <div>
           <h5 className="text-sm font-semibold text-[#f0f8ff]">
-            Productos SaaS
+            Productos y comunidad
           </h5>
           <ul className="mt-4 space-y-2.5 text-sm">
             {[
@@ -221,6 +217,7 @@ export function Footer() {
                 label: "MindFlow AI Sales Engine",
               },
               { href: "/productos/iads", label: "IADS" },
+              { href: "/productos/novaclick", label: "NovaClick" },
             ].map((link) => (
               <li key={link.href}>
                 <Link
@@ -265,12 +262,12 @@ export function Footer() {
             trackingContext={{
               page: "global",
               section: "footer",
-              ctaLabel: "consultar_disponibilidad",
+              ctaLabel: "hablar_con_un_especialista",
               destination: "/contacto",
               intent: "contact",
             }}
           >
-            Consultar disponibilidad
+          Hablar con un especialista
           </Button>
 
           {/* Newsletter inline */}

@@ -15,14 +15,127 @@ export const contactDetails = { email: 'info@novamindglobalcr.com', recipient: '
 // Keep quantified claims, pricing, service levels, testimonials, and cases unpublished until reviewed.
 export const commercialEvidenceEnabled = false
 
-export const navLinks = [
-  { href: '/', label: 'Inicio' },
-  { href: '/nova-assist', label: 'Nova Assist' },
-  { href: '/empresas', label: 'Para empresas' },
-  { href: '/#productos', label: 'Productos' },
-  { href: '/productos/pawtrack', label: 'PawTrack' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/contacto', label: 'Contacto' },
+export type NavigationLink = {
+  href: string
+  label: string
+  description?: string
+}
+
+export type PrimaryNavigationItem = NavigationLink & {
+  children: readonly NavigationLink[]
+}
+
+export const primaryNavigation: readonly PrimaryNavigationItem[] = [
+  {
+    href: '/soluciones',
+    label: 'Soluciones',
+    description: 'Explora opciones según el reto de tu organización.',
+    children: [
+      { href: '/soluciones', label: 'Todas las soluciones', description: 'Áreas y rutas disponibles.' },
+      { href: '/empresas', label: 'Para empresas', description: 'Productos y servicios empresariales.' },
+      { href: '/nova-assist', label: 'Para hogares', description: 'Soporte tecnológico residencial.' },
+    ],
+  },
+  {
+    href: '/servicios',
+    label: 'Servicios',
+    description: 'Consultoría, implementación y soporte.',
+    children: [
+      { href: '/servicios', label: 'Servicios profesionales', description: 'Capacidades y alcances disponibles.' },
+      { href: '/nova-assist/empresas/health-check', label: 'IT Health Check', description: 'Orientación inicial para empresas.' },
+      { href: '/nova-assist/empresas/it-ondemand', label: 'IT OnDemand', description: 'Soporte empresarial bajo alcance acordado.' },
+    ],
+  },
+  {
+    href: '/productos',
+    label: 'Productos',
+    description: 'Conoce las plataformas y productos existentes.',
+    children: [
+      { href: '/productos', label: 'Todos los productos', description: 'Catálogo de productos Novamind.' },
+      { href: '/productos/saas', label: 'Plataformas empresariales', description: 'Información y condiciones por producto.' },
+      { href: '/productos/novaclick', label: 'NovaClick', description: 'Presencia digital y comercio.' },
+    ],
+  },
+  {
+    href: '/casos',
+    label: 'Casos',
+    description: 'Revisa la información publicada sobre casos de uso.',
+    children: [],
+  },
+  {
+    href: '/blog',
+    label: 'Recursos',
+    description: 'Artículos y recursos disponibles.',
+    children: [
+      { href: '/blog', label: 'Insights', description: 'Artículos publicados en el blog.' },
+      { href: '/blog/feed.xml', label: 'RSS', description: 'Suscríbete al feed de publicaciones.' },
+    ],
+  },
+  {
+    href: '/sobre-nosotros',
+    label: 'Empresa',
+    description: 'Conoce Novamind Global y sus iniciativas.',
+    children: [
+      { href: '/sobre-nosotros', label: 'Nosotros', description: 'Información sobre Novamind Global.' },
+      { href: '/#como-trabajamos', label: 'Cómo trabajamos', description: 'Etapas y forma de colaboración.' },
+      { href: '/productos/pawtrack', label: 'PawTrack CR', description: 'Iniciativa tecnológica comunitaria.' },
+    ],
+  },
+]
+
+export const navLinks = primaryNavigation.map(({ href, label }) => ({ href, label }))
+
+export type SolutionArea = {
+  title: string
+  description: string
+  href: string
+  action: string
+  icon: 'automation' | 'cloud' | 'applications' | 'data' | 'engineering' | 'experience'
+}
+
+export const solutionAreas: readonly SolutionArea[] = [
+  {
+    title: 'IA y automatización',
+    description: 'Evalúa dónde la automatización puede apoyar procesos y conversaciones.',
+    href: '/productos/voicebot',
+    action: 'Explorar VoiceBot',
+    icon: 'automation',
+  },
+  {
+    title: 'Cloud y modernización',
+    description: 'Revisa opciones de infraestructura y modernización según el entorno.',
+    href: '/servicios',
+    action: 'Ver servicios',
+    icon: 'cloud',
+  },
+  {
+    title: 'Aplicaciones empresariales',
+    description: 'Conoce plataformas de nómina, ERP y procesos comerciales.',
+    href: '/productos',
+    action: 'Explorar productos',
+    icon: 'applications',
+  },
+  {
+    title: 'Datos e integración',
+    description: 'Define integraciones según los sistemas y requisitos de cada proyecto.',
+    href: '/servicios',
+    action: 'Conversar sobre integración',
+    icon: 'data',
+  },
+  {
+    title: 'Ingeniería de software',
+    description: 'Consulta capacidades de diseño y desarrollo de aplicaciones.',
+    href: '/servicios',
+    action: 'Ver capacidades',
+    icon: 'engineering',
+  },
+  {
+    title: 'Experiencia digital',
+    description: 'Explora soluciones de sitios web, presencia digital y comercio.',
+    href: '/productos/novaclick',
+    action: 'Conocer NovaClick',
+    icon: 'experience',
+  },
 ]
 
 export const trustBadges = commercialEvidenceEnabled
@@ -50,20 +163,24 @@ export const differentiationPillars = [
 
 export const implementationSteps = [
   {
-    title: 'Diagnóstico operativo',
+    title: 'Discover · Descubrir',
     description: 'Revisamos procesos, sistemas y necesidades para identificar el contexto del proyecto.',
   },
   {
-    title: 'Diseño de solución',
+    title: 'Design · Diseñar',
     description: 'Definimos una propuesta técnica, prioridades y entregables acordes al alcance solicitado.',
   },
   {
-    title: 'Implementación incremental',
-    description: 'Desarrollamos y configuramos los componentes acordados, con revisiones según las etapas de trabajo.',
+    title: 'Build · Construir',
+    description: 'Desarrollamos y configuramos los componentes acordados por etapas.',
   },
   {
-    title: 'Escalado y optimización',
-    description: 'Revisamos el trabajo entregado y acordamos cualquier ampliación o ajuste posterior.',
+    title: 'Operate · Operar',
+    description: 'Revisamos el trabajo entregado y las responsabilidades definidas para el servicio.',
+  },
+  {
+    title: 'Optimize · Optimizar',
+    description: 'Acordamos ajustes o ampliaciones posteriores según las necesidades del proyecto.',
   },
 ]
 

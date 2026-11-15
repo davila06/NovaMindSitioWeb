@@ -20,8 +20,8 @@ test("home presenta la arquitectura empresarial y conserva las rutas existentes"
     ["Servicios", "/servicios"],
     ["Productos", "/productos"],
     ["Casos", "/casos"],
-    ["Recursos", "/recursos"],
-    ["Empresa", "/empresa"],
+    ["Recursos", "/blog"],
+    ["Empresa", "/sobre-nosotros"],
   ]) {
     await expect(navigation.getByRole("link", { name: label, exact: true })).toHaveAttribute(
       "href",
@@ -29,7 +29,7 @@ test("home presenta la arquitectura empresarial y conserva las rutas existentes"
     );
   }
   await expect(
-    navigation.getByRole("link", {
+    page.getByRole("banner").getByRole("link", {
       name: "Hablar con un especialista",
       exact: true,
     }),
@@ -42,6 +42,7 @@ test("home presenta la arquitectura empresarial y conserva las rutas existentes"
     "Servicios de Nova Assist",
     "Cómo trabajamos",
     "Productos destacados",
+    "Ecosistema tecnológico",
     "Seguridad y confianza",
     "Insights",
   ];
@@ -62,10 +63,10 @@ test("home presenta la arquitectura empresarial y conserva las rutas existentes"
     "/productos/ccerp",
   ]);
   await expect(
-    page.getByRole("link", { name: "Soporte para hogares" }),
+    page.getByRole("main").getByRole("link", { name: "Soporte para hogares" }),
   ).toHaveAttribute("href", "/nova-assist");
   await expect(
-    page.getByRole("link", { name: "PawTrack CR", exact: true }),
+    page.getByRole("main").getByRole("link", { name: "Conocer PawTrack", exact: true }),
   ).toHaveAttribute("href", "/productos/pawtrack");
 });
 
@@ -82,12 +83,71 @@ test("los hubs nuevos reutilizan contenido y slugs de productos existentes", asy
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   for (const product of products) {
     await expect(
-      page.getByRole("link", { name: new RegExp(product.name) }),
+      page.getByRole("link", {
+        name: `Explorar ${product.name}`,
+        exact: true,
+      }),
     ).toHaveAttribute("href", `/productos/${product.slug}`);
   }
   await expect(
-    page.getByRole("link", { name: /NovaClick/ }),
+    page.getByRole("link", { name: "Explorar NovaClick", exact: true }),
   ).toHaveAttribute("href", "/productos/novaclick");
+});
+
+test("mega menú empresarial funciona con teclado y devuelve el foco al cerrarse", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Solo esenciales", exact: true })
+    .click();
+
+  const trigger = page.getByRole("button", {
+    name: /opciones de Soluciones/,
+  });
+  await trigger.focus();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(
+    page.getByRole("link", { name: /^Todas las soluciones/ }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).toBeFocused();
+});
+
+test("navegación móvil cabe en 320px y mantiene hogares y comunidad accesibles", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Solo esenciales", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Abrir menú" }).click();
+
+  const navigation = page.getByRole("navigation", {
+    name: "Navegación móvil",
+  });
+  await expect(navigation.getByRole("link", { name: "Productos", exact: true })).toBeVisible();
+  await expect(navigation.getByRole("link", { name: "Para hogares", exact: true })).toHaveAttribute(
+    "href",
+    "/nova-assist",
+  );
+  await expect(navigation.getByRole("link", { name: "PawTrack CR" })).toHaveAttribute(
+    "href",
+    "/productos/pawtrack",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+
+  await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("dialog", { name: "Menú de navegación móvil" }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Abrir menú" })).toBeFocused();
 });
 
 test("Nova Assist analytics respeta consentimiento y registra el selector sin datos personales", async ({ page }) => {
@@ -233,6 +293,10 @@ test("formulario valida cada paso y conserva el plan sin enviar email real", asy
     .getByRole("button", { name: "Solo esenciales", exact: true })
     .click();
   const form = page.getByRole("form", { name: "Solicitud comercial" });
+  await expect(
+    form.getByRole("button", { name: /persona u hogar/i }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await form.getByRole("button", { name: /siguiente/i }).click();
   await form.getByRole("button", { name: /siguiente/i }).click();
   await expect(form.getByLabel("Nombre", { exact: true })).toHaveAttribute(
     "aria-invalid",
@@ -240,7 +304,7 @@ test("formulario valida cada paso y conserva el plan sin enviar email real", asy
   );
   await form.getByLabel("Nombre", { exact: true }).fill("Audit User");
   await form
-    .getByLabel("Correo empresarial", { exact: true })
+    .getByLabel("Correo electrónico", { exact: true })
     .fill("audit@example.com");
   await form.getByRole("button", { name: /siguiente/i }).click();
   await expect(
@@ -249,7 +313,8 @@ test("formulario valida cada paso y conserva el plan sin enviar email real", asy
   await form.getByRole("button", { name: /siguiente/i }).click();
   await form
     .getByLabel("Mensaje", { exact: true })
-    .fill("Solicitud de prueba local sin envio real de correo.");
+    .fill("Necesito soporte para mi equipo de uso personal.");
+  await form.getByRole("button", { name: "Correo electrónico", exact: true }).click();
   await form.getByRole("checkbox").check();
   await page.screenshot({
     path: `test-results/contact-${testInfo.project.name}.png`,
@@ -259,6 +324,8 @@ test("formulario valida cada paso y conserva el plan sin enviar email real", asy
     page.getByText("Solicitud recibida", { exact: true }),
   ).toBeVisible();
   expect(payload.plan).toBe(planId);
+  expect(payload.marketSegment).toBe("b2c");
+  expect(payload.preferredContactMethod).toBe("email");
   expect(payload.consentPrivacy).toBe(true);
   expect(
     await page.evaluate(() => localStorage.getItem("nm-contact-draft")),
@@ -399,13 +466,15 @@ test("Health Check entrega contexto a contacto protegido sin enviarlo antes de c
   await page.getByLabel("Industria").selectOption({ label: "Comercio" });
   await page.getByRole("button", { name: "Continuar a contacto" }).click();
   expect(payload).toBeUndefined();
-  const form = page.getByRole("form", { name: "Solicitud comercial" });
+  const form = page.getByRole("form", { name: "Solicitud empresarial" });
   await form.getByLabel("Nombre").fill("Audit User");
-  await form.getByLabel("Correo empresarial").fill("audit@example.com");
+  await form.getByLabel("Correo de trabajo").fill("audit@example.com");
+  await form.getByLabel("Empresa").fill("Empresa Ejemplo");
   await form.getByRole("button", { name: /siguiente/i }).click();
   await expect(form.getByLabel("Interés principal")).toHaveValue("IT Health Check");
   await form.getByRole("button", { name: /siguiente/i }).click();
   await expect(form.getByLabel("Mensaje")).toHaveValue(/Industria: Comercio/);
+  await form.getByRole("button", { name: /^Correo electrónico$/ }).click();
   await form.getByRole("checkbox").check();
   await form.getByRole("button", { name: "Enviar solicitud" }).click();
   await expect.poll(() => payload?.plan).toBe("nova-assist-business-it-health-check");
@@ -461,6 +530,7 @@ test("Nova Assist permite enviar una solicitud confirmada sin duplicar el envío
   await form.getByRole("button", { name: /siguiente/i }).click();
   await form.getByLabel("Nombre").fill("Audit User");
   await form.getByLabel("Correo electrónico").fill("audit@example.com");
+  await form.getByRole("button", { name: /^Correo electrónico$/ }).click();
   await form.getByRole("checkbox").check();
   const submit = form.getByRole("button", { name: "Enviar solicitud" });
   await submit.dblclick();

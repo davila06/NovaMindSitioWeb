@@ -60,6 +60,7 @@ describe("Nova Assist service request flow", () => {
     fireEvent.change(screen.getByLabelText("Correo electrónico"), {
       target: { value: "test@example.com" },
     });
+    fireEvent.click(screen.getByRole("button", { name: /^Correo electrónico$/ }));
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "Enviar solicitud" }));
 

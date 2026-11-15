@@ -1,26 +1,43 @@
-import { AudienceRoutesSection } from '@/components/home/AudienceRoutesSection'
-import { FAQSection } from '@/components/home/FAQSection'
-import { FinalCTA } from '@/components/home/FinalCTA'
-import { HeroSection } from '@/components/home/HeroSection'
-import { ProductGrid } from '@/components/home/ProductGrid'
-import { TrustBar } from '@/components/home/TrustBar'
-import { ImplementationSection } from '@/components/home/ImplementationSection'
-import { SectionErrorBoundary } from '@/components/shared/SectionErrorBoundary'
-import { ProductCatalogSchema } from '@/components/home/ProductCatalogSchema'
-import { PawTrackCommunitySection } from '@/components/home/PawTrackCommunitySection'
+import { getBlogPostSummaries } from "@/lib/content";
+import { SectionErrorBoundary } from "@/components/shared/SectionErrorBoundary";
+import { FinalCTA } from "@/components/home/FinalCTA";
+import { HeroSection } from "@/components/home/HeroSection";
+import { ImplementationSection } from "@/components/home/ImplementationSection";
+import { PawTrackCommunitySection } from "@/components/home/PawTrackCommunitySection";
+import { ProductCatalogSchema } from "@/components/home/ProductCatalogSchema";
+import { TrustBar } from "@/components/home/TrustBar";
+import {
+  HomeInsightsSection,
+  NovaAssistServicesSection,
+  ProductHighlights,
+  ProblemsSection,
+  SecurityTrustSection,
+  SolutionAreasSection,
+  TechnologyEcosystemSection,
+} from "@/components/home/EnterpriseSections";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const blogPosts = await getBlogPostSummaries();
+
   return (
     <>
       <ProductCatalogSchema />
-      <SectionErrorBoundary section="HeroSection"><HeroSection /></SectionErrorBoundary>
-      <AudienceRoutesSection />
+      <SectionErrorBoundary section="HeroSection">
+        <HeroSection />
+      </SectionErrorBoundary>
       <TrustBar />
-      <SectionErrorBoundary section="ProductGrid"><ProductGrid /></SectionErrorBoundary>
-      <PawTrackCommunitySection />
+      <ProblemsSection />
+      <SolutionAreasSection />
+      <NovaAssistServicesSection />
       <ImplementationSection />
-      <FAQSection />
+      <SectionErrorBoundary section="ProductHighlights">
+        <ProductHighlights />
+      </SectionErrorBoundary>
+      <TechnologyEcosystemSection />
+      <SecurityTrustSection />
+      <HomeInsightsSection posts={blogPosts.slice(0, 3)} />
+      <PawTrackCommunitySection />
       <FinalCTA />
     </>
-  )
+  );
 }

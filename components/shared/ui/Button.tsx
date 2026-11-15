@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ReactNode } from 'react'
 import { CtaTrackingContext, trackCtaClick, trackEvent } from '@/lib/analytics-client'
 
-type ButtonVariant = 'solid' | 'ghost'
+type ButtonVariant = 'solid' | 'ghost' | 'enterprise'
 
 type ButtonProps = {
   children: ReactNode
@@ -24,10 +24,12 @@ export function Button({ children, href, variant = 'solid', className = '', isLo
   const style =
     variant === 'solid'
       ? 'relative bg-brand-violet text-white font-semibold btn-violet-halo before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none hover:bg-brand-iris active:scale-[0.97]'
-      : 'border border-brand-lavender/40 text-brand-lavender bg-transparent hover:bg-brand-lavender/8 hover:border-brand-lavender/70'
+      : variant === 'ghost'
+        ? 'border border-brand-lavender/40 text-brand-lavender bg-transparent hover:bg-brand-lavender/8 hover:border-brand-lavender/70'
+        : 'border border-brand-violet bg-brand-violet text-white shadow-[0_8px_24px_rgba(11,99,246,0.24)] hover:border-brand-iris hover:bg-brand-iris'
 
   const isDisabled = disabled || isLoading
-  const classes = `inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 overflow-hidden ${isDisabled ? 'opacity-60 pointer-events-none' : ''} ${style} ${className}`
+  const classes = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 overflow-hidden ${isDisabled ? 'opacity-60 pointer-events-none' : ''} ${style} ${className}`
 
   function onTrackClick() {
     if (isDisabled) return

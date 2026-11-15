@@ -3,7 +3,7 @@ import { PwaInstallActions } from "@/components/products/PwaInstallActions";
 
 export function ProductCTA({ name }: { name: string }) {
   const isPawTrack = name === "PawTrack CR / NALA";
-  const primaryHref = "/contacto";
+  const primaryHref = "/contacto?segment=b2b";
 
   return (
     <section className="rounded-2xl bg-brand-deep p-8 text-white">
@@ -36,14 +36,14 @@ export function ProductCTA({ name }: { name: string }) {
               Consultar disponibilidad
             </Button>
             <Button
-              href="/contacto"
+              href={primaryHref}
               variant="ghost"
               className="border-white/30 bg-white/10 text-white"
               trackingContext={{
                 page: `product/${name}`,
                 section: "product_cta",
                 ctaLabel: "consultar_alcance",
-                destination: "/contacto",
+                destination: primaryHref,
                 product: name,
                 intent: "contact",
               }}

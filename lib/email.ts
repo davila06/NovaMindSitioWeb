@@ -2,6 +2,7 @@ import { getServerEnv } from "@/lib/env";
 import { getPlatformBindings } from "#platform";
 
 export type MailMessage = {
+  to?: string;
   subject: string;
   html: string;
   text: string;
@@ -22,7 +23,7 @@ export async function sendMail(
   message: MailMessage,
 ): Promise<{ channel: string; deliveryId: string }> {
   const config = getServerEnv();
-  const to = config.CONTACT_TO_EMAIL;
+  const to = message.to ?? config.CONTACT_TO_EMAIL;
   const from = config.CONTACT_FROM_EMAIL;
   if (!to || !from) throw new Error("Email routing is not configured.");
   const platform = getPlatformBindings();

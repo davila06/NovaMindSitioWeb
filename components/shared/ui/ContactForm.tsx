@@ -15,7 +15,14 @@ import {
   novaAssistServices,
 } from "@/data/nova-assist";
 import { businessServices } from "@/data/nova-assist-business";
-import { resolveContactIntent } from "@/lib/contact-intent";
+import {
+  resolveContactIntent,
+  resolveContactMarketSegment,
+} from "@/lib/contact-intent";
+import type {
+  LeadMarketSegment,
+  PreferredContactMethod,
+} from "@/lib/leads/contract";
 import { getStoredUTM } from "@/lib/useUTM";
 import { containsCredentialLikeText } from "@/lib/contact-input";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
@@ -27,30 +34,12 @@ const serviceInterestOptions = contactInterests;
 
 const productInterestOptions = businessProducts.map((product) => product.name);
 
-const allInterestOptions = [
-  ...serviceInterestOptions,
-  ...productInterestOptions,
-];
-const CONTACT_REQUIRED_FIELDS: Array<keyof FormState> = [
-  "name",
-  "email",
-  "interest",
-  "message",
-  "consentPrivacy",
-];
-const SERVICE_REQUEST_REQUIRED_FIELDS: Array<keyof FormState> = [
-  "customerStatus",
-  "interest",
-  "deviceType",
-  "message",
-  "urgency",
-  "requestPreference",
-  "name",
-  "email",
-  "consentPrivacy",
-];
+const UNSURE_INTEREST = "No estoy seguro, necesito orientación";
 
 type FormState = {
+  marketSegment: LeadMarketSegment | "";
+  preferredContactMethod: PreferredContactMethod | "";
+  phone: string;
   name: string;
   email: string;
   company: string;
@@ -77,10 +66,13 @@ const contactResponseSchema = z.object({
 });
 
 const initialState: FormState = {
+  marketSegment: "",
+  preferredContactMethod: "",
+  phone: "",
   name: "",
   email: "",
   company: "",
-  interest: allInterestOptions[0] || "",
+  interest: "",
   leadVolume: "",
   urgency: "",
   implementationHorizon: "",
@@ -94,16 +86,17 @@ const initialState: FormState = {
 };
 
 const STEPS = [
-  { number: 1, label: "¿Quién eres?" },
-  { number: 2, label: "¿Qué necesitas?" },
-  { number: 3, label: "Tu mensaje" },
+  { number: 1, label: "Tipo de solicitud" },
+  { number: 2, label: "Tus datos" },
+  { number: 3, label: "¿Qué necesitas?" },
+  { number: 4, label: "Mensaje y contacto" },
 ];
 
-const STEP_REQUIRED: Record<number, Array<keyof FormState>> = {
-  1: ["name", "email"],
-  2: ["interest"],
-  3: ["message", "consentPrivacy"],
-};
+const BUSINESS_STEPS = [
+  { number: 1, label: "Tu empresa" },
+  { number: 2, label: "¿Qué necesitas?" },
+  { number: 3, label: "Mensaje y contacto" },
+];
 
 const SERVICE_REQUEST_STEPS = [
   { number: 1, label: "Cliente actual" },
@@ -112,10 +105,40 @@ const SERVICE_REQUEST_STEPS = [
   { number: 4, label: "Contacto y confirmación" },
 ];
 
+const contactMethodLabels: Record<PreferredContactMethod, string> = {
+  email: "Correo electrónico",
+  phone: "Llamada",
+  whatsapp: "WhatsApp",
+};
+
+function interestOptionsForSegment(segment: LeadMarketSegment | "") {
+  if (segment === "b2c") {
+    return [contactInterests[1], UNSURE_INTEREST];
+  }
+  if (segment === "b2b") {
+    return [
+      ...serviceInterestOptions.filter((interest) => interest !== contactInterests[1]),
+      ...productInterestOptions,
+      UNSURE_INTEREST,
+    ];
+  }
+  return [];
+}
+
+function defaultInterestForSegment(segment: LeadMarketSegment | "") {
+  return segment === "b2c" ? contactInterests[1] : contactInterests[0];
+}
+
+type ValidationContext = {
+  serviceRequest: boolean;
+  marketSegment: FormState["marketSegment"];
+  preferredContactMethod: FormState["preferredContactMethod"];
+};
+
 function validateField(
   field: keyof FormState,
   value: string,
-  serviceRequest = false,
+  context: ValidationContext,
 ): string {
   if (containsCredentialLikeText(value)) {
     return "No incluyas contraseñas, PIN, códigos privados ni datos de tarjeta.";
@@ -131,23 +154,44 @@ function validateField(
       ? ""
       : "Ingresa un correo electrónico válido.";
   }
+  if (field === "marketSegment") {
+    return value === "b2c" || value === "b2b"
+      ? ""
+      : "Selecciona si tu solicitud es personal o empresarial.";
+  }
+  if (field === "company" && context.marketSegment === "b2b") {
+    return value.trim().length >= 2
+      ? ""
+      : "Indica el nombre de la empresa.";
+  }
+  if (field === "preferredContactMethod") {
+    return value === "email" || value === "phone" || value === "whatsapp"
+      ? ""
+      : "Selecciona cómo prefieres que te contacten.";
+  }
+  if (field === "phone" && context.preferredContactMethod !== "email") {
+    const digits = value.replace(/\D/g, "").length;
+    return /^\+?[0-9\s().-]+$/.test(value.trim()) && digits >= 8 && digits <= 15
+      ? ""
+      : "Ingresa un teléfono válido de 8 a 15 dígitos.";
+  }
   if (field === "interest") {
     return value.trim().length >= 2 ? "" : "Selecciona un interes principal.";
   }
-  if (serviceRequest && field === "customerStatus") {
+  if (context.serviceRequest && field === "customerStatus") {
     return value === "existing" || value === "new"
       ? ""
       : "Indica si ya eres cliente de Nova Assist.";
   }
-  if (serviceRequest && field === "deviceType") {
+  if (context.serviceRequest && field === "deviceType") {
     return value.trim().length > 0 ? "" : "Selecciona el tipo de dispositivo.";
   }
-  if (serviceRequest && field === "urgency") {
+  if (context.serviceRequest && field === "urgency") {
     return ["baja", "media", "alta", "critica"].includes(value)
       ? ""
       : "Selecciona la urgencia de tu solicitud.";
   }
-  if (serviceRequest && field === "requestPreference") {
+  if (context.serviceRequest && field === "requestPreference") {
     return ["remote", "visit", "unsure"].includes(value)
       ? ""
       : "Indica tu preferencia de atención.";
@@ -171,12 +215,14 @@ export function ContactForm({
   service,
   initialMessage = "",
   variant = "contact",
+  initialSegment,
   healthCheck = false,
 }: {
   plan?: string;
   service?: string;
   initialMessage?: string;
   variant?: "contact" | "service-request" | "business";
+  initialSegment?: LeadMarketSegment;
   healthCheck?: boolean;
 } = {}) {
   const serviceRequest = variant === "service-request";
@@ -184,29 +230,41 @@ export function ContactForm({
   const intent = resolveContactIntent(
     service ? `nova-assist-${service}` : plan,
   );
+  const intentSegment = resolveContactMarketSegment(plan);
+  const resolvedInitialSegment = serviceRequest
+    ? "b2c"
+    : businessRequest
+      ? "b2b"
+      : initialSegment ?? intentSegment ?? "";
   const selectedService =
     service && novaAssistServiceBySlug[service]
       ? novaAssistServiceBySlug[service]
       : undefined;
-  const steps = serviceRequest ? SERVICE_REQUEST_STEPS : STEPS;
-  const requiredFields = serviceRequest
-    ? SERVICE_REQUEST_REQUIRED_FIELDS
-    : CONTACT_REQUIRED_FIELDS;
-  const stepRequired: Record<number, Array<keyof FormState>> = serviceRequest
-    ? {
-        1: ["customerStatus"],
-        2: ["interest", "deviceType"],
-        3: ["message", "urgency", "requestPreference"],
-        4: ["name", "email", "consentPrivacy"],
-      }
-    : STEP_REQUIRED;
+  const initialInterestOptions = businessRequest
+    ? businessServices.map((item) => item.name)
+    : interestOptionsForSegment(resolvedInitialSegment);
+  const initialInterest =
+    serviceRequest
+      ? selectedService?.name || UNSURE_INTEREST
+      : businessRequest
+        ? intent.plan && businessServices.some((item) => item.name === intent.interest)
+          ? intent.interest
+          : businessServices[0].name
+        : intentSegment === resolvedInitialSegment &&
+            initialInterestOptions.includes(intent.interest)
+          ? intent.interest
+          : resolvedInitialSegment
+            ? defaultInterestForSegment(resolvedInitialSegment)
+            : "";
   const [form, setForm] = useState<FormState>(() => ({
     ...initialState,
+    marketSegment: resolvedInitialSegment,
     message: initialMessage,
-    interest: serviceRequest
-      ? selectedService?.name || "No estoy seguro, necesito orientación"
-      : businessRequest && !plan ? businessServices[0].name : intent.interest,
+    interest: initialInterest,
   }));
+  const [selectedContactPlan, setSelectedContactPlan] = useState(
+    intent.plan && intentSegment === resolvedInitialSegment ? intent.plan : "",
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [submittedRequestId, setSubmittedRequestId] = useState("");
@@ -231,6 +289,68 @@ export function ContactForm({
   const businessServiceSlug = businessServices.find(
     (item) => item.name === form.interest,
   )?.slug;
+  const steps = serviceRequest
+    ? SERVICE_REQUEST_STEPS
+    : businessRequest
+      ? BUSINESS_STEPS
+      : STEPS;
+  const requiredFields = useMemo(() => {
+    const fields: Array<keyof FormState> = [
+      "name",
+      "email",
+      "interest",
+      "message",
+      "preferredContactMethod",
+      "consentPrivacy",
+    ];
+    if (serviceRequest) {
+      fields.push(
+        "customerStatus",
+        "deviceType",
+        "urgency",
+        "requestPreference",
+      );
+    } else if (!businessRequest) {
+      fields.push("marketSegment");
+    }
+    if (
+      businessRequest ||
+      (!serviceRequest && form.marketSegment === "b2b")
+    ) {
+      fields.push("company");
+    }
+    if (
+      form.preferredContactMethod === "phone" ||
+      form.preferredContactMethod === "whatsapp"
+    ) {
+      fields.push("phone");
+    }
+    return fields;
+  }, [
+    businessRequest,
+    form.marketSegment,
+    form.preferredContactMethod,
+    serviceRequest,
+  ]);
+  const stepRequired: Record<number, Array<keyof FormState>> = serviceRequest
+    ? {
+        1: ["customerStatus"],
+        2: ["interest", "deviceType"],
+        3: ["message", "urgency", "requestPreference"],
+        4: ["name", "email", "preferredContactMethod", "consentPrivacy"],
+      }
+    : businessRequest
+      ? {
+          1: ["name", "email", "company"],
+          2: ["interest"],
+          3: ["message", "preferredContactMethod", "consentPrivacy"],
+        }
+      : {
+          1: ["marketSegment"],
+          2: ["name", "email"],
+          3: ["interest"],
+          4: ["message", "preferredContactMethod", "consentPrivacy"],
+        };
 
   useEffect(() => {
     setInteractive(true);
@@ -242,14 +362,7 @@ export function ContactForm({
     } catch {
       /* ignore */
     }
-    if (intent.plan)
-      setForm((current) => ({
-        ...current,
-        interest: serviceRequest
-          ? selectedService?.name || current.interest
-          : intent.interest,
-      }));
-  }, [intent.plan, intent.interest, serviceRequest, selectedService]);
+  }, []);
 
   function novaEvent(event: NovaEvent, extra: Record<string, string | number> = {}) {
     if (!serviceRequest && !businessRequest) return;
@@ -263,7 +376,9 @@ export function ContactForm({
   useEffect(() => {
     if (!interactive) return;
     formRef.current
-      ?.querySelector<HTMLElement>("input:not([tabindex='-1']),select,textarea")
+      ?.querySelector<HTMLElement>(
+        "input:not([tabindex='-1']),select,textarea,button[aria-pressed]",
+      )
       ?.focus();
   }, [currentStep, interactive]);
 
@@ -304,6 +419,32 @@ export function ContactForm({
     progressRef.current.completionRate = completionRate;
   }, [completionRate]);
 
+  const validationContext: ValidationContext = {
+    serviceRequest,
+    marketSegment: form.marketSegment,
+    preferredContactMethod: form.preferredContactMethod,
+  };
+
+  function getStepFields(step: number) {
+    const fields = [...(stepRequired[step] ?? [])];
+    if (
+      !serviceRequest &&
+      !businessRequest &&
+      step === 2 &&
+      form.marketSegment === "b2b"
+    ) {
+      fields.push("company");
+    }
+    if (
+      step === steps.length &&
+      (form.preferredContactMethod === "phone" ||
+        form.preferredContactMethod === "whatsapp")
+    ) {
+      fields.push("phone");
+    }
+    return fields;
+  }
+
   function buildSuccessMessage(channel: string | undefined) {
     if (!channel || channel === "protected") {
       return "Recibimos tu solicitud. Revisaremos la información y te contactaremos para confirmar los siguientes pasos.";
@@ -328,11 +469,45 @@ export function ContactForm({
     hasSubmittedRef.current = false;
     setForm((current) => ({ ...current, [field]: value }));
     if (errors[field]) {
-      const fieldError = validateField(field, String(value), serviceRequest);
+      const fieldError = validateField(field, String(value), validationContext);
       setErrors((current) => ({
         ...current,
         [field]: fieldError || undefined,
       }));
+    }
+  }
+
+  function updateMarketSegment(segment: LeadMarketSegment) {
+    if (form.marketSegment === segment) return;
+    const options = interestOptionsForSegment(segment);
+    progressRef.current.started = true;
+    hasSubmittedRef.current = false;
+    setForm((current) => ({
+      ...current,
+      marketSegment: segment,
+      interest: options.includes(current.interest)
+        ? current.interest
+        : defaultInterestForSegment(segment),
+      company: segment === "b2c" ? "" : current.company,
+      leadVolume: segment === "b2c" ? "" : current.leadVolume,
+      urgency: segment === "b2c" ? "" : current.urgency,
+      implementationHorizon:
+        segment === "b2c" ? "" : current.implementationHorizon,
+    }));
+    setSelectedContactPlan("");
+    setErrors((current) => ({
+      ...current,
+      marketSegment: undefined,
+      company: segment === "b2c" ? undefined : current.company,
+      interest: undefined,
+    }));
+  }
+
+  function updatePreferredContactMethod(method: PreferredContactMethod) {
+    updateField("preferredContactMethod", method);
+    if (method === "email") {
+      setForm((current) => ({ ...current, phone: "" }));
+      setErrors((current) => ({ ...current, phone: undefined }));
     }
   }
 
@@ -352,7 +527,7 @@ export function ContactForm({
     const fieldError = validateField(
       field,
       String(form[field]),
-      serviceRequest,
+      validationContext,
     );
     setErrors((current) => ({ ...current, [field]: fieldError || undefined }));
     if (!serviceRequest && !businessRequest) trackFormProgress({
@@ -365,13 +540,13 @@ export function ContactForm({
   }
 
   function handleNextStep() {
-    const stepFields = stepRequired[currentStep] ?? [];
+    const stepFields = getStepFields(currentStep);
     const nextErrors: FormErrors = {};
     for (const field of stepFields) {
       const fieldError = validateField(
         field,
         String(form[field]),
-        serviceRequest,
+        validationContext,
       );
       if (fieldError) nextErrors[field] = fieldError;
     }
@@ -400,7 +575,7 @@ export function ContactForm({
       const fieldError = validateField(
         field,
         String(form[field]),
-        serviceRequest,
+        validationContext,
       );
       if (fieldError) {
         nextErrors[field] = fieldError;
@@ -451,7 +626,12 @@ export function ContactForm({
               ? requestedServiceSlug
                 ? `nova-assist-${requestedServiceSlug}`
                 : undefined
-              : intent.plan || undefined,
+              : selectedContactPlan || undefined,
+            marketSegment: form.marketSegment || resolvedInitialSegment,
+            preferredContactMethod: form.preferredContactMethod,
+            phone: form.phone.trim() || undefined,
+            company:
+              form.marketSegment === "b2b" ? form.company.trim() : undefined,
             consentPrivacy: true,
             turnstileToken: turnstileToken || undefined,
             utm: getStoredUTM() ?? undefined,
@@ -506,9 +686,11 @@ export function ContactForm({
           trackLeadConversion(result.requestId, {
             source: serviceRequest ? "nova_assist_request" : "contact_form",
             product: serviceRequest ? service ?? "nova_assist" : form.interest,
-            plan: businessRequest && businessServiceSlug
-              ? `nova-assist-business-${businessServiceSlug}`
-              : intent.plan,
+            ...(businessRequest && businessServiceSlug
+              ? { plan: `nova-assist-business-${businessServiceSlug}` }
+              : selectedContactPlan
+                ? { plan: selectedContactPlan }
+                : {}),
           });
         if (result.channel !== "protected") {
           novaEvent("service_request_succeeded", { outcome: "success" });
@@ -516,6 +698,8 @@ export function ContactForm({
         }
         if (!serviceRequest && !businessRequest) trackEvent("contact_submit_success", {
           channel: result.channel || "unknown",
+          market_segment: form.marketSegment,
+          preferred_contact_method: form.preferredContactMethod,
             ...(serviceRequest
               ? {
                   service:
@@ -532,9 +716,10 @@ export function ContactForm({
         });
         setForm({
           ...initialState,
+          marketSegment: resolvedInitialSegment,
           interest: serviceRequest
-            ? "No estoy seguro, necesito orientación"
-            : businessRequest && !plan ? businessServices[0].name : intent.interest,
+            ? UNSURE_INTEREST
+            : initialInterest,
         });
         setErrors({});
         setCurrentStep(1);
@@ -567,6 +752,101 @@ export function ContactForm({
 
   const inputCls =
     "w-full rounded-xl border border-brand-lavender/20 bg-brand-void/60 px-4 py-2.5 text-sm text-[#f0f8ff] outline-none ring-brand-violet transition focus:ring-2";
+
+  function renderPreferredContactFields(idPrefix: string) {
+    return (
+      <>
+        <fieldset
+          aria-describedby={
+            errors.preferredContactMethod
+              ? `${idPrefix}-method-error`
+              : undefined
+          }
+        >
+          <legend className="text-sm font-semibold text-white">
+            ¿Cómo prefieres que te contacten?{" "}
+            <span className="text-rose-300">*</span>
+          </legend>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            {(
+              [
+                ["email", "Correo electrónico"],
+                ["phone", "Llamada"],
+                ["whatsapp", "WhatsApp"],
+              ] as const
+            ).map(([method, label]) => (
+              <button
+                key={method}
+                type="button"
+                aria-pressed={form.preferredContactMethod === method}
+                aria-invalid={Boolean(errors.preferredContactMethod)}
+                aria-describedby={
+                  errors.preferredContactMethod
+                    ? `${idPrefix}-method-error`
+                    : undefined
+                }
+                onClick={() => updatePreferredContactMethod(method)}
+                className={`min-h-12 rounded-xl border px-3 py-3 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lavender ${
+                  form.preferredContactMethod === method
+                    ? "border-brand-lavender/60 bg-brand-violet/15 text-white"
+                    : "border-brand-lavender/15 bg-brand-void/30 text-text-muted hover:border-brand-lavender/35"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {errors.preferredContactMethod && (
+            <span
+              id={`${idPrefix}-method-error`}
+              role="alert"
+              className="mt-2 block text-xs text-rose-300"
+            >
+              {errors.preferredContactMethod}
+            </span>
+          )}
+          {form.preferredContactMethod === "email" && (
+            <p className="mt-2 text-xs leading-5 text-text-subtle">
+              Usaremos el correo electrónico que compartiste.
+            </p>
+          )}
+        </fieldset>
+        {(form.preferredContactMethod === "phone" ||
+          form.preferredContactMethod === "whatsapp") && (
+          <label className="block space-y-2 text-sm font-medium text-text-muted">
+            <span>
+              Teléfono de contacto <span className="text-rose-300">*</span>
+            </span>
+            <input
+              type="tel"
+              inputMode="tel"
+              value={form.phone}
+              onChange={(event) => updateField("phone", event.target.value)}
+              onFocus={() => handleFieldFocus("phone")}
+              onBlur={() => handleFieldBlur("phone")}
+              placeholder="+506 8888 8888"
+              autoComplete="tel"
+              maxLength={30}
+              aria-label="Teléfono de contacto"
+              aria-invalid={Boolean(errors.phone)}
+              aria-describedby={errors.phone ? `${idPrefix}-phone-error` : undefined}
+              required
+              className={inputCls}
+            />
+            {errors.phone && (
+              <span
+                id={`${idPrefix}-phone-error`}
+                role="alert"
+                className="text-xs text-rose-300"
+              >
+                {errors.phone}
+              </span>
+            )}
+          </label>
+        )}
+      </>
+    );
+  }
 
   return (
     <div>
@@ -650,7 +930,13 @@ export function ContactForm({
 
       <form
         ref={formRef}
-        aria-label={serviceRequest ? "Solicitud de ayuda de Nova Assist" : "Solicitud comercial"}
+        aria-label={
+          serviceRequest
+            ? "Solicitud de ayuda de Nova Assist"
+            : businessRequest
+              ? "Solicitud empresarial"
+              : "Solicitud comercial"
+        }
         hidden={serviceRequest && submitted}
         onSubmit={handleSubmit}
         noValidate
@@ -669,7 +955,58 @@ export function ContactForm({
           />
         </div>
 
-        {/* Step 1 — ¿Quién eres? */}
+        {!serviceRequest && !businessRequest && currentStep === 1 && (
+          <div className="space-y-4 reveal-slide-up">
+            <fieldset
+              aria-describedby={errors.marketSegment ? "contact-segment-error" : undefined}
+            >
+              <legend className="text-sm font-semibold text-white">
+                ¿Para quién es esta solicitud? <span className="text-rose-300">*</span>
+              </legend>
+              <p className="mt-1 text-xs leading-5 text-text-subtle">
+                Así dirigimos tu consulta al equipo adecuado.
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {([
+                  ["b2c", "Persona u hogar", "Soporte y servicios para uso personal."],
+                  ["b2b", "Empresa u organización", "Productos, servicios y soluciones para organizaciones."],
+                ] as const).map(([segment, label, description]) => (
+                  <button
+                    key={segment}
+                    type="button"
+                    aria-pressed={form.marketSegment === segment}
+                    aria-invalid={Boolean(errors.marketSegment)}
+                    aria-describedby={
+                      errors.marketSegment ? "contact-segment-error" : undefined
+                    }
+                    onClick={() => updateMarketSegment(segment)}
+                    className={`min-h-24 rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lavender ${
+                      form.marketSegment === segment
+                        ? "border-brand-lavender/60 bg-brand-violet/15 text-white"
+                        : "border-brand-lavender/15 bg-brand-void/30 text-text-muted hover:border-brand-lavender/35"
+                    }`}
+                  >
+                    <span className="block text-sm font-semibold">{label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-text-subtle">
+                      {description}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {errors.marketSegment && (
+                <span
+                  id="contact-segment-error"
+                  role="alert"
+                  className="mt-2 block text-xs text-rose-300"
+                >
+                  {errors.marketSegment}
+                </span>
+              )}
+            </fieldset>
+          </div>
+        )}
+
+        {/* Contact details */}
         {serviceRequest && currentStep === 1 && (
           <div className="space-y-4 reveal-slide-up">
             <fieldset aria-describedby={errors.customerStatus ? "request-customer-error" : undefined}>
@@ -806,6 +1143,7 @@ export function ContactForm({
                 {errors.email && <span id="request-email-error" className="text-xs text-rose-300">{errors.email}</span>}
               </label>
             </div>
+            {renderPreferredContactFields("request")}
             <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
               <h3 className="text-sm font-semibold text-white">Revisa tu solicitud</h3>
               <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
@@ -813,6 +1151,7 @@ export function ContactForm({
                 <div><dt className="text-text-subtle">Servicio</dt><dd className="mt-0.5 text-text-muted">{form.interest}</dd></div>
                 <div><dt className="text-text-subtle">Dispositivo</dt><dd className="mt-0.5 text-text-muted">{form.deviceType}</dd></div>
                 <div><dt className="text-text-subtle">Atención</dt><dd className="mt-0.5 text-text-muted">{form.requestPreference === "remote" ? "Remota" : form.requestPreference === "visit" ? "Visita" : "Por definir"}</dd></div>
+                <div><dt className="text-text-subtle">Canal de contacto</dt><dd className="mt-0.5 text-text-muted">{form.preferredContactMethod ? contactMethodLabels[form.preferredContactMethod] : "Por definir"}</dd></div>
                 {form.serviceArea && <div><dt className="text-text-subtle">Zona</dt><dd className="mt-0.5 text-text-muted">{form.serviceArea}</dd></div>}
               </dl>
             </div>
@@ -829,7 +1168,8 @@ export function ContactForm({
           </div>
         )}
 
-        {!serviceRequest && currentStep === 1 && (
+        {!serviceRequest &&
+          currentStep === (businessRequest ? 1 : 2) && (
           <div className="space-y-4 reveal-slide-up">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-2 text-sm font-medium text-text-muted">
@@ -859,7 +1199,7 @@ export function ContactForm({
                 )}
               </label>
               <label className="block space-y-2 text-sm font-medium text-text-muted">
-                <span>Correo empresarial</span>
+                <span>{businessRequest ? "Correo de trabajo" : "Correo electrónico"}</span>
                 <input
                   type="email"
                   value={form.email}
@@ -868,7 +1208,7 @@ export function ContactForm({
                   onBlur={() => handleFieldBlur("email")}
                   placeholder="correo@ejemplo.com"
                   autoComplete="email"
-                  aria-label="Correo empresarial"
+                  aria-label={businessRequest ? "Correo de trabajo" : "Correo electrónico"}
                   aria-invalid={Boolean(errors.email)}
                   required
                   aria-describedby={
@@ -886,23 +1226,35 @@ export function ContactForm({
                 )}
               </label>
             </div>
-            <label className="block space-y-2 text-sm font-medium text-text-muted">
-              <span>Empresa</span>
-              <input
-                value={form.company}
-                onChange={(e) => updateField("company", e.target.value)}
-                onFocus={() => handleFieldFocus("company")}
-                onBlur={() => handleFieldBlur("company")}
-                placeholder="Nombre de empresa"
-                autoComplete="organization"
-                className={inputCls}
-              />
-            </label>
+            {(businessRequest || form.marketSegment === "b2b") && (
+              <label className="block space-y-2 text-sm font-medium text-text-muted">
+                <span>Empresa <span className="text-rose-300">*</span></span>
+                <input
+                  value={form.company}
+                  onChange={(e) => updateField("company", e.target.value)}
+                  onFocus={() => handleFieldFocus("company")}
+                  onBlur={() => handleFieldBlur("company")}
+                  placeholder="Nombre de la organización"
+                  autoComplete="organization"
+                  aria-label="Empresa"
+                  aria-invalid={Boolean(errors.company)}
+                  aria-describedby={errors.company ? "contact-company-error" : undefined}
+                  required
+                  className={inputCls}
+                />
+                {errors.company && (
+                  <span id="contact-company-error" role="alert" className="text-xs text-rose-300">
+                    {errors.company}
+                  </span>
+                )}
+              </label>
+            )}
           </div>
         )}
 
-        {/* Step 2 — ¿Qué necesitas? */}
-        {!serviceRequest && currentStep === 2 && (
+        {/* Service selection and business qualification */}
+        {!serviceRequest &&
+          currentStep === (businessRequest ? 2 : 3) && (
           <div className="space-y-4 reveal-slide-up">
             <label className="block space-y-2 text-sm font-medium text-text-muted">
               <span>Interés principal</span>
@@ -910,7 +1262,12 @@ export function ContactForm({
                 value={form.interest}
                 aria-label="Interés principal"
                 aria-invalid={Boolean(errors.interest)}
-                onChange={(e) => updateField("interest", e.target.value)}
+                onChange={(e) => {
+                  updateField("interest", e.target.value);
+                  if (e.target.value !== intent.interest) {
+                    setSelectedContactPlan("");
+                  }
+                }}
                 onFocus={() => handleFieldFocus("interest")}
                 onBlur={() => handleFieldBlur("interest")}
                 required
@@ -919,7 +1276,10 @@ export function ContactForm({
                 }
                 className={inputCls}
               >
-                {(businessRequest ? businessServices.map((item) => item.name) : allInterestOptions).map((option) => (
+                {(businessRequest
+                  ? businessServices.map((item) => item.name)
+                  : interestOptionsForSegment(form.marketSegment)
+                ).map((option) => (
                   <option key={option}>{option}</option>
                 ))}
               </select>
@@ -932,6 +1292,7 @@ export function ContactForm({
                 </span>
               )}
             </label>
+            {(businessRequest || form.marketSegment === "b2b") && (
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block space-y-2 text-sm font-medium text-text-muted">
                 <span>Volumen estimado</span>
@@ -984,11 +1345,13 @@ export function ContactForm({
                 </select>
               </label>
             </div>
+            )}
           </div>
         )}
 
-        {/* Step 3 — Tu mensaje */}
-        {!serviceRequest && currentStep === 3 && (
+        {/* Final step — message and contact preference */}
+        {!serviceRequest &&
+          currentStep === (businessRequest ? 3 : 4) && (
           <div className="space-y-4 reveal-slide-up">
             <label className="block space-y-2 text-sm font-medium text-text-muted">
               <span>Mensaje</span>
@@ -1000,7 +1363,11 @@ export function ContactForm({
                 onChange={(e) => updateField("message", e.target.value)}
                 onFocus={() => handleFieldFocus("message")}
                 onBlur={() => handleFieldBlur("message")}
-                placeholder="Cuéntanos sobre tu operación, volumen y objetivos."
+                placeholder={
+                  form.marketSegment === "b2b"
+                    ? "Cuéntanos sobre tu operación, objetivos y el resultado que buscas."
+                    : "Cuéntanos qué necesitas resolver y cualquier detalle que nos ayude a orientarte."
+                }
                 autoComplete="off"
                 required
                 aria-describedby={
@@ -1018,15 +1385,18 @@ export function ContactForm({
               )}
             </label>
 
+            {renderPreferredContactFields("contact")}
+
             {/* Aviso de privacidad — obligatorio Ley 8968 Costa Rica */}
             <div className="rounded-xl border border-brand-lavender/15 bg-brand-card/40 px-4 py-3 text-xs text-text-muted leading-5">
               <p>
                 <strong className="text-[#f0f8ff]">
                   Aviso de privacidad (Ley 8968 CR):
                 </strong>{" "}
-                Novamind Global S.A. tratará sus datos (nombre, correo, empresa,
-                mensaje) con la finalidad de atender su solicitud comercial. Los
-                campos marcados con * son obligatorios. Puede ejercer sus
+                Novamind Global S.A. tratará los datos que proporciones
+                (incluyendo nombre, correo, teléfono, organización y canal de
+                contacto cuando correspondan) para atender esta solicitud. Los
+                campos marcados con * son obligatorios. Puedes ejercer tus
                 derechos de acceso, rectificación y supresión escribiendo a{" "}
                 <a
                   href="mailto:privacidad@novamindglobalcr.com"

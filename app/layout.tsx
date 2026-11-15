@@ -26,9 +26,9 @@ const playfair = Playfair_Display({
 });
 
 const homeMetadata = createPageMetadata({
-  title: "Novamind Global | IA aplicada a los negocios",
+  title: "Novamind Global | Tecnología e IA para empresas",
   description:
-    "Software empresarial, inteligencia artificial y servicios tecnológicos para empresas, hogares y comunidades.",
+    "Automatizamos procesos, modernizamos plataformas y construimos soluciones empresariales conectadas a la realidad de cada organización.",
   path: "/",
 });
 
@@ -49,8 +49,8 @@ export const metadata: Metadata = {
 /** Viewport export — Next.js 15 best practice: separate from metadata */
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#030812" },
-    { media: "(prefers-color-scheme: light)", color: "#0ea5e9" },
+    { media: "(prefers-color-scheme: dark)", color: "#07111f" },
+    { media: "(prefers-color-scheme: light)", color: "#0b63f6" },
   ],
   colorScheme: "dark",
   width: "device-width",
@@ -149,7 +149,7 @@ export default function RootLayout({
         <style
           dangerouslySetInnerHTML={{
             __html: `
-          html,body{background-color:#030812;color:#f0f8ff;margin:0;padding:0}
+          html,body{background-color:#07111f;color:#f0f8ff;margin:0;padding:0}
           *{box-sizing:border-box}
           @view-transition{navigation:auto}
         `,

@@ -13,7 +13,7 @@ afterEach(cleanup);
 describe("navigation and public evidence", () => {
   it("announces menu expansion and restores keyboard focus", () => {
     render(<Navbar />);
-    const trigger = screen.getByRole("button", { name: "Abrir menu" });
+    const trigger = screen.getByRole("button", { name: "Abrir menú" });
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(trigger);
     expect(trigger).toHaveAttribute("aria-expanded", "true");

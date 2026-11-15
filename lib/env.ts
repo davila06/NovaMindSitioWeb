@@ -20,6 +20,8 @@ const envSchema = z.object({
 
   // Contact routing
   CONTACT_TO_EMAIL: optionalEmail,
+  CONTACT_B2C_TO_EMAIL: optionalEmail,
+  CONTACT_B2B_TO_EMAIL: optionalEmail,
   CONTACT_FROM_EMAIL: optionalEmail,
 
   // Rate limiting tunables

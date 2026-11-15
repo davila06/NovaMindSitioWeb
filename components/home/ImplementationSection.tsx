@@ -4,42 +4,46 @@ import { implementationSteps } from "@/data/site";
 
 export function ImplementationSection() {
   return (
-    <SectionWrapper id="implementacion">
+    <SectionWrapper
+      id="como-trabajamos"
+      aria-labelledby="process-heading"
+      className="enterprise-section-subtle scroll-mt-24"
+    >
       <Container>
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-gold">
-              Forma de trabajo
-            </p>
-            <h2 className="mt-3 font-display text-3xl font-bold text-[#f0f8ff] sm:text-4xl">
-              Un proceso claro, definido con cada organización
+        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          <div className="max-w-xl">
+            <p className="enterprise-kicker">Forma de trabajo</p>
+            <h2
+              id="process-heading"
+              className="mt-3 font-display text-3xl font-semibold leading-tight tracking-[-0.03em] text-slate-900 sm:text-4xl"
+            >
+              Cómo trabajamos
             </h2>
-            <p className="mt-4 text-slate-300">
-              Acordamos prioridades, responsables y entregables con base en el
-              contexto del proyecto. Cada etapa y sus condiciones se confirman
-              antes de avanzar.
+            <p className="mt-4 text-base leading-7 text-slate-700">
+              Discover → Design → Build → Operate → Optimize
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Cada iniciativa comienza por entender el contexto. Las
+              prioridades, entregables y responsabilidades se definen antes de
+              avanzar.
             </p>
           </div>
 
-          <ol className="grid gap-4">
+          <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             {implementationSteps.map((step, index) => (
               <li
                 key={step.title}
-                className="rounded-2xl border border-brand-lavender/15 bg-brand-card/80 p-5"
+                className="relative rounded-xl border border-slate-200 bg-white p-4 sm:min-h-48 sm:p-5"
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-lavender/20 bg-brand-lavender/10 text-sm font-bold text-brand-lavender">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <h3 className="font-display text-xl text-[#f0f8ff]">
-                      {step.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-text-muted">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
+                <span className="font-mono text-xs font-semibold tracking-[0.12em] text-blue-700">
+                  0{index + 1}
+                </span>
+                <h3 className="mt-4 text-sm font-bold leading-6 text-slate-900">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {step.description}
+                </p>
               </li>
             ))}
           </ol>

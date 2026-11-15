@@ -8,6 +8,9 @@ export function StickyCTABar() {
   const [visible, setVisible] = useState(false);
   const pathname = usePathname();
   const isNovaAssist = pathname.startsWith("/nova-assist");
+  const isRequestPage =
+    isNovaAssist && pathname.endsWith("/solicitar");
+  const shouldShow = visible && !isRequestPage;
 
   useEffect(() => {
     const onScroll = () => {
@@ -24,8 +27,8 @@ export function StickyCTABar() {
 
   return (
     <div
-      aria-hidden={!visible}
-      className={`fixed inset-x-0 bottom-14 z-40 flex justify-center px-4 transition-[transform,opacity] duration-300 md:hidden ${visible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}
+      aria-hidden={!shouldShow}
+      className={`fixed inset-x-0 bottom-[calc(5rem_+_env(safe-area-inset-bottom))] z-40 flex justify-center px-4 transition-[transform,opacity] duration-300 md:hidden ${shouldShow ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}
     >
       <Link
         href={isNovaAssist ? "/nova-assist/solicitar" : "/contacto"}

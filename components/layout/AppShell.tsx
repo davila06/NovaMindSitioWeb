@@ -13,12 +13,17 @@ import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { KeyboardShortcuts } from "@/components/layout/KeyboardShortcuts";
 import { WebVitalsReporter } from "@/components/layout/WebVitalsReporter";
 import { AnalyticsBootstrap } from "@/components/layout/AnalyticsBootstrap";
+import { usePathname } from "next/navigation";
 
 type AppShellProps = {
   children: ReactNode;
 };
 
 export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+  const isNovaAssistRequestPage =
+    pathname.startsWith("/nova-assist/") && pathname.endsWith("/solicitar");
+
   // Service Worker registration
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -39,15 +44,29 @@ export function AppShell({ children }: AppShellProps) {
       </a>
       <CommandPalette />
       <Navbar />
-      <main id="main-content" tabIndex={-1} className="pb-16 md:pb-0">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="pb-[calc(6rem_+_env(safe-area-inset-bottom))] md:pb-0"
+      >
         {children}
       </main>
       <Footer />
       <BottomNav />
-      <FloatingChat />
+      {isNovaAssistRequestPage ? (
+        <div className="hidden md:block">
+          <FloatingChat />
+          <BackToTop />
+          <WhatsAppButton />
+        </div>
+      ) : (
+        <>
+          <FloatingChat />
+          <BackToTop />
+          <WhatsAppButton />
+        </>
+      )}
       <StickyCTABar />
-      <BackToTop />
-      <WhatsAppButton />
       <KeyboardShortcuts />
       <WebVitalsReporter />
       <AnalyticsBootstrap />

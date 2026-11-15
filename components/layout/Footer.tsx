@@ -144,7 +144,7 @@ function LinkedInIcon() {
 export function Footer() {
   return (
     <footer
-      className="mt-20 bg-brand-void/80"
+      className="mt-20 bg-brand-void/80 pb-[calc(6rem_+_env(safe-area-inset-bottom))] md:pb-0"
       aria-label="Pie de página de Novamind Global"
     >
       {/* Línea de luz premium */}

@@ -26,7 +26,7 @@ export function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-lavender/15 bg-brand-void/92 backdrop-blur-2xl md:hidden"
       aria-label="Navegación principal móvil"
     >
-      <div className="flex justify-around px-2 py-2 pb-safe">
+      <div className="flex justify-around px-2 py-2 pb-[env(safe-area-inset-bottom)]">
         {mobileNavItems.map(({ href, icon: Icon, label }) => {
           const active = isActive(href)
           return (

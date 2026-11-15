@@ -4,11 +4,27 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/contacto", useRouter: () => ({ prefetch: vi.fn(), push: vi.fn() }) }));
+const route = vi.hoisted(() => ({ pathname: "/contacto" }));
+vi.mock("next/navigation", () => ({ usePathname: () => route.pathname, useRouter: () => ({ prefetch: vi.fn(), push: vi.fn() }) }));
 import { Navbar } from "@/components/layout/Navbar";
+import { StickyCTABar } from "@/components/layout/StickyCTABar";
 import { Button } from "@/components/shared/ui/Button";
 
-afterEach(cleanup);
+const viewportDescriptors = {
+  scrollY: Object.getOwnPropertyDescriptor(window, "scrollY"),
+  innerHeight: Object.getOwnPropertyDescriptor(window, "innerHeight"),
+  scrollHeight: Object.getOwnPropertyDescriptor(document.documentElement, "scrollHeight"),
+};
+
+afterEach(() => {
+  cleanup();
+  route.pathname = "/contacto";
+  for (const [key, descriptor] of Object.entries(viewportDescriptors)) {
+    const target = key === "scrollHeight" ? document.documentElement : window;
+    if (descriptor) Object.defineProperty(target, key, descriptor);
+    else Reflect.deleteProperty(target, key);
+  }
+});
 
 describe("navigation and public evidence", () => {
   it("announces menu expansion and restores keyboard focus", () => {
@@ -31,6 +47,16 @@ describe("navigation and public evidence", () => {
     const link = screen.getByRole("link", { name: "Disabled" });
     expect(link).not.toHaveAttribute("href");
     expect(link).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("does not show a sticky request CTA on its own request page", () => {
+    route.pathname = "/nova-assist/solicitar";
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 500 });
+    Object.defineProperty(document.documentElement, "scrollHeight", { configurable: true, value: 2000 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 800 });
+    render(<StickyCTABar />);
+    fireEvent.scroll(window);
+    expect(screen.getByText("Solicitar ayuda →").parentElement).toHaveAttribute("aria-hidden", "true");
   });
 
   it("does not publish unsupported prices or ratings in product schema", () => {

@@ -26,6 +26,34 @@ describe("ContactForm", () => {
     expect(container.querySelector("form button")?.matches(":disabled")).toBe(true);
   });
 
+  it("shows a matching icon for each preferred contact method", () => {
+    render(<ContactForm variant="business" />);
+    fireEvent.change(screen.getByLabelText("Nombre"), {
+      target: { value: "Ana Perez" },
+    });
+    fireEvent.change(screen.getByLabelText("Correo de trabajo"), {
+      target: { value: "ana@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Empresa"), {
+      target: { value: "Empresa Ejemplo" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+
+    expect(
+      screen.getByRole("button", { name: /^Correo electrónico$/ })
+        .querySelector("svg.lucide-mail"),
+    ).not.toBeNull();
+    expect(
+      screen.getByRole("button", { name: /^Llamada$/ })
+        .querySelector("svg.lucide-phone"),
+    ).not.toBeNull();
+    expect(
+      screen.getByRole("button", { name: /^WhatsApp$/ })
+        .querySelector("svg.lucide-message-circle"),
+    ).not.toBeNull();
+  });
+
   it("preserva el plan del enlace sin persistir datos personales", () => {
     render(<ContactForm plan="clickfix-express" />);
     fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));

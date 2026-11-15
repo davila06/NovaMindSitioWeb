@@ -25,7 +25,13 @@ import type {
 } from "@/lib/leads/contract";
 import { getStoredUTM } from "@/lib/useUTM";
 import { containsCredentialLikeText } from "@/lib/contact-input";
-import { ChevronRight, CheckCircle2 } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronRight,
+  Mail,
+  MessageCircle,
+  Phone,
+} from "lucide-react";
 import { z } from "zod";
 import { Turnstile, turnstileSiteKey } from "@/components/shared/ui/Turnstile";
 import { trackNovaEvent, type NovaEvent } from "@/lib/nova-analytics";
@@ -770,11 +776,11 @@ export function ContactForm({
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             {(
               [
-                ["email", "Correo electrónico"],
-                ["phone", "Llamada"],
-                ["whatsapp", "WhatsApp"],
+                ["email", "Correo electrónico", Mail],
+                ["phone", "Llamada", Phone],
+                ["whatsapp", "WhatsApp", MessageCircle],
               ] as const
-            ).map(([method, label]) => (
+            ).map(([method, label, Icon]) => (
               <button
                 key={method}
                 type="button"
@@ -786,13 +792,14 @@ export function ContactForm({
                     : undefined
                 }
                 onClick={() => updatePreferredContactMethod(method)}
-                className={`min-h-12 rounded-xl border px-3 py-3 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lavender ${
+                className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lavender ${
                   form.preferredContactMethod === method
                     ? "border-brand-lavender/60 bg-brand-violet/15 text-white"
                     : "border-brand-lavender/15 bg-brand-void/30 text-text-muted hover:border-brand-lavender/35"
                 }`}
               >
-                {label}
+                <Icon aria-hidden="true" focusable="false" size={18} />
+                <span>{label}</span>
               </button>
             ))}
           </div>
